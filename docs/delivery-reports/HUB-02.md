@@ -59,3 +59,19 @@ Não foi feita auditoria visual da página em navegador nas larguras de 390 px e
 - **Verificações HUB-02-C01:** resultado do CI e formatação definitiva serão documentados após a execução na branch corrigida. Não afirmar sucesso antecipado.
 
 A auditoria do responsável/consultor permanece necessária; nenhuma liberação de merge ou HUB-03 foi concedida.
+
+## HUB-02-C01 — revalidação efetiva e evidências de auditoria
+
+**Run de referência para a correção:** [GitHub Actions 40036863436](https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40036863436), executado no commit `ac4698e1dce1657628d532cc171ddddbe96b4f94`, **concluído com sucesso**: instalação Bun em modo `--frozen-lockfile`, lint (0 erros, 6 avisos), verificação específica do CSS e relatório Prettier, verificação global de formatação, TypeScript/typecheck, Vitest (2 arquivos / 6 testes aprovados) e build Vite/Nitro.
+
+**Histórico de correções C01:** o primeiro run [40036686674](https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40036686674) identificou apenas a formatação CSS `oklch(0.55 0.20 28)` → `oklch(0.55 0.2 28)`, comprovando compatibilidade com Prettier 3.9.6. O run [40036748142](https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40036748142) confirmou CSS formatado, mas apontou formatação pendente neste relatório Markdown; o run [40036815507](https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40036815507) apresentou diff indicando uma linha em branco necessária antes da lista de cinco commits. Esses problemas de formatação foram corrigidos em commits subsequentes, sem rebase ou alteração de `main`.
+
+**Validação de proteção local:** teste isolado com `git check-ignore -q`, utilizando os padrões publicados em `.gitignore`, confirmou `.env`, `.env.production`, `.env.local`, `src/.env`, `src/.env.test`, `.dev.vars`, `.dev.vars.preview` e `secrets/demo.txt` como ignorados; `.env.example` permaneceu permitido. Nenhum conteúdo secreto real foi criado. Inspeção dos **95 arquivos rastreados** no HEAD da correção não encontrou nomes de arquivos sensíveis nos padrões verificados; não equivale a um scanner de segredos em todo o histórico.
+
+**Validação de limites modulares:** `src/app/config/hub-modules.ts` contém a composição e os imports explícitos dos três módulos; `src/shared/` não contém imports de `@/modules/...`, conforme leitura dos arquivos atuais. O PR mantém exclusivamente o escopo HUB-02 e HUB-02-C01.
+
+**Avisos remanescentes:** os 6 avisos ESLint `react-refresh/only-export-components` persistem nos componentes Radix/shadcn herdados do template: `badge`, `button`, `form`, `navigation-menu`, `sidebar`, `toggle`. Build exibe aviso não bloqueante sobre `inlineDynamicImports` ignorado com `codeSplitting`; o workflow exibe aviso de depreciação de Node 20 na action `actions/checkout@v4`. Essas mensagens já existiam na entrega original e não foram introduzidas por C01.
+
+**Limitações e pendências:** screenshots e inspeção visual em navegador nas larguras 390 px/1440 px não foram realizados, pois o ambiente de execução acessível não dispõe de cópia local executável do repositório com dependências; não se realizou deploy para obter capturas. A evidência existente é build e teste de renderização em jsdom, não revisão visual. Aprovação do auditor, merge e qualquer etapa posterior permanecem pendentes.
+
+**Integridade:** `main` não recebeu operações de escrita durante a correção; comparar HEAD no encerramento com `0cb8e0a7268342630bd764a2d9c23a893568f338`. PR Draft #1 permanece em revisão, sem merge.
