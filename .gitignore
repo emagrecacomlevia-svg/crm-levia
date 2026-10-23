@@ -16,6 +16,20 @@ dist-ssr
 .nitro
 *.local
 
+# Local environment and secret configuration (never commit credentials)
+.env
+.env.*
+!.env.example
+.envrc
+.dev.vars.*
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+secrets/
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars

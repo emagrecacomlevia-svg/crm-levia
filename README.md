@@ -46,9 +46,9 @@ O CI executa estes comandos sem publicação. `bun run format` **modifica** arqu
 
 ## Organização
 
-- `src/app/`: composição visual e layout da página inicial.
+- `src/app/`: composição dos módulos em `config/hub-modules.ts`, apresentação e layout da página inicial.
 - `src/modules/`: metadados isolados das áreas planejadas.
-- `src/shared/`: UI, tipos e metadados compartilhados.
+- `src/shared/`: UI, tipos e utilidades reutilizáveis, sem dependência de `src/modules/`.
 - `src/routes/`: rotas **TanStack** existentes (não criar segundo roteador).
 - `src/tests/` e `src/test/`: testes visuais e teste de roteamento já existente.
 - `docs/`: arquitetura, decisões, baseline de segurança e relatório da entrega.

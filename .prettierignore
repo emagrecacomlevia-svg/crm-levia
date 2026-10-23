@@ -10,5 +10,3 @@ routeTree.gen.ts
 # Lovable-managed guidance and routing conventions kept unchanged
 AGENTS.md
 src/routes/README.md
-# Existing TanStack/Tailwind theme CSS retained with scoped HUB-02 token updates
-src/styles.css

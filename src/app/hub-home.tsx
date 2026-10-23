@@ -1,7 +1,7 @@
 import { ArrowDownRight, Check, ShieldCheck } from "lucide-react";
 
 import { HubShell } from "@/app/layouts/hub-shell";
-import { hubModules } from "@/shared/lib/hub-modules";
+import { hubModules } from "@/app/config/hub-modules";
 import { EnvironmentNotice } from "@/shared/ui/environment-notice";
 import { ModuleCard } from "@/shared/ui/module-card";
 

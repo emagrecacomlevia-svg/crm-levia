@@ -11,6 +11,7 @@ Monólito modular evolutivo. Um frontend React/TypeScript com separação por ca
 ```text
 src/
   app/
+    config/hub-modules.ts
     hub-home.tsx
     layouts/hub-shell.tsx
     providers/README.md
@@ -20,7 +21,7 @@ src/
     core/index.ts
   shared/
     types/hub-module.ts
-    lib/hub-modules.ts
+    lib/README.md
     ui/module-card.tsx
     ui/environment-notice.tsx
   routes/
@@ -37,7 +38,10 @@ TanStack Start define o shell de roteamento e SSR em `src/routes/__root.tsx`, `s
 - **social-studio:** metadados de apresentação da capacidade editorial futura; sem armazenamento, aprovação real, publicação ou acesso ao Drive.
 - **crm:** apenas área reservada; sem entidades comerciais, funil, preços ou lógica de vendas.
 - **core:** representação arquitetural futura de identidade, catálogo referencial, versões e auditoria; sem autenticação ou proteção de dados.
-- **shared:** tipos estáticos e componentes de apresentação sem acesso a serviços.
+- **app/config:** compõe os módulos com imports de `@/modules/*` exclusivamente na camada de aplicação.
+- **shared:** tipos, utilitários e componentes reutilizáveis; não importa módulos de domínio e não acessa serviços.
+
+Regra de dependência: `app → modules → shared` e `app → shared`; a direção `shared → modules` é proibida. A lista de cartões institucionais é composta em `src/app/config/hub-modules.ts`.
 
 Em etapas futuras, as regras de domínio devem residir nos módulos e as integrações passar por contratos explícitos. Não presumir que uma arte, preço, estudo ou conteúdo histórico esteja aprovado.
 
