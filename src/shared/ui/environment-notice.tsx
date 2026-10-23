@@ -9,9 +9,7 @@ export function EnvironmentNotice() {
     >
       <Info aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-olive" />
       <div>
-        <p className="text-sm font-semibold">
-          Ambiente de desenvolvimento — dados demonstrativos.
-        </p>
+        <p className="text-sm font-semibold">Ambiente de desenvolvimento — dados demonstrativos.</p>
         <p className="mt-1 text-sm leading-6 text-muted-foreground">
           Esta página apresenta a fundação do projeto. Os módulos ainda não estão operacionais.
         </p>

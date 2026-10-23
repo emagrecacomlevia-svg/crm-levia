@@ -79,10 +79,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "LEVIA HUB | LEVIA BIOSCIENCE" },
-      { name: "description", content: "Centro administrativo digital da LEVIA BIOSCIENCE. Ambiente de desenvolvimento com dados demonstrativos." },
+      {
+        name: "description",
+        content:
+          "Centro administrativo digital da LEVIA BIOSCIENCE. Ambiente de desenvolvimento com dados demonstrativos.",
+      },
       { name: "author", content: "LEVIA BIOSCIENCE" },
       { property: "og:title", content: "LEVIA HUB | LEVIA BIOSCIENCE" },
-      { property: "og:description", content: "Centro administrativo digital da LEVIA BIOSCIENCE. Ambiente de desenvolvimento com dados demonstrativos." },
+      {
+        property: "og:description",
+        content:
+          "Centro administrativo digital da LEVIA BIOSCIENCE. Ambiente de desenvolvimento com dados demonstrativos.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

@@ -28,9 +28,7 @@ export function ModuleCard({ module }: { module: HubModule }) {
         </span>
       </div>
       <h3 className="text-xl font-semibold tracking-tight text-forest">{module.name}</h3>
-      <p className="mt-3 flex-1 text-sm leading-7 text-muted-foreground">
-        {module.description}
-      </p>
+      <p className="mt-3 flex-1 text-sm leading-7 text-muted-foreground">{module.description}</p>
 
       <div className="mt-6 border-t border-border pt-5">
         <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-olive">

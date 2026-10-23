@@ -58,7 +58,8 @@ export function HubHome() {
                 <div>
                   <p className="text-lg font-semibold">Governança desde o início</p>
                   <p className="mt-1 text-sm leading-6 text-white/70">
-                    Preparado para receber regras de acesso, revisão e rastreabilidade em etapas futuras.
+                    Preparado para receber regras de acesso, revisão e rastreabilidade em etapas
+                    futuras.
                   </p>
                 </div>
               </div>
