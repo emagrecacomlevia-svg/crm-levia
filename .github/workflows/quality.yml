@@ -27,8 +27,10 @@ jobs:
       - name: Lint
         run: bun run lint
 
-      - name: Verify CSS formatting and show any diff
-        run: ./node_modules/.bin/prettier src/styles.css | diff -u src/styles.css -
+      - name: Verify corrected files format and show any diff
+        run: |
+          ./node_modules/.bin/prettier src/styles.css | diff -u src/styles.css -
+          ./node_modules/.bin/prettier docs/delivery-reports/HUB-02.md | diff -u docs/delivery-reports/HUB-02.md -
 
       - name: Check formatting
         run: bun run format:check
