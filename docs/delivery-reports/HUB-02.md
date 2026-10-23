@@ -38,6 +38,7 @@ Responsável aprova; Consultor/Auditor Técnico audita; Desenvolvedor executa. N
 ## Adendo AT-004 — histórico da entrega original (antes da HUB-02-C01)
 
 Os cinco commits da fundação original na branch foram:
+
 1. `aa4e41df6120d17dc1aa01fae172dc032b6ebfc4` — prova de escrita.
 2. `174deb0ea4c1a575e62b22e2871275fc9b61d367` — interface, módulos e testes.
 3. `fa3f4dafc9f24ef0ec7580073a78a33a1b466774` — documentação e workflow.
