@@ -6,6 +6,7 @@ on:
       - ".github/workflows/identity-sql.yml"
       - "supabase/**"
       - "scripts/check-hub04b1-sql.mjs"
+      - "docs/architecture/SUPABASE-PREFLIGHT.md"
   workflow_dispatch:
 
 permissions:
