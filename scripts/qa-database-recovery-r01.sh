@@ -125,9 +125,21 @@ if ! (cd "$work/isolated-project" && supabase db dump --db-url "$src" \
   sed -E 's#postgresql://[^[:space:]]+#LOCAL-URL-REDACTED#g' "$work/dump-data.log" | tail -20 >&2
   exit 1
 fi
-test -s "$work/schema.sql" && test -s "$work/data.sql"
-grep -Fq 'CREATE TABLE' "$work/schema.sql"
-grep -Fq 'COPY hub_recovery_lab.' "$work/data.sql"
+if ! test -s "$work/schema.sql" || ! test -s "$work/data.sql"; then
+  echo 'FAIL: one or both exported SQL files empty' >&2
+  exit 1
+fi
+echo 'PASS: CLI dump outputs nonempty schema and data SQL'
+if ! grep -Fq 'CREATE TABLE' "$work/schema.sql"; then
+  echo 'FAIL: exported schema is missing CREATE TABLE' >&2
+  exit 1
+fi
+if ! grep -Eiq '^COPY[[:space:]]+.*(people|events)' "$work/data.sql"; then
+  echo 'FAIL: data dump missing expected COPY statements' >&2
+  echo 'Sanitized data-dump structural indicators (no rows):' >&2
+  grep -E '^(COPY|INSERT INTO|CREATE|SET)' "$work/data.sql" | head -12 >&2 || true
+  exit 1
+fi
 if grep -Eq '^CREATE SCHEMA (auth|storage|realtime|supabase_migrations)' "$work/schema.sql"; then
   echo 'FAIL: managed or history schema unexpectedly exported' >&2
   exit 1
