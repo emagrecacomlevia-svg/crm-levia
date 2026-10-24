@@ -16,12 +16,12 @@
 
 ## Fronteiras entre ambientes
 
-| Ambiente | Estado na HUB-04A | Dados permitidos | Finalidade |
-| -------- | ----------------- | ---------------- | ---------- |
-| HUB dev | Criado no plano Free, isolado | Sintéticos, quando outra fase autorizar | Evolução e testes futuros |
-| HUB staging | Não criado | Nenhum | Possível homologação isolada futura |
-| HUB produção | Não criado | Nenhum | Sujeito a plano, segurança e autorização separados |
-| Site institucional / QR e outros sistemas | Fora do HUB | Nenhum uso compartilhado | Infraestrutura preexistente, intocada |
+| Ambiente                                  | Estado na HUB-04A             | Dados permitidos                        | Finalidade                                         |
+| ----------------------------------------- | ----------------------------- | --------------------------------------- | -------------------------------------------------- |
+| HUB dev                                   | Criado no plano Free, isolado | Sintéticos, quando outra fase autorizar | Evolução e testes futuros                          |
+| HUB staging                               | Não criado                    | Nenhum                                  | Possível homologação isolada futura                |
+| HUB produção                              | Não criado                    | Nenhum                                  | Sujeito a plano, segurança e autorização separados |
+| Site institucional / QR e outros sistemas | Fora do HUB                   | Nenhum uso compartilhado                | Infraestrutura preexistente, intocada              |
 
 O projeto `levia-hub-dev` **não** está conectado à aplicação React/TanStack, ao site institucional, à Cloudflare, ao Drive ou ao Lovable Cloud. As rotas `/app/*` continuam **públicas e inteiramente demonstrativas**. Ter um serviço Auth provisionado pelo Supabase não equivale a implementar login, proteção de rotas ou RLS de negócio.
 
