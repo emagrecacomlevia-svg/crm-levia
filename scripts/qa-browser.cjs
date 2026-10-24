@@ -72,11 +72,24 @@ async function run() {
         await page.getByRole("heading", { level: 1, name: heading }).waitFor();
         await noOverflow(page, route, width);
         if (route.startsWith("/app")) {
-          const active = page
-            .getByRole("navigation", { name: "Navegação administrativa" })
-            .getByRole("link", { name: /ATUAL/ });
-          const current = await active.first().getAttribute("aria-current");
+          let navigation;
+          if (width < 1024) {
+            await page.getByRole("button", { name: "Abrir menu" }).click();
+            navigation = page
+              .getByRole("dialog", { name: "Navegação do LEVIA HUB" })
+              .getByRole("navigation", { name: "Navegação administrativa" });
+          } else {
+            navigation = page.getByRole("navigation", { name: "Navegação administrativa" });
+          }
+          const current = await navigation
+            .getByRole("link", { name: /ATUAL/ })
+            .first()
+            .getAttribute("aria-current");
           assert.equal(current, "page", `Estado ativo de ${route}`);
+          if (width < 1024) {
+            await page.keyboard.press("Escape");
+            await page.getByRole("dialog").waitFor({ state: "hidden" });
+          }
           assert.equal(await page.getByText("Ambiente demonstrativo").count(), 1);
         }
         record(`acesso direto ${route}, largura ${width}px e sem overflow`);
