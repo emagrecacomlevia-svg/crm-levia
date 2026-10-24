@@ -2,10 +2,10 @@ name: HUB-04B2B-G01 Supabase CLI Isolated QA
 on:
   pull_request:
     paths:
-      - '.github/workflows/hub-04b2b-g01-cli-qa.yml'
-      - 'scripts/qa-supabase-cli-g01.sh'
-      - 'supabase/migrations/20261024130000_identity_permissions.sql'
-      - 'supabase/tests/managed_preflight_assertions.sql'
+      - ".github/workflows/hub-04b2b-g01-cli-qa.yml"
+      - "scripts/qa-supabase-cli-g01.sh"
+      - "supabase/migrations/20261024130000_identity_permissions.sql"
+      - "supabase/tests/managed_preflight_assertions.sql"
   workflow_dispatch:
 
 permissions:
@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
-      SUPABASE_TELEMETRY_DISABLED: '1'
-      SUPABASE_ACCESS_TOKEN: ''
+      SUPABASE_TELEMETRY_DISABLED: "1"
+      SUPABASE_ACCESS_TOKEN: ""
     steps:
       - name: Checkout isolated candidate
         uses: actions/checkout@v4
