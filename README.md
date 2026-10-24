@@ -67,6 +67,8 @@ A árvore `src/routeTree.gen.ts` é **gerada pela integração TanStack/Vite e i
 - `src/tests/` e `src/test/`: testes visuais e teste de roteamento já existente.
 - `docs/`: arquitetura, decisões, baseline de segurança e relatório da entrega.
 
+O workflow de QA em Chromium é `.github/workflows/browser-qa.yml`: usa Playwright 1.56.1 somente no runner temporário, sem adicionar dependência ou lockfile ao projeto. Testa cinco rotas nas larguras 320, 390, 768, 1280 e 1440 px, grava capturas e publica o artefato GitHub `hub-03-browser-qa` por 14 dias. Para reproduzir localmente com navegador instalado, consulte [Navegação](docs/architecture/NAVIGATION.md).
+
 Consulte [Arquitetura](docs/architecture/ARCHITECTURE.md), [ADR-001](docs/decisions/ADR-001.md), [Segurança](docs/security/SECURITY_BASELINE.md) e [Relatório HUB-02](docs/delivery-reports/HUB-02.md).
 
 ## Restrições

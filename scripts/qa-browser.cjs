@@ -133,7 +133,6 @@ async function run() {
     await screenshot(page, "menu-mobile-aberto-390.png");
     await page.keyboard.press("Escape");
     await dialog.waitFor({ state: "hidden" });
-    await trigger.focus();
     assert.equal(await trigger.evaluate((element) => element === document.activeElement), true);
     record("menu: abre, captura, Escape fecha e foco retorna");
 
