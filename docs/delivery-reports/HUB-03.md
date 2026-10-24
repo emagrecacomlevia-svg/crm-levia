@@ -52,7 +52,7 @@ A primeira execução integral aprovada para HUB-03 foi [GitHub Actions #4005676
 **Não executado:** merge do PR Draft #2, publicação, alterações de infraestrutura/Cloudflare, Supabase, Auth/RLS, conexão Drive, ações Lovable AI ou uso de informações reais.
 
 **Pendente para auditoria:** avaliação visual complementar em navegador, decisão sobre os avisos herdados, revisão final do Consultor e aprovação do responsável. A HUB-04 não foi iniciada.
- 
+
 ## HUB-03-C01 — Correções técnicas do parecer AT-007
 
 **Base auditada:** `main` em `aaf2f8c0df136d1f2b593ae53dfd585e2276548b`; branch `feature/hub-03-admin-shell` em `aa174d939baf99373b228002d15c1deb905a3128`. PR Draft #2 preservado.
