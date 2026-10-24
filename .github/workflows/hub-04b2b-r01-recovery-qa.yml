@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout reviewed candidate
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Install and verify official pinned Supabase CLI 2.122.0
         shell: bash
         run: |
