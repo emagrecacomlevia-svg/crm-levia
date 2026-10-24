@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { ArrowDownRight, Check, ShieldCheck } from "lucide-react";
 
 import { HubShell } from "@/app/layouts/hub-shell";
@@ -30,7 +31,16 @@ export function HubHome() {
               Uma base para organizar o presente e construir, com critério, o próximo capítulo da
               LEVIA BIOSCIENCE.
             </p>
-            <div className="mt-9 inline-flex items-center gap-3 rounded-full border border-white/20 px-4 py-2 text-xs font-semibold tracking-[0.14em] text-sage">
+            <div className="mt-9 flex flex-wrap items-center gap-4">
+              <Link
+                to="/app"
+                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-sage px-6 py-3 text-sm font-semibold text-forest transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+              >
+                Abrir demonstração do HUB
+                <ArrowDownRight aria-hidden="true" className="ml-2 size-4" />
+              </Link>
+            </div>
+            <div className="mt-5 inline-flex items-center gap-3 rounded-full border border-white/20 px-4 py-2 text-xs font-semibold tracking-[0.14em] text-sage">
               <span aria-hidden="true" className="size-2 rounded-full bg-sage" />
               FUNDAÇÃO TÉCNICA · HUB-02
             </div>

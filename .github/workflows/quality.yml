@@ -1,4 +1,4 @@
-name: HUB-02 Quality
+name: LEVIA HUB Quality
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   quality:
-    name: Lint · Format · Types · Tests · Build
+    name: Lint · Format · Build · Types · Tests
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -31,15 +31,28 @@ jobs:
         run: |
           ./node_modules/.bin/prettier src/styles.css | diff -u src/styles.css -
           ./node_modules/.bin/prettier docs/delivery-reports/HUB-02.md | diff -u docs/delivery-reports/HUB-02.md -
+          ./node_modules/.bin/prettier docs/architecture/NAVIGATION.md | diff -u docs/architecture/NAVIGATION.md -
+          ./node_modules/.bin/prettier README.md | diff -u README.md -
 
       - name: Check formatting
         run: bun run format:check
 
+      # Verify a clean checkout contains no stale tracked generated route manifest.
+      - name: Confirm generated route tree is absent in clean checkout
+        run: test ! -e src/routeTree.gen.ts
+
+      - name: Build and generate routes
+        run: bun run build
+
+      - name: Verify the five generated paths
+        run: |
+          test -f src/routeTree.gen.ts
+          for route in "'/'" "'/app'" "'/app/social-studio'" "'/app/crm'" "'/app/core'"; do
+            grep -Fq "$route" src/routeTree.gen.ts
+          done
+
       - name: Typecheck
-        run: bun run typecheck
+        run: bun run typecheck:generated
 
       - name: Unit and UI tests
-        run: bun run test
-
-      - name: Build
-        run: bun run build
+        run: bun run test:generated
