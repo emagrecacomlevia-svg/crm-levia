@@ -110,3 +110,13 @@ Testes posteriores obrigatórios: atores reais de teste com identidade Auth,
 sessão expirada, JWT antigo após desativação, concessão expirada/revogada,
 escalada de privilégio, concorrência, segmentação por registro e verificação
 de que todas as alterações em concessões produzem eventos completos.
+
+## HUB-04B1-C01 — testes negativos ampliados
+
+No PostgreSQL 17 isolado, verificar 48 operações reais: SELECT, INSERT, UPDATE e DELETE sobre as quatro tabelas, usando SET ROLE `anon`, `authenticated` e `service_role` do stub. **Cada uma precisa falhar com SQLSTATE 42501.** UPDATE/DELETE aceito com zero linhas é FALHA do teste, não prova de segurança. Verificar também 48 combinações de ACL separadas por operação, RLS habilitado e nenhuma policy permissiva.
+
+**ACL versus RLS:** testes com roles sem USAGE no schema comprovam negação por privilégio; um GRANT temporário para SELECT/USAGE somente no PostgreSQL local, removido antes do ROLLBACK, demonstra a filtragem RLS sem políticas apesar de existirem dados. `service_role` do stub é NOLOGIN sem BYPASSRLS; a realidade do Supabase gerenciado exige auditoria posterior.
+
+Testar cronologia de revogação, agendamento futuro, NULL, validade igual/invertida, revogador com/sem timestamp, CASCADE de conta/grants após excluir Auth e SET NULL do ator em grant/evento. O evento de auditoria é **inserido manualmente como fixture** e não comprova geração automática.
+
+**Bloqueio operacional:** aprovação de retenção/privacidade e exclusão LGPD, autor confiável validado server-side, auditoria atômica, política positiva por escopo e homologação contra Supabase gerenciado.

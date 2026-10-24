@@ -76,3 +76,9 @@ implementados e auditados antes de qualquer interface de administração.
 
 Consultar [Esquema HUB-04B1](../architecture/DATABASE-SCHEMA.md) e
 [Plano de testes RLS](RLS-TEST-PLAN.md). **Não executar remotamente.**
+
+## HUB-04B1-C01 — concessão não é identidade
+
+`granted_by_auth_user_id <> subject_user_id` (implementado com `IS DISTINCT FROM`) é somente restrição de valores armazenados. Um escritor malicioso poderia preencher UUID de terceiro se conseguisse escrita; a desigualdade não verifica ator real. A arquitetura futura exige autenticar e vincular o ator no backend, verificar capacidade/escopo/aprovação independente e registrar grant/evento atomicamente com auditabilidade.
+
+Ator NULL pode decorrer de migração autorizada, dados legados e `ON DELETE SET NULL`; não é concessão anônima autorizada. Fluxos normais futuros exigirão identidade de responsável validada, com exceções explícitas governadas e documentação de retenção e exclusão de dados pessoais. O SQL atual não cria esse escritor nem mecanismos de auditoria operacional.

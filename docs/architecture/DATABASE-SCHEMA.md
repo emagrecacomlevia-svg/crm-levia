@@ -122,3 +122,21 @@ identificação confiável de quem concede, aprovação por segunda pessoa,
 auditoria transacional e imutabilidade, retenção LGPD, proteção do superusuário,
 bootstrap de operador autorizado, reconciliação com identidades removidas e
 recuperação. Nenhum desses requisitos é considerado resolvido pelo SQL atual.
+
+## HUB-04B1-C01 — exclusão, tempo e autoria (AT-012)
+
+A migration permanece **não aplicada remotamente**. Os testes em PostgreSQL 17 isolado verificam estes efeitos de remoção de identidades sintéticas:
+
+- `admin_accounts.auth_user_id`: `ON DELETE CASCADE` remove a conta quando seu usuário Auth é excluído.
+- `permission_grants.subject_user_id`: o CASCADE a partir da conta apaga todas as concessões daquele beneficiário e seus detalhes de escopo, vigência, concessão e revogação.
+- `granted_by_auth_user_id` e `revoked_by_auth_user_id`: `ON DELETE SET NULL` mantém concessões de terceiros, mas perde a ligação de autoria com o usuário excluído.
+- `permission_audit_events.actor_auth_user_id`: `ON DELETE SET NULL` conserva eventos anteriores, mas o vínculo com o ator é perdido.
+- `permission_audit_events.subject_user_id` e `grant_id`: os UUIDs históricos sem FK sobrevivem, inclusive após exclusão de contas e grants. Podem constituir dados pessoais/reidentificáveis.
+
+**Crítico:** a migration não gera eventos de auditoria automaticamente. Os testes inserem um evento sintético manualmente apenas para demonstrar retenção. Não há trilha transacional completa e não se pode presumir que todos os grants antigos estejam representados. Definir antes do uso real a retenção, minimização, tratamento LGPD, reconciliação com identidades excluídas, autoria histórica e hipóteses de exclusão legítima. Não substituir CASCADE por RESTRICT sem decisão: isso poderia impedir exclusão regular de Auth e não resolveria a perda de evidência.
+
+**Restrição adicionada:** `grant_revocation_not_before_grant` permite `revoked_at NULL` ou exige `revoked_at >= granted_at`. `valid_from` futuro continua permitido, inclusive revogação antes do início programado, desde que posterior à criação do grant. `valid_until > valid_from` é exigido quando há fim.
+
+**Identidade do concedente:** `granted_by_auth_user_id IS DISTINCT FROM subject_user_id` compara somente UUIDs fornecidos. **Não autentica o ator nem impede falsificação de um terceiro UUID por escritor indevidamente autorizado.** Campos nulos suportam legado/importação controlada e SET NULL, mas não autorizam operação empresarial sem responsável validado. O futuro escritor deve ligar o ator à sessão server-side verificada, aplicar autorização, impedir campos de ator arbitrários, exigir segregação e registrar ato/evento na mesma transação. Sem isso, bloquear administração real.
+
+**Provas locais:** 48 tentativas DML reais sob três papéis e quatro tabelas com erro SQLSTATE 42501, além de ACL individual; RLS habilitado e sem policies. Concessão temporária somente no teste, revertida, isola a negação por RLS sem confundi-la com falta de privilégio SQL. `service_role` sintético não possui BYPASSRLS como no Supabase gerenciado.

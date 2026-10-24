@@ -93,3 +93,14 @@
 Fontes oficiais: [Auth](https://supabase.com/docs/guides/auth/managing-user-data),
 [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security),
 [CLI](https://supabase.com/docs/reference/cli/global-flags).
+
+## HUB-04B1-C01 — correções AT-012 para auditoria
+
+- **A, exclusão:** mantidos CASCADE e SET NULL, com teste de identidades sintéticas em PostgreSQL isolado. Exclusão de beneficiário elimina conta e grants; exclusão de ator torna referências nulas. Um evento de auditoria criado manualmente permanece com UUIDs históricos. Não há auditoria automática; retenção, LGPD e reconciliação bloqueiam uso real.
+- **B, tempo:** CHECK `grant_revocation_not_before_grant` adicionado; permite nulo e data posterior/igual à concessão sem impedir `valid_from` futuro. Negativos exigem rejeição de revogação anterior, janelas iguais/invertidas e revogador sem data.
+- **C, acesso:** 48 tentativas SQL reais exigem SQLSTATE 42501; 48 ACLs individuais, RLS e policies conferidas. GRANT temporário somente no teste isolado distingue negação por ACL de deny-all RLS. Stub `service_role` não equivale ao serviço gerenciado.
+- **D, ator:** desigualdade de UUID armazenado não comprova identidade; campos NULL podem resultar de exclusão de Auth/legado, não autorizam concessão sem autoria.
+
+**Status técnico:** candidato não aplicado remotamente. Resultados do SQL QA, Quality CI e Browser QA devem ser registrados depois de efetivamente observados no HEAD da correção. Sem merge, SQL remoto, usuário real ou avanço HUB-04B2. A `main` auditada deve continuar em `8466e8b41356c0a3c27737683fb7e596099c790d`.
+
+**Pendências bloqueantes:** consentimento/política de retenção de evidências, privacidade, writer confiável e auditável, teste de segurança em Supabase gerenciado, segregação, política RLS positiva e recuperação/reversão.
