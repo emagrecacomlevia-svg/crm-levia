@@ -95,7 +95,7 @@ assert_eq "$(sql success 'SELECT count(*) FROM hub_private.capabilities;')" '9' 
 assert_eq "$(sql success "SELECT count(*) FROM pg_policies WHERE schemaname='hub_private';")" '0' 'unexpected positive policies'
 assert_eq "$(sql success "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='hub_private' AND c.relkind='r' AND c.relrowsecurity;")" '4' 'RLS missing'
 assert_eq "$(sql success "SELECT count(*) FROM pg_indexes WHERE schemaname='hub_private' AND indexname IN ('permission_grant_one_unrevoked_scope','permission_audit_by_subject_date');")" '2' 'secondary indexes'
-assert_eq "$(sql success "SELECT count(*) FROM pg_constraint k JOIN pg_namespace n ON n.oid=k.connamespace WHERE n.nspname='hub_private' AND k.contype='f';")" '6' 'foreign keys'
+assert_eq "$(sql success "SELECT count(*) FROM pg_constraint k JOIN pg_namespace n ON n.oid=k.connamespace WHERE n.nspname='hub_private' AND k.contype='f';")" '7' 'foreign keys'
 docker exec -i "$container" psql -U postgres -d success -v ON_ERROR_STOP=1 \
   < supabase/tests/managed_preflight_assertions.sql > "$work/assertions.log" 2>&1
 grep -F 'PASS: schema, owner, roles, RLS' "$work/assertions.log"
