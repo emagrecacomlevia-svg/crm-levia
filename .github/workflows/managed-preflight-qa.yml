@@ -1,0 +1,24 @@
+name: HUB-04B2A-C01 Managed Preflight (Isolated)
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  managed-preflight:
+    name: Managed-role approximation · PostgreSQL 17 · offline
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify immutable migration candidate
+        run: |
+          test "$(git hash-object supabase/migrations/20261024130000_identity_permissions.sql)" = "7e954d9ce51ce0e3e96021809241a1bb9a439c59"
+
+      - name: Isolated managed-role and rollback simulation
+        run: bash scripts/qa-managed-preflight.sh
