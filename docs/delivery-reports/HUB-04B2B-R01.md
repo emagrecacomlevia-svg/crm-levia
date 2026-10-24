@@ -33,6 +33,7 @@ Os documentos históricos `FIRST-MIGRATION-RECOVERY.md` e `RECOVERY-RUNBOOK.md` 
 - Sem `supabase link`, tokens, passwords, segredos no GitHub ou endpoints do Supabase LEVIA.
 
 Documentação oficial consultada:
+
 - https://supabase.com/docs/reference/cli/supabase-db-dump
 - https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore
 - https://supabase.com/docs/guides/platform/backups
