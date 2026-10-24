@@ -152,7 +152,7 @@ select pg_temp.assert_ok(
   'service_role test stub is NOT managed BYPASSRLS role');
 
 set role anon;
-do $
+do $$
 declare
   tab text;
   pk text;
@@ -185,11 +185,11 @@ begin
     end loop;
   end loop;
 end;
-$;
+$$;
 reset role;
 
 set role authenticated;
-do $
+do $$
 declare
   tab text;
   pk text;
@@ -222,11 +222,11 @@ begin
     end loop;
   end loop;
 end;
-$;
+$$;
 reset role;
 
 set role service_role;
-do $
+do $$
 declare
   tab text;
   pk text;
@@ -259,7 +259,7 @@ begin
     end loop;
   end loop;
 end;
-$;
+$$;
 reset role;
 
 -- Revocation/expiration and disabled-account checks are diagnostic, NOT positive RLS tests:
@@ -302,7 +302,7 @@ select pg_temp.assert_ok(
  capability_code='content.review_editorial' and revoked_at is null),
  'NULL revoked_at allowed');
 
-do $
+do $$
 declare denied boolean;
 begin
   denied:=false;
@@ -349,7 +349,7 @@ begin
   if not denied then raise exception 'revoker without timestamp accepted'; end if;
   raise notice 'CHECK denied revoker without timestamp';
 end;
-$;
+$$;
 
 -- ACL denies 42501; RLS independently denies SELECT with a temporary grant
 -- in this rolled-back and network-isolated transaction, never in migration.
