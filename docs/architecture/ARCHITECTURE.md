@@ -4,7 +4,7 @@
 
 ## Princípios
 
-Monólito modular evolutivo. Um frontend React/TypeScript com separação por capacidades e código compartilhado mínimo. A camada de persistência e controle de acesso não existe nesta fase. **Supabase é somente um candidato aprovado conceitualmente para ambiente administrativo independente em etapas futuras**; nenhum projeto, esquema ou cliente foi criado.
+Monólito modular evolutivo. Um frontend React/TypeScript com separação por capacidades e código compartilhado mínimo. A camada de persistência e controle de acesso não existe nesta fase. **Na HUB-04A, um projeto Supabase Free exclusivo de desenvolvimento foi provisionado**, sem esquema de negócio, cliente frontend, autenticação ou persistência da aplicação.
 
 ## Estrutura atual
 
@@ -67,6 +67,6 @@ Em etapas futuras, as regras de domínio devem residir nos módulos e as integra
 
 ## Tecnologias e evolução
 
-A stack inicial é React 19 + TypeScript 5.8 + TanStack Start/Router + Vite 8 + Tailwind CSS 4 + Bun + Vitest/React Testing Library. A configuração Lovable existente foi preservada. O pacote `@lovable.dev/vite-tanstack-config` configura plugins essenciais; não duplicá-los. Banco, RLS, auth, CI de deploy e serviços externos exigem aprovação posterior.
+A stack inicial é React 19 + TypeScript 5.8 + TanStack Start/Router + Vite 8 + Tailwind CSS 4 + Bun + Vitest/React Testing Library. A configuração Lovable existente foi preservada. O pacote `@lovable.dev/vite-tanstack-config` configura plugins essenciais; não duplicá-los. O ambiente Supabase de desenvolvimento criado na HUB-04A não se conecta ao frontend; esquema empresarial, RLS, Auth, CI de deploy e integrações exigem aprovação posterior.
 
 O workflow de qualidade não faz deploy. O monólito modular pode evoluir sem alteração de roteador ou migração de tecnologia não autorizada.
