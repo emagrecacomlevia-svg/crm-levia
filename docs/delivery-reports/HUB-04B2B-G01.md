@@ -73,7 +73,6 @@ No PR os gatilhos do novo script acionam G01 CLI QA, Managed Preflight, Quality 
 
 **A migration do LEVIA HUB não autoriza qualquer modificação no Vault, Auth, Storage, Realtime ou objetos gerenciados fora de `hub_private`.** A presença de `--skip-vault` deve ser mantida em qualquer desenho futuro do instrumento; não é autorização para `db push` remoto. Sem essa flag, a própria documentação da CLI alerta sobre sincronização antecipada de segredos. Nenhum segredo, credencial ou configuração privada foi incluído no Git.
 
-
 ## Data API e bloqueio
 
 No AT-021, o responsável informou Exposed schemas = graphql_public e public; hub_private não aparece.
