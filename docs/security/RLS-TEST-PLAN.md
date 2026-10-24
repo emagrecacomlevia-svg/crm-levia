@@ -78,3 +78,35 @@ As entidades abaixo são **hipotéticas**, não nomes aprovados de tabelas ou sc
 Referências: [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [Auth Sessions](https://supabase.com/docs/guides/auth/sessions), [API Security](https://supabase.com/docs/guides/api/securing-your-api).
 
 **Nenhuma política foi aplicada.** Esta matriz prevê testes futuros, não é evidência de isolamento operacional.
+
+## HUB-04B1 — testes preparados versus garantia real
+
+A migration candidata isola quatro tabelas em `hub_private`, revoga o acesso
+à Data API e mantém zero políticas permissivas. O workflow `identity-sql.yml`
+executa testes **reais de PostgreSQL 17 apenas em contêiner descartável** com
+schema `auth` de teste, sem rede e sem acesso ao projeto Supabase remoto.
+
+- Estrutura: quatro tabelas, PK/FK, nove capacidades, dois índices secundários,
+  RLS habilitada nas quatro e `pg_policies` vazio.
+- ACL: `has_schema_privilege`, `has_table_privilege` e tentativas reais de
+  leitura anônima, leitura `authenticated` e escrita no catálogo.
+- Restrições: conta inicialmente desativada, FK Auth, unicidade de concessões
+  não revogadas, limites de vigência, escopo incompatível e autoatribuição.
+- Condição **diagnóstica**: a leitura privilegiada de dados sintéticos mostra
+  que concessões expiradas, revogadas ou vinculadas a contas desabilitadas
+  não satisfazem o predicado de vigência previsto.
+- Ausência de acesso comercial/editorial: não há nenhuma tabela CRM ou Social
+  Studio, GRANT, policy ou função privilegiada para essas áreas.
+
+**Limite de segurança:** os testes do predicado diagnóstico não provam RLS
+positiva. Como o sistema nega tudo agora, nenhum teste demonstra um usuário
+legitimamente autorizado lendo um registro — isso exige políticas futuras
+revisadas, com testes positivos e negativos por escopo. O registro de eventos
+não é automaticamente preenchido, protegido contra todos os operadores
+privilegiados ou associado atomicamente à mutação de concessões. Essa é uma
+pendência bloqueante para administração real de privilégios.
+
+Testes posteriores obrigatórios: atores reais de teste com identidade Auth,
+sessão expirada, JWT antigo após desativação, concessão expirada/revogada,
+escalada de privilégio, concorrência, segmentação por registro e verificação
+de que todas as alterações em concessões produzem eventos completos.

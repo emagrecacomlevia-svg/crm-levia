@@ -1,0 +1,63 @@
+name: HUB-04B1 Isolated SQL QA
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/identity-sql.yml"
+      - "supabase/**"
+      - "scripts/check-hub04b1-sql.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-security:
+    name: PostgreSQL 17 · migration candidate · deny-all tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Static SQL safety check
+        run: node scripts/check-hub04b1-sql.mjs
+
+      - name: Start disposable PostgreSQL without network access
+        run: |
+          docker run --rm -d --name levia-hub04b1-pg --network none \
+            -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17
+          for i in $(seq 1 45); do
+            if docker exec levia-hub04b1-pg pg_isready -U postgres; then exit 0; fi
+            sleep 2
+          done
+          docker logs levia-hub04b1-pg
+          exit 1
+
+      - name: Create Supabase Auth-only SQL stub, locally
+        run: |
+          docker exec levia-hub04b1-pg psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon nologin;
+          create role authenticated nologin;
+          create role service_role nologin;
+          create schema auth;
+          create table auth.users (id uuid primary key);
+          SQL
+
+      - name: Apply candidate ONLY to isolated runner database
+        run: |
+          docker cp supabase/migrations/20261024130000_identity_permissions.sql \
+            levia-hub04b1-pg:/tmp/identity_permissions.sql
+          docker exec levia-hub04b1-pg psql -U postgres -v ON_ERROR_STOP=1 \
+            -f /tmp/identity_permissions.sql
+
+      - name: Execute PostgreSQL privileges, RLS and constraints assertions
+        run: |
+          docker cp supabase/tests/identity_permissions.sql \
+            levia-hub04b1-pg:/tmp/identity_permissions_tests.sql
+          docker exec levia-hub04b1-pg psql -U postgres -v ON_ERROR_STOP=1 \
+            -f /tmp/identity_permissions_tests.sql
+
+      - name: Remove disposable container
+        if: always()
+        run: docker rm -f levia-hub04b1-pg || true
