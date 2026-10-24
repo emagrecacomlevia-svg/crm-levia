@@ -1,0 +1,44 @@
+name: HUB-04B2B-G01 Supabase CLI Isolated QA
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/hub-04b2b-g01-cli-qa.yml"
+      - "scripts/qa-supabase-cli-g01.sh"
+      - "supabase/migrations/20261024130000_identity_permissions.sql"
+      - "supabase/tests/managed_preflight_assertions.sql"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  local-only:
+    name: Pinned CLI 2.122.0 / PostgreSQL 17 / no remote project
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SUPABASE_TELEMETRY_DISABLED: "1"
+      SUPABASE_ACCESS_TOKEN: ""
+    steps:
+      - name: Checkout isolated candidate
+        uses: actions/checkout@v4
+      - name: Obtain official Supabase CLI 2.122.0 and verify release checksum
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          version=2.122.0
+          base="https://github.com/supabase/cli/releases/download/v$version"
+          asset=$(printf 'supabase_%s_linux_amd64.tar.gz' "$version")
+          curl -fL --retry 3 "$base/$asset" -o "$asset"
+          curl -fL --retry 3 "$base/checksums.txt" -o checksums.txt
+          grep -F "$asset" checksums.txt | sha256sum -c -
+          cli_dir=$(mktemp -d)
+          tar -xzf "$asset" -C "$cli_dir" supabase
+          sudo install -m 0755 "$cli_dir/supabase" /usr/local/bin/supabase
+          rm -rf "$cli_dir"
+          rm -f "$asset" checksums.txt
+          test "$(supabase --version)" = "$version"
+          supabase --version
+      - name: Real CLI ledger / dry run / rollback / drift / reconstruction — disposable DB only
+        shell: bash
+        run: bash scripts/qa-supabase-cli-g01.sh
