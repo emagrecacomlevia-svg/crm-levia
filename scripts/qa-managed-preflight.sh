@@ -48,10 +48,18 @@ if docker exec "$container" psql -U hub_migration_executor -d managed_failure \
   -c "SELECT 1 / 0" > /tmp/levia-controlled-failure.log 2>&1; then
   echo "FAIL: controlled failure unexpectedly succeeded"; exit 1
 fi
-grep -q "division by zero" /tmp/levia-controlled-failure.log
+if ! grep -q "division by zero" /tmp/levia-controlled-failure.log; then
+  echo "FAIL: controlled migration did not reach intended division-by-zero step"
+  cat /tmp/levia-controlled-failure.log
+  exit 1
+fi
 failure_state=$(docker exec "$container" psql -U postgres -d managed_failure -At \
   -c "SELECT (to_regnamespace('hub_private') IS NULL)::text || ':' || (SELECT count(*) FROM supabase_migrations.schema_migrations)::text")
-test "$failure_state" = "true:0"
+if test "$failure_state" != "true:0"; then
+  echo "FAIL: rollback-state mismatch (schema absent : synthetic ledger empty expected)"
+  echo "$failure_state"
+  exit 1
+fi
 echo "PASS: atomic rollback on controlled failure (schema absent, history empty)"
 
 # Success case: transactional candidate plus a synthetic migration-history row.

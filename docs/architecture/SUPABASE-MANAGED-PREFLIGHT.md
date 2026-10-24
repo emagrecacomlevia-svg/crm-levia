@@ -62,18 +62,19 @@ Não inferir ausência de exposição pelo fato de não existir tabela ou schema
 
 ## Comparação: ambiente real versus ensaio isolado
 
-| Aspecto | Gerenciado por leitura | PostgreSQL 17 isolado |
-| --- | --- | --- |
-| `auth.users` | Schema/tabela existentes, owner gerenciado | Stub sintético com owner dedicado |
-| `postgres` | Não superuser, mas `BYPASSRLS` | Superuser do contêiner apenas para bootstrap |
-| Executor de DDL | Possível `postgres` identificado por leitura | `hub_migration_executor` não superuser |
-| `service_role` | `BYPASSRLS=true` | Configurado `BYPASSRLS=true` no teste novo |
-| Herança de papéis | Associações consultadas | Apenas subconjunto modelado |
-| `pg_default_acl` | Grants em `public` sob dois criadores | Verificação de ACL no schema novo |
-| Data API/PostgREST | Configuração não comprovada | Não executa PostgREST |
-| Histórico de migrations | Nenhuma migration remota | Marcador sintético, não CLI oficial |
-| Transação/falha | **Não testada remotamente** | Cenários de commit e rollback |
-| Auth, Storage, Realtime | Infraestrutura gerenciada preservada | Não reproduzidos integralmente |
+- **Auth:** `auth.users` pertence a um proprietário gerenciado; no ensaio, a tabela é
+  sintética e seu proprietário também é separado do executor.
+- **Executor:** `postgres` remoto não é superuser e tem `BYPASSRLS`; o ensaio utiliza
+  um executor sem superuser e reserva um superuser apenas para a preparação descartável.
+- **`service_role`:** tem `BYPASSRLS=true` no remoto e na nova simulação; a suíte
+  anterior usava um stub `NO BYPASSRLS`.
+- **Herança:** associações de papéis reais foram consultadas, mas só parte é simulada.
+- **Privilégios padrão:** grants no `public` remoto sob dois proprietários; o teste
+  avalia a ACL do schema novo, criada pelo executor isolado.
+- **Data API:** ainda não comprovada no Dashboard; PostgREST não roda na simulação.
+- **Histórico:** nenhuma migration remota; marcador local sintético, não CLI Supabase.
+- **Transação/falha:** não ensaiadas remotamente; cenários de commit e rollback locais.
+- **Gerenciados:** Auth, Storage e Realtime remotos não são reproduzidos integralmente.
 
 O cenário isolado **não tem paridade integral com Supabase gerenciado**.
 O QA existente (48 negativas, PostgreSQL 17 com stub) permanece válido
