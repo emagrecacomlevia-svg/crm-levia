@@ -24,6 +24,11 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: R02 temporary Markdown Prettier diff (no repository writes)
+        run: |
+          ./node_modules/.bin/prettier docs/operations/DATABASE-BACKUP-PLAN.md | diff -u docs/operations/DATABASE-BACKUP-PLAN.md - || true
+          ./node_modules/.bin/prettier docs/delivery-reports/HUB-04B2B-R02.md | diff -u docs/delivery-reports/HUB-04B2B-R02.md - || true
+
       - name: Lint
         run: bun run lint
 
