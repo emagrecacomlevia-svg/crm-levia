@@ -29,12 +29,12 @@ jobs:
           version=2.122.0
           base="https://github.com/supabase/cli/releases/download/v$version"
           asset=$(printf 'supabase_%s_linux_amd64.tar.gz' "$version")
-          curl -fL --retry 3 "$base/$asset" -o cli.tgz
+          curl -fL --retry 3 "$base/$asset" -o "$asset"
           curl -fL --retry 3 "$base/checksums.txt" -o checksums.txt
           grep -F "$asset" checksums.txt | sha256sum -c -
-          tar -xzf cli.tgz supabase
+          tar -xzf "$asset" supabase
           sudo install -m 0755 supabase /usr/local/bin/supabase
-          rm -f cli.tgz checksums.txt supabase
+          rm -f "$asset" checksums.txt supabase
           test "$(supabase --version)" = "$version"
           supabase --version
       - name: Real CLI ledger / dry run / rollback / drift / reconstruction — disposable DB only
