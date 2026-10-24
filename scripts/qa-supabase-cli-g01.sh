@@ -17,6 +17,9 @@ supabase --help | head -60
 supabase db push --help | head -90
 supabase migration list --help | head -90
 supabase db push --help | grep -F -- '--dry-run'
+# AT-022: explicitly prohibit automatic Vault synchronization in ALL push scenarios.
+supabase db push --help | grep -F -- '--skip-vault'
+echo 'PASS: CLI 2.122.0 help exposes --skip-vault'
 supabase db push --help | grep -F -- '--db-url'
 supabase migration list --help | grep -F -- '--db-url'
 
@@ -80,14 +83,14 @@ printf '\n-- isolated injected failure, never in Git\nSELECT 1 / 0;\n' \
   >> "$work/failure/supabase/migrations/20261024130000_identity_permissions.sql"
 
 # Dry-run must list the candidate without creating business schema or ledger record.
-(cd "$work/success" && supabase db push --db-url "$(dburl success)" --dry-run --yes) \
+(cd "$work/success" && supabase db push --db-url "$(dburl success)" --dry-run --skip-vault --yes) \
   > "$work/dryrun.log" 2>&1
 grep -F '20261024130000' "$work/dryrun.log"
 assert_eq "$(sql success "SELECT (to_regnamespace('hub_private') IS NULL)::text;")" 'true' 'dry-run mutated DB'
 echo 'PASS: CLI db push --dry-run listed version, schema still absent'
 
 # Genuine CLI push against disposable PostgreSQL, including its OWN history ledger.
-(cd "$work/success" && supabase db push --db-url "$(dburl success)" --yes) \
+(cd "$work/success" && supabase db push --db-url "$(dburl success)" --skip-vault --yes) \
   > "$work/success.log" 2>&1
 assert_eq "$(sql success "SELECT count(*) FROM supabase_migrations.schema_migrations WHERE version='20261024130000';")" '1' 'CLI migration history'
 assert_eq "$(sql success "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='hub_private' AND c.relkind='r';")" '4' 'private tables'
@@ -105,14 +108,14 @@ grep -F '20261024130000' "$work/list.log"
 echo 'PASS: genuine CLI ledger version 20261024130000, 4 tables, 9 capabilities, FKs/indexes/RLS/ACL'
 
 # Duplicate CLI push must not reapply migration or add another version.
-(cd "$work/success" && supabase db push --db-url "$(dburl success)" --yes) \
+(cd "$work/success" && supabase db push --db-url "$(dburl success)" --skip-vault --yes) \
   > "$work/duplicate.log" 2>&1
 assert_eq "$(sql success "SELECT count(*) FROM supabase_migrations.schema_migrations WHERE version='20261024130000';")" '1' 'duplicate history'
 assert_eq "$(sql success 'SELECT count(*) FROM hub_private.capabilities;')" '9' 'duplicate catalog'
 echo 'PASS: second CLI push does not reapply or duplicate recorded version'
 
 # Intentional SQL error INSIDE migration: ledger and DDL must roll back together.
-if (cd "$work/failure" && supabase db push --db-url "$(dburl failure)" --yes) \
+if (cd "$work/failure" && supabase db push --db-url "$(dburl failure)" --skip-vault --yes) \
      > "$work/failure.log" 2>&1; then
   echo 'FAIL: injected division-by-zero unexpectedly succeeded' >&2; exit 1
 fi
@@ -124,7 +127,7 @@ echo 'PASS: controlled failure rolled back schema and version record'
 # Simulated drift (schema exists without ledger) must be observable and rejected.
 docker exec "$container" psql -U postgres -d drift -v ON_ERROR_STOP=1 \
   -c 'CREATE SCHEMA hub_private;' >/dev/null
-if (cd "$work/drift" && supabase db push --db-url "$(dburl drift)" --yes) \
+if (cd "$work/drift" && supabase db push --db-url "$(dburl drift)" --skip-vault --yes) \
      > "$work/drift.log" 2>&1; then
   echo 'FAIL: partial-state drift unexpectedly accepted' >&2; exit 1
 fi
@@ -136,9 +139,11 @@ echo 'PASS: simulated drift detected (schema present, CLI history absent)'
 docker exec "$container" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
   -c 'DROP DATABASE success WITH (FORCE);' >/dev/null
 create_fixtures success
-(cd "$work/success" && supabase db push --db-url "$(dburl success)" --yes) \
+(cd "$work/success" && supabase db push --db-url "$(dburl success)" --skip-vault --yes) \
   > "$work/rebuild.log" 2>&1
 assert_eq "$(sql success "SELECT count(*) FROM supabase_migrations.schema_migrations WHERE version='20261024130000';")" '1' 'rebuild history'
 assert_eq "$(sql success "SELECT count(*) FROM hub_private.capabilities;")" '9' 'rebuild catalog'
 echo 'PASS: isolated database reconstructed, identical audited migration reapplied via CLI'
+# No CLI db push call may omit --skip-vault: all six paths are covered above.
+echo 'PASS: C01 all six CLI push scenarios used --skip-vault with --db-url localhost'
 echo 'PASS: G01 isolated CLI homologation concluded. No remote Supabase was contacted.'
