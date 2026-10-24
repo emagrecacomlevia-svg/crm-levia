@@ -32,9 +32,11 @@ jobs:
           curl -fL --retry 3 "$base/$asset" -o "$asset"
           curl -fL --retry 3 "$base/checksums.txt" -o checksums.txt
           grep -F "$asset" checksums.txt | sha256sum -c -
-          tar -xzf "$asset" supabase
-          sudo install -m 0755 supabase /usr/local/bin/supabase
-          rm -f "$asset" checksums.txt supabase
+          cli_dir=$(mktemp -d)
+          tar -xzf "$asset" -C "$cli_dir" supabase
+          sudo install -m 0755 "$cli_dir/supabase" /usr/local/bin/supabase
+          rm -rf "$cli_dir"
+          rm -f "$asset" checksums.txt
           test "$(supabase --version)" = "$version"
           supabase --version
       - name: Real CLI ledger / dry run / rollback / drift / reconstruction — disposable DB only
