@@ -17,6 +17,7 @@
 3. **Plataforma gerenciada:** um dump com filtro Supabase exclui por padrão schemas internos como `auth`, `storage` e extensões. Dump normal é de schema, **não** inclui dados ou roles personalizados sem opções específicas. Objetos físicos do Storage, Auth providers, Vault, secrets, chaves, configuração da Data API, SMTP, Edge Functions, Realtime, rede e demais metadados/control-plane não são restaurados integralmente por esse procedimento. Não copiar schemas gerenciados sem justificativa e autorização independente.
 
 Fontes oficiais consultadas:
+
 - https://supabase.com/docs/reference/cli/supabase-db-dump
 - https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore
 - https://supabase.com/docs/guides/platform/backups
