@@ -100,12 +100,31 @@ echo 'PASS: synthetic database prepared in disposable PostgreSQL 17'
 mkdir -p "$work/isolated-project"
 (cd "$work/isolated-project" && supabase init --yes >/dev/null)
 src="$(db_url "$source_db")"
+# CLI dump invokes pg_dump in a *second* Docker container. Linux host network
+# makes loopback refer to the ephemeral runner, not the Docker bridge container.
+# The database remains bound only to 127.0.0.1 on that runner.
+(cd "$work/isolated-project" && supabase db dump --db-url "$src" \
+  --schema hub_recovery_lab --network-id host --dry-run --file "$work/preview.sql") \
+  > "$work/dryrun.log" 2>&1
+test ! -e "$work/preview.sql"
+grep -qi 'pg_dump' "$work/dryrun.log"
+echo 'PASS: CLI dump --dry-run described pg_dump without creating output'
 # Export schema and data deliberately separately. --role-only not needed: no custom
 # role definitions are exported; target has a synthetic pre-existing role.
-(cd "$work/isolated-project" && supabase db dump --db-url "$src" \
-  --schema hub_recovery_lab --file "$work/schema.sql") >"$work/dump-schema.log" 2>&1
-(cd "$work/isolated-project" && supabase db dump --db-url "$src" \
-  --schema hub_recovery_lab --data-only --use-copy --file "$work/data.sql") >"$work/dump-data.log" 2>&1
+if ! (cd "$work/isolated-project" && supabase db dump --db-url "$src" \
+  --schema hub_recovery_lab --network-id host --file "$work/schema.sql") \
+  >"$work/dump-schema.log" 2>&1; then
+  echo 'FAIL: isolated CLI schema export failed (sanitized diagnostic)' >&2
+  sed -E 's#postgresql://[^[:space:]]+#LOCAL-URL-REDACTED#g' "$work/dump-schema.log" | tail -20 >&2
+  exit 1
+fi
+if ! (cd "$work/isolated-project" && supabase db dump --db-url "$src" \
+  --schema hub_recovery_lab --network-id host --data-only --use-copy \
+  --file "$work/data.sql") >"$work/dump-data.log" 2>&1; then
+  echo 'FAIL: isolated CLI data export failed (sanitized diagnostic)' >&2
+  sed -E 's#postgresql://[^[:space:]]+#LOCAL-URL-REDACTED#g' "$work/dump-data.log" | tail -20 >&2
+  exit 1
+fi
 test -s "$work/schema.sql" && test -s "$work/data.sql"
 grep -Fq 'CREATE TABLE' "$work/schema.sql"
 grep -Fq 'COPY hub_recovery_lab.' "$work/data.sql"
