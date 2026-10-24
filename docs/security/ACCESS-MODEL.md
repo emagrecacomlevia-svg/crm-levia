@@ -57,3 +57,28 @@ Esses perfis são rótulos funcionais; permissões efetivas devem ser granulariz
 **Atenção:** banco gerenciado com infraestrutura Auth nativa não significa que login ou sessão já funcionem no LEVIA HUB. As rotas `/app/*` permanecem públicas e demonstrativas na HUB-04A.
 
 Fontes: [Supabase SSR](https://supabase.com/docs/guides/auth/server-side), [Sessões](https://supabase.com/docs/guides/auth/sessions), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [Limites de autenticação](https://supabase.com/docs/guides/auth/rate-limits).
+
+## HUB-04B1 — implementação candidata, ainda não operacional
+
+Migration proposta: `supabase/migrations/20261024130000_identity_permissions.sql`.
+O cadastro corporativo nasce desabilitado, sem relação automática entre
+`authenticated` e capacidades empresariais. O catálogo é fechado com nove
+capacidades; revisão editorial, revisão científica e aprovação comercial são
+distintas. Cada concessão requer escopo nominal `module` ou `resource`, janela
+válida e ausência de revogação. Escopos genéricos globais são rejeitados.
+
+**Negação incondicional nesta fase:** schema `hub_private`, RLS habilitada sem
+políticas permissivas e nenhum `GRANT` de acesso a cliente. A validação de
+conta habilitada e vigência está **apenas documentada e coberta por testes
+diagnósticos**; ainda não existe um caminho de autorização positivo. A trilha
+`permission_audit_events` é só estrutura: eventos transacionais devem ser
+implementados e auditados antes de qualquer interface de administração.
+
+Consultar [Esquema HUB-04B1](../architecture/DATABASE-SCHEMA.md) e
+[Plano de testes RLS](RLS-TEST-PLAN.md). **Não executar remotamente.**
+
+## HUB-04B1-C01 — concessão não é identidade
+
+`granted_by_auth_user_id <> subject_user_id` (implementado com `IS DISTINCT FROM`) é somente restrição de valores armazenados. Um escritor malicioso poderia preencher UUID de terceiro se conseguisse escrita; a desigualdade não verifica ator real. A arquitetura futura exige autenticar e vincular o ator no backend, verificar capacidade/escopo/aprovação independente e registrar grant/evento atomicamente com auditabilidade.
+
+Ator NULL pode decorrer de migração autorizada, dados legados e `ON DELETE SET NULL`; não é concessão anônima autorizada. Fluxos normais futuros exigirão identidade de responsável validada, com exceções explícitas governadas e documentação de retenção e exclusão de dados pessoais. O SQL atual não cria esse escritor nem mecanismos de auditoria operacional.

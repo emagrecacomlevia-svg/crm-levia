@@ -78,3 +78,17 @@ O ambiente lógico `levia-hub-dev` foi criado no plano **Free** e região `sa-ea
 ## Restrições
 
 Sem implantação, sem **banco integrado à aplicação**, sem autenticação, sem dados comerciais ou clínicos reais, sem conexão ao site institucional e sem consumo de créditos de IA Lovable. A HUB-04A provisionou somente infraestrutura Supabase Free independente, sem schema empresarial ou uso pela aplicação. O projeto permanece público: revisões devem evitar informações confidenciais em arquivos, PRs, logs e artefatos.
+
+## HUB-04B1 — identidades e permissões, somente SQL candidato
+
+O PR desta etapa adiciona migration e testes de segurança **sem aplicação ao
+Supabase remoto**: [Modelo de dados](docs/architecture/DATABASE-SCHEMA.md),
+[Modelo de acesso](docs/security/ACCESS-MODEL.md),
+[Plano de testes](docs/security/RLS-TEST-PLAN.md) e
+[Relatório HUB-04B1](docs/delivery-reports/HUB-04B1.md).
+
+O workflow isolado `.github/workflows/identity-sql.yml` executa PostgreSQL 17
+num contêiner efêmero sem rede. A aplicação demonstrativa e as rotas públicas
+não mudam. Não existem login, permissões empresariais efetivas, RLS aplicada,
+credenciais ou dados reais. **Não executar a migration em produção ou no
+projeto `levia-hub-dev` sem autorização posterior.**

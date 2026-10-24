@@ -33,6 +33,7 @@ jobs:
           ./node_modules/.bin/prettier docs/delivery-reports/HUB-02.md | diff -u docs/delivery-reports/HUB-02.md -
           ./node_modules/.bin/prettier docs/architecture/NAVIGATION.md | diff -u docs/architecture/NAVIGATION.md -
           ./node_modules/.bin/prettier README.md | diff -u README.md -
+          ./node_modules/.bin/prettier docs/architecture/DATABASE-SCHEMA.md | diff -u docs/architecture/DATABASE-SCHEMA.md -
 
       - name: Check formatting
         run: bun run format:check
