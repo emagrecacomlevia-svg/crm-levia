@@ -9,7 +9,16 @@
 - Branch exclusiva: `feature/hub-04b1-identity-schema`.
 - Projeto Supabase de desenvolvimento observado por metadados, em **leitura**:
   `levia-hub-dev`, `sa-east-1`, `ACTIVE_HEALTHY`. Não executar SQL remoto.
-- Branch, HEAD final, commits e PR: preencher com evidência final, sem previsão.
+- Pull Request Draft: https://github.com/emagrecacomlevia-svg/crm-levia/pull/4.
+- Commits rastreados antes da atualização final deste relatório:
+  `083cde65db52abe6e5cf7b63d7d54047c7e3a173` (migration e testes);
+  `23778aa627c05584f6af2e83ff709c7038cd520e` (Prettier JavaScript);
+  `ebf386212563d08565f71d3e4a0fbad8308f88fa` (entrada SQL do teste);
+  `3215a0f2377cb4257a5da9b0fb2eb25e43b992c5` (diagnóstico de formato);
+  `fabbf65b08d5ebf0f2affcba07317953214e74b8` (guia);
+  `308e8d4f1f675beaafcff1594bda1333c77b1769` (evidências CI).
+  O SHA da versão final é o HEAD visível no PR; não registrar uma previsão
+  circular do hash do próprio commit do relatório.
 
 ## Implementado no repositório, não no banco remoto
 
