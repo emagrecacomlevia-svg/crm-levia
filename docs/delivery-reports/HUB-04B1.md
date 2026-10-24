@@ -43,9 +43,29 @@
 
 ## Verificações e CI
 
-A preencher estritamente após executar os workflows no GitHub. A execução
-local de PostgreSQL não estava disponível no ambiente de autoria; os testes
-estão preparados para GitHub Actions gratuito em container efêmero.
+- **Local no ambiente de autoria:** verificador estático Node passou. CLI
+  Supabase e serviço PostgreSQL local não estavam instalados; por isso a
+  migração não foi gerada por CLI e o teste de banco local foi executado no
+  runner temporário do GitHub, **não no banco Supabase**.
+- **Quality CI aprovado:**
+  https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40097017024
+  — Bun com lockfile congelado; lint com **0 erros e 6 avisos herdados**,
+  formatação, geração de rotas, build, typecheck e **22 testes Vitest**.
+- **SQL QA aprovado:**
+  https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40097017017
+  — PostgreSQL 17 descartável com `--network none`, schema Auth de teste,
+  execução real de DDL, verificações RLS/ACL, FK, unicidade, janelas de
+  vigência e autoatribuição. Banco descartado após os testes.
+- **Browser QA aprovado:**
+  https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40097017022
+  — regressão visual e navegação da interface demonstrativa preservada.
+- **Histórico de correção do CI:** primeiros jobs falharam por Prettier no
+  verificador JavaScript, omissão do `-i` em `docker exec` para alimentação
+  do schema de teste e formatação do guia Markdown. As correções foram
+  versionadas na mesma branch, sem alteração da migration SQL.
+- **Limitação de prova:** um teste em PostgreSQL genérico com Auth simulado
+  não verifica integração, autenticação nem enforcement positivo de RLS em
+  Supabase; a etapa remota continua proibida e não foi testada.
 
 ## Critérios antes de qualquer execução remota futura
 
