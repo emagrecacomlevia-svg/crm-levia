@@ -37,9 +37,9 @@ Acesse o endereço local indicado pelo Vite. Para verificar:
 ```bash
 bun run lint
 bun run format:check
+bun run build
 bun run typecheck
 bun run test
-bun run build
 ```
 
 O CI executa estes comandos sem publicação. `bun run format` **modifica** arquivos; use somente para ajustes locais intencionais.
