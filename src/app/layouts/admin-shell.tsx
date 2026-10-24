@@ -109,7 +109,11 @@ export function AdminShell() {
           </div>
         </header>
 
-        <main id="admin-content" tabIndex={-1} className="min-w-0 flex-1 px-4 py-8 sm:px-7 sm:py-10 lg:px-10">
+        <main
+          id="admin-content"
+          tabIndex={-1}
+          className="min-w-0 flex-1 px-4 py-8 sm:px-7 sm:py-10 lg:px-10"
+        >
           <div className="mx-auto w-full max-w-6xl">
             <Outlet />
           </div>

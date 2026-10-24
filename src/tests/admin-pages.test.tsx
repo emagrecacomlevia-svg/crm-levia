@@ -9,7 +9,9 @@ import { SocialStudioPage } from "@/modules/social-studio/pages";
 describe("Administrative demonstration pages", () => {
   it("renders the dashboard with planned modules and no business metrics", () => {
     render(<AdminOverviewPage />);
-    expect(screen.getByRole("heading", { level: 1, name: "LEVIA HUB — Visão Geral" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: "LEVIA HUB — Visão Geral" }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/03 módulos previstos/)).toBeInTheDocument();
     expect(screen.getByText(/Nenhum indicador comercial/)).toBeInTheDocument();
   });
@@ -32,7 +34,9 @@ describe("Administrative demonstration pages", () => {
 
   it("renders planned core governance without operational authentication", () => {
     render(<CorePage />);
-    expect(screen.getByRole("heading", { level: 1, name: "Núcleo Administrativo" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Núcleo Administrativo" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Papéis e permissões" })).toBeInTheDocument();
     expect(screen.getByText(/Nenhuma conta, permissão de usuário/)).toBeInTheDocument();
     expect(screen.queryByRole("button")).toBeNull();

@@ -35,16 +35,21 @@ export function AdminOverviewPage() {
         aside={<StatusIndicator label="Interface em construção" />}
       />
 
-      <section aria-label="Resumo da plataforma" className="rounded-3xl bg-forest p-6 text-white sm:p-9">
+      <section
+        aria-label="Resumo da plataforma"
+        className="rounded-3xl bg-forest p-6 text-white sm:p-9"
+      >
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div className="max-w-xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sage">
               Panorama da fundação
             </p>
-            <h2 className="mt-3 font-serif text-3xl sm:text-4xl">Uma plataforma. Três frentes planejadas.</h2>
+            <h2 className="mt-3 font-serif text-3xl sm:text-4xl">
+              Uma plataforma. Três frentes planejadas.
+            </h2>
             <p className="mt-4 text-sm leading-7 text-white/80">
-              Design modular, clareza de navegação e evolução controlada. Nenhum
-              indicador comercial, publicação ou registro real é exibido nesta fase.
+              Design modular, clareza de navegação e evolução controlada. Nenhum indicador
+              comercial, publicação ou registro real é exibido nesta fase.
             </p>
           </div>
           <div className="flex size-14 items-center justify-center rounded-2xl border border-white/25 text-sage">
@@ -58,7 +63,9 @@ export function AdminOverviewPage() {
           <h2 id="modules-title" className="text-xl font-semibold text-forest">
             Áreas da plataforma
           </h2>
-          <span className="text-xs text-muted-foreground">03 módulos previstos · não operacionais</span>
+          <span className="text-xs text-muted-foreground">
+            03 módulos previstos · não operacionais
+          </span>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {overview.map((item) => {
@@ -92,7 +99,9 @@ export function AdminOverviewPage() {
               </span>
               <div>
                 <p className="font-semibold text-forest">Fundação técnica · HUB-02</p>
-                <p className="mt-1 text-sm text-muted-foreground">Identidade institucional, estrutura e testes.</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                Identidade institucional, estrutura e testes.
+              </p>
               </div>
             </li>
             <li className="flex gap-4">
@@ -127,8 +136,8 @@ export function AdminOverviewPage() {
             <LockKeyhole aria-hidden="true" className="size-6 text-olive" strokeWidth={1.6} />
             <p className="mt-3 font-semibold text-forest">Sem autenticação ou banco</p>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Não insira dados pessoais, comerciais, clínicos ou confidenciais. As telas
-              não salvam, publicam, autorizam ou processam informações.
+              Não insira dados pessoais, comerciais, clínicos ou confidenciais. As telas não salvam,
+              publicam, autorizam ou processam informações.
             </p>
           </div>
           <p className="mt-5 flex items-center gap-2 text-xs font-medium text-olive">

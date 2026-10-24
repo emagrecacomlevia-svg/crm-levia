@@ -6,12 +6,27 @@ import { SectionCard } from "@/shared/ui/section-card";
 import { StatusIndicator } from "@/shared/ui/status-indicator";
 
 const features: readonly PlannedFeature[] = [
-  { name: "Planejamento editorial", description: "Organização prevista de ciclos, temas e prioridades." },
-  { name: "Biblioteca de materiais", description: "Referências futuras aos arquivos originais, sem importar acervo." },
+  {
+    name: "Planejamento editorial",
+    description: "Organização prevista de ciclos, temas e prioridades.",
+  },
+  {
+    name: "Biblioteca de materiais",
+    description: "Referências futuras aos arquivos originais, sem importar acervo.",
+  },
   { name: "Calendário", description: "Visão planejada de atividades e datas editoriais." },
-  { name: "Pautas e conteúdos", description: "Estrutura futura para briefings, textos e versões." },
-  { name: "Revisões e aprovações", description: "Etapas distintas por versão, canal, finalidade e público." },
-  { name: "Publicações manuais", description: "Registro posterior de publicações, sem disparos automáticos." },
+  {
+    name: "Pautas e conteúdos",
+    description: "Estrutura futura para briefings, textos e versões.",
+  },
+  {
+    name: "Revisões e aprovações",
+    description: "Etapas distintas por versão, canal, finalidade e público.",
+  },
+  {
+    name: "Publicações manuais",
+    description: "Registro posterior de publicações, sem disparos automáticos.",
+  },
 ];
 
 export function SocialStudioPage() {

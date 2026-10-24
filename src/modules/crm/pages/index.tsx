@@ -6,9 +6,18 @@ import { SectionCard } from "@/shared/ui/section-card";
 import { StatusIndicator } from "@/shared/ui/status-indicator";
 
 const features: readonly PlannedFeature[] = [
-  { name: "Empresas e contatos", description: "Cadastro e identificação de duplicidades, se autorizado." },
-  { name: "Oportunidades", description: "Registro futuro de etapas, responsáveis e próximas ações." },
-  { name: "Acompanhamento", description: "Histórico, tarefas e prazos para um processo comercial definido." },
+  {
+    name: "Empresas e contatos",
+    description: "Cadastro e identificação de duplicidades, se autorizado.",
+  },
+  {
+    name: "Oportunidades",
+    description: "Registro futuro de etapas, responsáveis e próximas ações.",
+  },
+  {
+    name: "Acompanhamento",
+    description: "Histórico, tarefas e prazos para um processo comercial definido.",
+  },
   { name: "Relatórios", description: "Indicadores somente após existência de dados válidos." },
 ];
 

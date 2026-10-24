@@ -6,10 +6,22 @@ import { SectionCard } from "@/shared/ui/section-card";
 import { StatusIndicator } from "@/shared/ui/status-indicator";
 
 const features: readonly PlannedFeature[] = [
-  { name: "Identidade e usuários", description: "Gestão futura de contas, sem login nesta etapa." },
-  { name: "Papéis e permissões", description: "Controles reais dependerão de Auth e regras no backend." },
-  { name: "Catálogo referencial", description: "Referências validadas, sem importar catálogo histórico." },
-  { name: "Versões comerciais", description: "Vigência formal de informações em etapas futuras." },
+  {
+    name: "Identidade e usuários",
+    description: "Gestão futura de contas, sem login nesta etapa.",
+  },
+  {
+    name: "Papéis e permissões",
+    description: "Controles reais dependerão de Auth e regras no backend.",
+  },
+  {
+    name: "Catálogo referencial",
+    description: "Referências validadas, sem importar catálogo histórico.",
+  },
+  {
+    name: "Versões comerciais",
+    description: "Vigência formal de informações em etapas futuras.",
+  },
   { name: "Campanhas e metadados", description: "Classificações e vínculos a definir." },
   { name: "Auditoria", description: "Rastreabilidade futura de alterações e aprovações." },
 ];

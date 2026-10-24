@@ -43,7 +43,9 @@ describe("LEVIA HUB administrative shell", () => {
       "href",
       "#admin-content",
     );
-    expect(screen.getByRole("navigation", { name: "Navegação administrativa" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { name: "Navegação administrativa" }),
+    ).toBeInTheDocument();
   });
 
   it("indicates the active section with text and aria-current", () => {
