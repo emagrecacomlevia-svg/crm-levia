@@ -1,27 +1,40 @@
-# HUB-04B2B-E02-C02 — Isolated `--db-url` authentication QA (AT-034)
+# HUB-04B2B-E02-C02 — QA de autenticação isolada (AT-034)
 
-**Scope:** Proposed test only. The protected `levia-hub-dev` project (`dfhjfajbmnsgrklhqtjk`) must never be a GitHub Actions connection target. Do not interpret this test as acceptance of actual LEVIA database credentials or authorization to deploy.
+**Escopo:** Somente PostgreSQL descartável. Não conectar ao Supabase LEVIA.
 
-## Pinned inputs and existing QA
+## Checkpoint e instrumento
 
-- Immutable main baseline: `d72bf14204ce8068673093998f18a22652a87e01`.
-- Candidate: `supabase/migrations/20261024130000_identity_permissions.sql`; Git blob `7e954d9ce51ce0e3e96021809241a1bb9a439c59` (never edited).
-- Supabase CLI **v2.122.0**, official GitHub Linux AMD64 release `supabase_2.122.0_linux_amd64.tar.gz`, SHA-256 `59ed066847b98d7461c60e9109d40cab6b9756177ce06ebb05b51338519f5136`; compare with the official `checksums.txt` and the pinned digest.
-- Keep `scripts/qa-supabase-cli-g01.sh` unchanged. This separate test is executed by `.github/workflows/hub-04b2b-g01-cli-qa.yml` only after original isolated QA.
-- Runner: GitHub-hosted `ubuntu-24.04`, `permissions: contents: read`, `SUPABASE_TELEMETRY_DISABLED=1`; no GitHub secrets, real tokens, project links, or remote database URLs.
+- Base `main`: `d72bf14204ce8068673093998f18a22652a87e01`.
+- Migration: `20261024130000_identity_permissions.sql` (sem alterações).
+- Blob SQL: `7e954d9ce51ce0e3e96021809241a1bb9a439c59`.
+- CLI oficial v2.122.0; pacote Linux AMD64 com checksum da release.
+- SHA-256: `59ed066847b98d7461c60e9109d40cab6b9756177ce06ebb05b51338519f5136`.
+- Reutiliza o workflow G01; não altera `scripts/qa-supabase-cli-g01.sh`.
+- GitHub Actions `ubuntu-24.04`; permissões `contents: read`; sem secrets.
 
-## Isolation and test design
+## Execução sintética
 
-`bash scripts/qa-supabase-cli-e02-c02-dburl-auth.sh` creates a disposable `postgres:17` Docker container bound **only to host `127.0.0.1:55433`**. PostgreSQL enforces **SCRAM-SHA-256 on TCP host connections** and authenticates a synthetic, non-superuser, non-`CREATEROLE`, non-`CREATEDB` role `qa_executor`. Synthetic passwords are random and exist only in process memory or temporary private files outside Git, never in CLI arguments.
+- PostgreSQL 17 descartável em Docker, publicado apenas em `127.0.0.1:55433`.
+- TCP exige SCRAM-SHA-256; usuário limitado `qa_executor` sem privilégios administrativos.
+- Senha sintética aleatória em `PGPASSFILE` privado, modo `0600`, fora do Git.
+- URL CLI sem senha: `postgresql://qa_executor@127.0.0.1:55433/qa_auth?sslmode=disable`.
+- CLI executada sob UID separado e ambiente limpo (`env -i`), sem `--linked`.
+- Firewall bloqueia todo tráfego desse UID fora do loopback IPv4, inclusive IPv6.
+- Proxy administrativo sintético local observa tentativas HTTP(S) e nega acesso.
+- Casos negativos: senha ausente e senha incorreta, ambos devem ser rejeitados.
+- Caso positivo: autenticação da CLI via `db query` e identificação SQL da sessão.
+- Prévia: `db push --db-url ... --skip-vault --dry-run`, sem executar o SQL.
+- Após a prévia: `hub_private` ausente e histórico de migrations inexistente.
+- Os logs temporários são verificados quanto a credenciais sintéticas e descartados.
 
-A private `PGPASSFILE` (`0600`) contains a matching synthetic entry. The CLI receives an intentionally passwordless URL: `postgresql://qa_executor@127.0.0.1:55433/qa_auth?sslmode=disable` and `PGPASSFILE`, **never** `--password`, `--linked` or `--project-ref`. All CLI commands run as a separate Linux UID under `env -i`, with an empty HOME and only required variables. Firewall rules prohibit that UID's outbound IPv4/IPv6 traffic except IPv4 loopback. A local synthetic HTTP(S) proxy trap is tested first and must observe no requests during the CLI tests. These controls detect and prevent remote administrative calls even if proxy settings were bypassed. Firewall, container, temp files, user and proxy are removed on shell exit.
+## Limites e interrupção
 
-The test exercises: CLI help and exact version; rejection of missing credentials; rejection of incorrect `PGPASSFILE`; genuine CLI `db query` SCRAM authentication with correct `PGPASSFILE`; identity `current_user`/`session_user` from the test PostgreSQL; genuine CLI `db push --db-url ... --dry-run --skip-vault`. After the preview, independent catalog reads must confirm **no `hub_private` schema**, **no `supabase_migrations.schema_migrations`** and thus no recorded migration. Only the audited migration may appear in the preview. The positive and negative CLI logs are scanned for both synthetic password values before being discarded. No logs or secrets are uploaded as artifacts.
+Falha de autenticação, checksum, isolamento, plano ou teste de integridade reprova
+este QA. A validação local não autoriza conexão ou escrita no Supabase real.
 
-## Stop conditions and interpretation
+Qualquer uso remoto futuro depende de estação privada, custódia de segredos,
+validação TLS com identidade do servidor (`sslmode=verify-full` e CA adequada),
+revalidação do projeto, usuário SQL e privilégios, auditoria independente do
+Consultor e autorização expressa do responsável LEVIA.
 
-Any CLI SHA/version mismatch, password not recognized, unsuccessful authentication, inability to enforce outbound isolation, attempted HTTP(S) request, unexpected dry-run plan, database catalog mutation or secret leakage **fails the job**. In particular, a green result is **local-only homologation** for this exact CLI version/OS/configuration. It is **not** proof of TLS trust, public network reachability or Postgres privileges in LEVIA Supabase.
-
-For any later, separately authorized private workstation test, use a **separate private secret store** (no chat/GitHub logs), verify the exact database host and its project ownership, require proper TLS with certificate validation (`sslmode=verify-full`, applicable CA), validate `session_user` and `current_user` against the intended executor, assert grants including `REFERENCES` on `auth.users`, and avoid exposing plaintext secrets in process arguments or shell history. A direct remote connection must **never** use `sslmode=disable`. Do not run `db push` or any remote write without independent Consultant approval and explicit owner authorization.
-
-**No migration application, Git merge, Auth change, Storage change or LEVIA Supabase access is part of AT-034.**
+**Não usar TLS desabilitado fora de `127.0.0.1`. Não executar a migration.**

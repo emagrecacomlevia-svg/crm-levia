@@ -138,9 +138,16 @@ fi
 echo 'PASS: SCRAM rejects missing and incorrect protected credentials'
 
 # Positive CLI query confirms DB user with the SAME passwordless --db-url and PGPASSFILE.
-(cd "$work/sandbox" && qa_cli "$work/pgpass-good" supabase db query \
+if ! (cd "$work/sandbox" && qa_cli "$work/pgpass-good" supabase db query \
   "SELECT current_user AS executor, session_user AS login_role, inet_server_port() AS server_port" \
-  --db-url "$url") > "$work/identity.log" 2>&1
+  --db-url "$url") > "$work/identity.log" 2>&1; then
+  diagnostic="$(cat "$work/identity.log")"
+  diagnostic="${diagnostic//"$password"/[SYNTHETIC-PASSWORD-REDACTED]}"
+  diagnostic="${diagnostic//"$wrong_password"/[SYNTHETIC-PASSWORD-REDACTED]}"
+  printf 'DIAGNOSTIC (synthetic, sanitized): %s\n' "$diagnostic" >&2
+  echo 'FAIL: genuine CLI db query SCRAM authentication not established' >&2
+  exit 1
+fi
 grep -Fq qa_executor "$work/identity.log" || { echo 'FAIL: PostgreSQL query did not identify the expected executor' >&2; exit 1; }
 grep -Fq 5432 "$work/identity.log" || { echo 'FAIL: PostgreSQL query destination port mismatch' >&2; exit 1; }
 echo 'PASS: genuine Supabase CLI authenticated via 0600 PGPASSFILE; PostgreSQL executor qa_executor on 127.0.0.1'
