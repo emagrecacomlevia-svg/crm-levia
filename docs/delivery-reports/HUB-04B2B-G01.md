@@ -1,6 +1,6 @@
 # LEVIA HUB — HUB-04B2B-G01 — Homologação da Supabase CLI
 
-**Referência:** AT-021, 24/10/2026. **Natureza:** teste exclusivamente isolado e documentação. **DDL remoto:** proibido.
+**Referências:** AT-021 e correção AT-022 (HUB-04B2B-G01-C01), 24/10/2026. **Natureza:** testes exclusivamente isolados e documentação. **DDL remoto:** proibido.
 
 ## Identidade e baseline
 
@@ -19,7 +19,7 @@
 - Ubuntu 24.04 GitHub Actions: download do tarball Linux AMD64 oficial e checksums.txt, validação com sha256sum -c e instalação local do executável.
 - Evidências do runner: versão 2.122.0; SHA-256 do artefato oficial OK.
 - Foram executados: supabase --version, supabase --help, supabase db push --help e supabase migration list --help.
-- Flags confirmadas: db push --db-url, db push --dry-run e migration list --db-url.
+- Flags confirmadas: db push --db-url, db push --dry-run, **db push --skip-vault** e migration list --db-url. Na CLI 2.122.0, `db push --help` informa que o Vault seria atualizado a partir de config.toml antes das migrations, salvo quando `--skip-vault` está presente.
 - Referências: https://supabase.com/docs/reference/cli/supabase-db-push e https://supabase.com/docs/reference/cli/supabase-migration-list.
 
 ## Isolamento e testes da migration
@@ -29,7 +29,7 @@
 - Banco, roles e auth.users inteiramente sintéticos; service_role local com BYPASSRLS. Telemetria desativada.
 - O runner acessou GitHub para obter a CLI oficial; comandos de banco direcionados somente ao loopback.
 - Git hash-object conferiu o blob original antes dos testes.
-- O dry-run listou a versão 20261024130000 sem criar o schema de negócio.
+- O dry-run listou a versão 20261024130000 sem criar o schema de negócio. Na C01, o dry-run e **todos os cinco demais db push** foram executados com `--skip-vault` e `--db-url` local.
 - Aplicação em banco descartável pela **Supabase CLI**: quatro tabelas, nove capacidades, sete FKs, índices, RLS habilitada, zero policies e permissões restritas confirmados.
 - A CLI criou e preencheu o histórico real em supabase_migrations.schema_migrations: versão 20261024130000 presente uma vez.
 - migration list --db-url exibiu 20261024130000 nas colunas local e remota; esta última se refere somente ao banco descartável, não ao Supabase LEVIA.
@@ -40,16 +40,39 @@
 - O teste reutiliza assertions anteriores cujo NOTICE menciona histórico sintético. Neste G01 o registro de versão foi criado pela CLI, não manualmente.
 - A paridade com PostgREST, Auth e objetos gerenciados do Supabase remoto **não foi demonstrada**.
 
-## Resultado do CI
+## Histórico de CI e correção HUB-04B2B-G01-C01 (AT-022)
 
-Execução final no commit 2069ee2f97fc4c5c6e1b1d78aad6b190b92af4a5:
+### G01 original — evidências anteriores, não pertencem à C01
 
-- [CLI Isolated QA — success](https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40116180915).
-- [LEVIA HUB Quality — success](https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40116180917).
-- [Managed Preflight — success](https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40116181019).
-- [Browser QA — success](https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40116180877).
+- HEAD auditado antes da C01 (AT-022): `b1196a72f170276d0ed83e2e6448dce84bfffd2a`.
+- Execução G01 original anterior ao relatório: commit `2069ee2f97fc4c5c6e1b1d78aad6b190b92af4a5`.
+- [CLI QA G01 original — success](https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40116180915).
+- [Quality original — success](https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40116180917).
+- [Managed Preflight original — success](https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40116181019).
+- [Browser QA original — success](https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40116180877).
+- Essas execuções **não** devem ser apresentadas como testes do HEAD da C01.
 
-Tentativas preliminares falharam no procedimento de extração e em asserção inicialmente incorreta de contagem de FKs. As correções ficaram restritas ao script/workflow da branch de testes; migration e main permaneceram intocadas.
+### C01 — controle explícito de Vault
+
+- Commit de correção do script: `d4a4388d501512998a4c0b6db69e92c42f5dcbf9`.
+- Arquivo ajustado: `scripts/qa-supabase-cli-g01.sh`; workflow preexistente inspecionado e preservado.
+- O script passa `--skip-vault` em **seis de seis chamadas** de `supabase db push`: prévia `--dry-run`, aplicação, repetição, falha controlada, drift e reconstrução. Todos os destinos usam `--db-url` em `127.0.0.1`.
+- A verificação `supabase db push --help | grep -F -- '--skip-vault'` é obrigatória, além da confirmação da versão exata `2.122.0`.
+- Nenhum `--include-seed`, `--include-roles` ou `--include-all` foi adicionado.
+- [CLI QA C01 após a alteração do script — success](https://github.com/emagrecacomlevia-svg/crm-levia/actions/runs/40117187244), executado no commit `d4a4388d501512998a4c0b6db69e92c42f5dcbf9`.
+- Logs desse run confirmam a descrição da opção no `--help`, a versão, todos os cenários de regressão e a mensagem final `PASS: C01 all six CLI push scenarios used --skip-vault with --db-url localhost`.
+- O sucesso em banco descartável comprova compatibilidade efetiva da flag e dos testes isolados; não garante a ausência de efeitos no Supabase gerenciado que **não foi contatado**.
+
+### Identificação do HEAD final da C01 e evidências após este documento
+
+O HEAD final de C01 é a versão da branch `feature/hub-04b2b-g01-cli-offline-qa` registrada no [PR Draft #7](https://github.com/emagrecacomlevia-svg/crm-levia/pull/7/commits), **posterior ao commit documental**. A SHA completa do próprio commit não pode ser inserida no conteúdo que participa de seu hash sem mudar esse hash. Para preservar rastreabilidade, a SHA final e os URLs/estados dos runs **desse HEAD** serão registrados em comentário de auditoria na [conversa do PR #7](https://github.com/emagrecacomlevia-svg/crm-levia/pull/7) depois que o GitHub finalizar os workflows.
+
+No PR os gatilhos do novo script acionam G01 CLI QA, Managed Preflight, Quality e Browser. O workflow específico `HUB-04B1 Isolated SQL QA` filtra arquivos `supabase/**` e outros caminhos que **não foram modificados** pela C01; se não disparar, declarar **não executado neste HEAD** em vez de reaproveitar runs antigos.
+
+### Limite de escopo da migration e do executor
+
+**A migration do LEVIA HUB não autoriza qualquer modificação no Vault, Auth, Storage, Realtime ou objetos gerenciados fora de `hub_private`.** A presença de `--skip-vault` deve ser mantida em qualquer desenho futuro do instrumento; não é autorização para `db push` remoto. Sem essa flag, a própria documentação da CLI alerta sobre sincronização antecipada de segredos. Nenhum segredo, credencial ou configuração privada foi incluído no Git.
+
 
 ## Data API e bloqueio
 
