@@ -58,6 +58,10 @@ create table hub_private.permission_grants (
   granted_by_auth_user_id uuid references auth.users (id) on delete set null,
   revoked_by_auth_user_id uuid references auth.users (id) on delete set null,
   constraint grant_valid_window check (valid_until is null or valid_until > valid_from),
+  -- Revocation can precede a scheduled valid_from, never granted_at.
+  constraint grant_revocation_not_before_grant check (
+    revoked_at is null or revoked_at >= granted_at
+  ),
   constraint grant_scope_nonempty check (
     scope_key ~ '^[a-z][a-z0-9:_-]{0,127}$'
     and scope_key not in ('all', 'global')
@@ -79,6 +83,9 @@ create table hub_private.permission_grants (
       or (scope_kind = 'resource' and scope_key ~ '^social:[a-z0-9_-]+$')
     ))
   ),
+  -- Unequal stored UUIDs do NOT authenticate the writer or actor.
+  -- Future trusted writers must validate actor identity, capability and scope.
+  -- NULL actors support controlled legacy records/ON DELETE SET NULL only.
   constraint grant_no_self_assignment check (
     granted_by_auth_user_id is distinct from subject_user_id
   ),
@@ -97,6 +104,9 @@ create unique index permission_grant_one_unrevoked_scope
     subject_user_id, capability_code, scope_kind, scope_key
   ) where revoked_at is null;
 
+-- Auth CASCADE removes account/grants, while audit snapshots are not cascaded.
+-- Actor SET NULL loses provenance; surviving subject/grant UUIDs may remain
+-- personal data. Formal retention/LGPD and audited writer BLOCK operational use.
 -- Event storage only. Future privileged, reviewed transactional writers must emit events;
 -- this phase deliberately creates no SECURITY DEFINER function, trigger or API.
 create table hub_private.permission_audit_events (
