@@ -35,8 +35,7 @@ export function CrmPage() {
         description="Não existem registros comerciais, formulários de contato, funis operacionais ou indicadores financeiros nesta demonstração."
       >
         <div className="mt-5 flex items-start gap-3 rounded-xl bg-cream p-5 text-sm leading-6 text-foreground">
-          <ClipboardList aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-olive" />
-          O planejamento desta área não equivale à decisão de construir um CRM próprio.
+          <ClipboardList aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-olive" />O planejamento desta área não equivale à decisão de construir um CRM próprio.
         </div>
       </SectionCard>
       <div>

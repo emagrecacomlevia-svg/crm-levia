@@ -100,8 +100,8 @@ export function AdminOverviewPage() {
               <div>
                 <p className="font-semibold text-forest">Fundação técnica · HUB-02</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                Identidade institucional, estrutura e testes.
-              </p>
+                  Identidade institucional, estrutura e testes.
+                </p>
               </div>
             </li>
             <li className="flex gap-4">
