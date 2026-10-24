@@ -46,13 +46,13 @@ O CI executa estes comandos sem publicação. `bun run format` **modifica** arqu
 
 ## Rotas navegáveis da demonstração
 
-| Caminho | Conteúdo |
-| --- | --- |
-| `/` | Página institucional preservada, com entrada para a demonstração |
-| `/app` | Visão geral administrativa |
-| `/app/social-studio` | Planejamento editorial demonstrativo |
-| `/app/crm` | Área reservada CRM |
-| `/app/core` | Referência do núcleo administrativo |
+| Caminho              | Conteúdo                                                         |
+| -------------------- | ---------------------------------------------------------------- |
+| `/`                  | Página institucional preservada, com entrada para a demonstração |
+| `/app`               | Visão geral administrativa                                       |
+| `/app/social-studio` | Planejamento editorial demonstrativo                             |
+| `/app/crm`           | Área reservada CRM                                               |
+| `/app/core`          | Referência do núcleo administrativo                              |
 
 Todas as rotas estão **públicas e sem autenticação**. Navegação é real via TanStack Router; não há ações de salvar, aprovar, publicar ou operar dados. O menu móvel é implementado com Radix Dialog e fechamento acessível. A verificação de navegação contempla testes de UI e de matching do TanStack.
 
