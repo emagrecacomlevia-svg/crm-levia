@@ -6,15 +6,15 @@
 
 Adotar **RBAC limitado + escopos + atributos verificáveis** para evitar uma multiplicação de papéis fixos. Papéis abaixo são perfis de negócio **candidatos**, não papéis nativos de PostgreSQL nem permissões já concedidas. Uma mesma pessoa pode receber mais de uma competência **somente após aprovação formal**, com período, responsável e justificativa auditáveis.
 
-| Perfil candidato | Capacidades futuras típicas | Restrições |
-| ---------------- | ---------------------------- | ---------- |
-| Administrador técnico | Operar configurações aprovadas, suporte, segurança e diagnóstico | **Não** obter leitura comercial/editorial irrestrita automaticamente; acesso emergencial controlado |
-| Gestor comercial | Gerir escopos e trabalho comercial sob sua responsabilidade | Não acessar outro escopo, aprovar conteúdos científicos nem administrar identidades técnicas |
-| Operador comercial | Consultar e atualizar contatos/oportunidades designados | Não alterar permissões, gerir aprovação, apagar históricos ou acessar outras carteiras |
-| Responsável editorial | Propor pautas e organizar revisões dos materiais designados | Não aprovar conclusão científica/comercial por conta própria |
-| Revisor científico | Emitir parecer sobre versão e finalidade especificadas | Não autorizar publicação ou alterar preço comercial automaticamente |
-| Aprovador comercial/documental | Aprovar conteúdo estritamente no escopo e versão delegados | Não substituir revisão científica; não aprovar próprio material se segregação exigida |
-| Consulta restrita | Consultar registros explicitamente liberados | Sem INSERT, UPDATE, DELETE ou exportação ampla |
+| Perfil candidato               | Capacidades futuras típicas                                      | Restrições                                                                                          |
+| ------------------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Administrador técnico          | Operar configurações aprovadas, suporte, segurança e diagnóstico | **Não** obter leitura comercial/editorial irrestrita automaticamente; acesso emergencial controlado |
+| Gestor comercial               | Gerir escopos e trabalho comercial sob sua responsabilidade      | Não acessar outro escopo, aprovar conteúdos científicos nem administrar identidades técnicas        |
+| Operador comercial             | Consultar e atualizar contatos/oportunidades designados          | Não alterar permissões, gerir aprovação, apagar históricos ou acessar outras carteiras              |
+| Responsável editorial          | Propor pautas e organizar revisões dos materiais designados      | Não aprovar conclusão científica/comercial por conta própria                                        |
+| Revisor científico             | Emitir parecer sobre versão e finalidade especificadas           | Não autorizar publicação ou alterar preço comercial automaticamente                                 |
+| Aprovador comercial/documental | Aprovar conteúdo estritamente no escopo e versão delegados       | Não substituir revisão científica; não aprovar próprio material se segregação exigida               |
+| Consulta restrita              | Consultar registros explicitamente liberados                     | Sem INSERT, UPDATE, DELETE ou exportação ampla                                                      |
 
 Esses perfis são rótulos funcionais; permissões efetivas devem ser granularizadas por **ação, entidade, escopo, vigência e estado da conta**. Um administrador técnico pode precisar de acesso à infraestrutura sem qualquer direito de ler conteúdo empresarial.
 
@@ -31,15 +31,15 @@ Esses perfis são rótulos funcionais; permissões efetivas devem ser granulariz
 
 ## Matriz conceitual mínima por situação
 
-| Ator / estado | Leitura empresarial | Escrita empresarial | Administração de acesso |
-| ------------- | ------------------- | ------------------ | ----------------------- |
-| Sem autenticação | Negada | Negada | Negada |
-| Autenticado sem concessão | Negada | Negada | Negada |
-| Operador comercial habilitado | Só registros/escopos designados | Só operações e campos permitidos | Negada |
-| Gestor comercial habilitado | Só escopos delegados | Só comandos e escopos delegados | Negada, salvo futura permissão específica revisada |
-| Participante editorial habilitado | Apenas materiais atribuídos e versões autorizadas | Apenas etapas explicitamente delegadas | Negada |
-| Administrador técnico habilitado | Negada por padrão para conteúdo de negócio | Negada por padrão para conteúdo de negócio | Somente controles técnicos delegados |
-| Usuário desativado ou revogado | Negada | Negada | Negada |
+| Ator / estado                     | Leitura empresarial                               | Escrita empresarial                        | Administração de acesso                            |
+| --------------------------------- | ------------------------------------------------- | ------------------------------------------ | -------------------------------------------------- |
+| Sem autenticação                  | Negada                                            | Negada                                     | Negada                                             |
+| Autenticado sem concessão         | Negada                                            | Negada                                     | Negada                                             |
+| Operador comercial habilitado     | Só registros/escopos designados                   | Só operações e campos permitidos           | Negada                                             |
+| Gestor comercial habilitado       | Só escopos delegados                              | Só comandos e escopos delegados            | Negada, salvo futura permissão específica revisada |
+| Participante editorial habilitado | Apenas materiais atribuídos e versões autorizadas | Apenas etapas explicitamente delegadas     | Negada                                             |
+| Administrador técnico habilitado  | Negada por padrão para conteúdo de negócio        | Negada por padrão para conteúdo de negócio | Somente controles técnicos delegados               |
+| Usuário desativado ou revogado    | Negada                                            | Negada                                     | Negada                                             |
 
 ## Fluxos futuros de autenticação — não implementados
 
