@@ -71,6 +71,8 @@ printf '127.0.0.1:55433:qa_auth:qa_executor:%s\n' "$wrong_password" > "$work/pgp
 chmod 0600 "$work/pgpass-good" "$work/pgpass-bad"
 cp "$migration" "$work/sandbox/supabase/migrations/20261024130000_identity_permissions.sql"
 sudo -n chown -R "$qa_user:$qa_user" "$work/home" "$work/sandbox" "$work/pgpass-good" "$work/pgpass-bad"
+# Runner must enter the sandbox before switching to the isolated QA UID.
+sudo -n chmod 0755 "$work/sandbox"
 test "$(stat -c %a "$work/pgpass-good")" = 600
 url='postgresql://qa_executor@127.0.0.1:55433/qa_auth?sslmode=disable'
 
@@ -135,7 +137,14 @@ fi
 if (cd "$work/sandbox" && qa_cli "$work/pgpass-bad" supabase db query 'select current_user' --db-url "$url") > "$work/bad-pass.log" 2>&1; then
   echo 'FAIL: incorrect credentials accepted' >&2; exit 1
 fi
-echo 'PASS: SCRAM rejects missing and incorrect protected credentials'
+# Reject test-harness errors such as permission denied in cd (not authentication tests).
+grep -Eqi 'password|authentication|connection|failed to connect' "$work/no-pass.log" || {
+  echo 'FAIL: absent-password test did not reach the connection attempt' >&2; exit 1;
+}
+grep -Eqi 'password|authentication|connection|failed to connect' "$work/bad-pass.log" || {
+  echo 'FAIL: wrong-password test did not reach the connection attempt' >&2; exit 1;
+}
+echo 'PASS: SCRAM rejects missing and incorrect protected credentials' 
 
 # Positive CLI query confirms DB user with the SAME passwordless --db-url and PGPASSFILE.
 if ! (cd "$work/sandbox" && qa_cli "$work/pgpass-good" supabase db query \

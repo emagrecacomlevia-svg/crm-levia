@@ -42,6 +42,12 @@ jobs:
           rm -f "$asset" checksums.txt
           test "$(supabase --version)" = "$version"
           supabase --version
+      - name: Temporary formatter diagnostic (no repo write)
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          npx --yes prettier@3.9.6 .github/workflows/hub-04b2b-g01-cli-qa.yml | diff -u .github/workflows/hub-04b2b-g01-cli-qa.yml - || true
+          npx --yes prettier@3.9.6 docs/operations/HUB-04B2B-E02-C02-DBURL-AUTH-QA.md | diff -u docs/operations/HUB-04B2B-E02-C02-DBURL-AUTH-QA.md - || true
       - name: Real CLI ledger / dry run / rollback / drift / reconstruction — disposable DB only
         shell: bash
         run: bash scripts/qa-supabase-cli-g01.sh
