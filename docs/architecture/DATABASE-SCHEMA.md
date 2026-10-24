@@ -97,8 +97,8 @@ e autorização explícita.
   banco. Não conecta nem autentica no Supabase remoto.
 - Para reproduzir isoladamente: usar PostgreSQL 17 local, criar `anon`,
   `authenticated` e `service_role` como `NOLOGIN`, schema `auth`, e tabela de
-  teste `auth.users(id uuid primary key)`; executar os arquivos com `psql
-  -v ON_ERROR_STOP=1 -f ...` como administrador. Nunca apontar o comando a
+  teste `auth.users(id uuid primary key)`; executar os arquivos com
+  `psql -v ON_ERROR_STOP=1 -f arquivo.sql` como administrador. Não apontar para
   banco remoto para HUB-04B1.
 - Reversão futura: **não foi criada migration DOWN ou DROP**. Antes de aplicar
   remotamente, registrar dump autorizado do schema, dependências, estratégia de
