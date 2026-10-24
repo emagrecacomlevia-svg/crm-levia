@@ -5,7 +5,10 @@ const migration = readFileSync(
   new URL("../supabase/migrations/20261024130000_identity_permissions.sql", import.meta.url),
   "utf8",
 );
-const test = readFileSync(new URL("../supabase/tests/identity_permissions.sql", import.meta.url), "utf8");
+const test = readFileSync(
+  new URL("../supabase/tests/identity_permissions.sql", import.meta.url),
+  "utf8",
+);
 
 for (const fragment of [
   "create schema hub_private;",
@@ -24,7 +27,12 @@ for (const fragment of [
 }
 assert.ok(!/security\s+definer/i.test(migration.replace(/^--.*$/gm, "")), "no security definer");
 assert.ok(!/create\s+policy/i.test(migration.replace(/^--.*$/gm, "")), "no permissive policies");
-assert.ok(!/\b(create\s+table\s+(public|crm|social)|drop\s+(table|schema)|alter\s+table\s+auth\.)\b/i.test(migration), "no unexpected schema changes");
+assert.ok(
+  !/\b(create\s+table\s+(public|crm|social)|drop\s+(table|schema)|alter\s+table\s+auth\.)\b/i.test(
+    migration,
+  ),
+  "no unexpected schema changes",
+);
 assert.ok(test.includes("set role anon;") && test.includes("set role authenticated;"));
 assert.ok(test.includes("rollback;"), "fixtures must be rolled back");
 assert.ok(!/(sb_secret_|service_role\s*=|postgresql:\/\/)/i.test(migration + test), "no secrets");
