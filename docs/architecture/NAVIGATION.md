@@ -2,13 +2,13 @@
 
 ## Contrato de rotas
 
-| Rota | Componente |
-| --- | --- |
-| `/` | `HubHome` |
-| `/app` | `AdminOverviewPage`, dentro de `AdminShell` |
-| `/app/social-studio` | `SocialStudioPage`, dentro de `AdminShell` |
-| `/app/crm` | `CrmPage`, dentro de `AdminShell` |
-| `/app/core` | `CorePage`, dentro de `AdminShell` |
+| Rota                 | Componente                                  |
+| -------------------- | ------------------------------------------- |
+| `/`                  | `HubHome`                                   |
+| `/app`               | `AdminOverviewPage`, dentro de `AdminShell` |
+| `/app/social-studio` | `SocialStudioPage`, dentro de `AdminShell`  |
+| `/app/crm`           | `CrmPage`, dentro de `AdminShell`           |
+| `/app/core`          | `CorePage`, dentro de `AdminShell`          |
 
 O roteamento é feito exclusivamente com TanStack Router, por `src/routes/app.tsx`, `app.index.tsx` e as rotas filhas. `src/routeTree.gen.ts` é gerado pelo plugin existente; não editá-lo manualmente. O CI executa `bun run build` antes de TypeScript/Vitest para regeneração do manifesto.
 
