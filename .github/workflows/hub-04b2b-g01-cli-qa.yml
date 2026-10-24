@@ -39,6 +39,11 @@ jobs:
           rm -f "$asset" checksums.txt
           test "$(supabase --version)" = "$version"
           supabase --version
+      # Temporary, non-mutating diagnostic to correct AT-022 report formatting.
+      - name: Diagnose report Markdown formatting
+        shell: bash
+        run: |
+          npx --yes prettier@3.9.6 docs/delivery-reports/HUB-04B2B-G01.md | diff -u docs/delivery-reports/HUB-04B2B-G01.md - || true
       - name: Real CLI ledger / dry run / rollback / drift / reconstruction — disposable DB only
         shell: bash
         run: bash scripts/qa-supabase-cli-g01.sh
