@@ -19,6 +19,8 @@ CREATE ROLE supabase_auth_admin NOLOGIN;
 CREATE ROLE hub_migration_executor LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE;
 CREATE DATABASE managed_success;
 CREATE DATABASE managed_failure;
+GRANT CREATE ON DATABASE managed_success TO hub_migration_executor;
+GRANT CREATE ON DATABASE managed_failure TO hub_migration_executor;
 SQL
 for db in managed_success managed_failure; do
   docker exec -i "$container" psql -U postgres -d "$db" -v ON_ERROR_STOP=1 <<'SQL'
