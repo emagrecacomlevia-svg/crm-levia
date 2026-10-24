@@ -56,7 +56,7 @@ O CI executa estes comandos sem publicação. `bun run format` **modifica** arqu
 
 Todas as rotas estão **públicas e sem autenticação**. Navegação é real via TanStack Router; não há ações de salvar, aprovar, publicar ou operar dados. O menu móvel é implementado com Radix Dialog e fechamento acessível. A verificação de navegação contempla testes de UI e de matching do TanStack.
 
-A árvore `src/routeTree.gen.ts` é gerada pela integração TanStack/Vite. O CI roda `build` antes de `typecheck` e `test` para que as rotas recém-criadas sejam registradas sem editar manualmente o arquivo gerado. Consulte [Navegação](docs/architecture/NAVIGATION.md) e [Relatório HUB-03](docs/delivery-reports/HUB-03.md).
+A árvore `src/routeTree.gen.ts` é **gerada pela integração TanStack/Vite e ignorada pelo Git**. A partir de checkout limpo, `bun run typecheck`, `bun run test` e `bun run test:watch` executam `routes:prepare` (build Vite) antes da verificação. No CI, o build único precede `typecheck:generated` e `test:generated`, evitando duplicar compilação. Consulte [Navegação](docs/architecture/NAVIGATION.md) e [Relatório HUB-03](docs/delivery-reports/HUB-03.md). Consulte [Navegação](docs/architecture/NAVIGATION.md) e [Relatório HUB-03](docs/delivery-reports/HUB-03.md).
 
 ## Organização
 

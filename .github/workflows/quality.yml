@@ -37,13 +37,22 @@ jobs:
       - name: Check formatting
         run: bun run format:check
 
-      # TanStack file-based routing generates routeTree.gen.ts during the Vite build.
-      # Build first so typecheck and route-matching tests read the generated route registry.
-      - name: Build
+      # Verify a clean checkout contains no stale tracked generated route manifest.
+      - name: Confirm generated route tree is absent in clean checkout
+        run: test ! -e src/routeTree.gen.ts
+
+      - name: Build and generate routes
         run: bun run build
 
+      - name: Verify the five generated paths
+        run: |
+          test -f src/routeTree.gen.ts
+          for route in "'/'" "'/app'" "'/app/social-studio'" "'/app/crm'" "'/app/core'"; do
+            grep -Fq "$route" src/routeTree.gen.ts
+          done
+
       - name: Typecheck
-        run: bun run typecheck
+        run: bun run typecheck:generated
 
       - name: Unit and UI tests
-        run: bun run test
+        run: bun run test:generated

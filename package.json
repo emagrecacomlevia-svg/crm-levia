@@ -11,9 +11,12 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "typecheck": "bun run routes:prepare && tsc --noEmit",
+    "test": "bun run routes:prepare && vitest run",
+    "test:watch": "bun run routes:prepare && vitest",
+    "routes:prepare": "vite build",
+    "typecheck:generated": "tsc --noEmit",
+    "test:generated": "vitest run"
   },
   "overrides": {
     "rolldown": "1.2.1"

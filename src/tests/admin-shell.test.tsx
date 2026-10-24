@@ -4,15 +4,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AdminShell } from "@/app/layouts/admin-shell";
 
-const routerState = vi.hoisted(() => ({ pathname: "/app" }));
+const routerState = vi.hoisted(() => ({ pathname: "/app", lastNavigation: "" }));
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
     children,
+    onClick,
     ...props
   }: AnchorHTMLAttributes<HTMLAnchorElement> & { to: string; children: ReactNode }) => (
-    <a href={to} {...props}>
+    <a
+      href={to}
+      {...props}
+      onClick={(event) => {
+        // Model TanStack client-side links: no jsdom document navigation.
+        event.preventDefault();
+        routerState.lastNavigation = to;
+        onClick?.(event);
+      }}
+    >
       {children}
     </a>
   ),
@@ -23,6 +33,7 @@ vi.mock("@tanstack/react-router", () => ({
 describe("LEVIA HUB administrative shell", () => {
   beforeEach(() => {
     routerState.pathname = "/app";
+    routerState.lastNavigation = "";
   });
 
   afterEach(() => {
@@ -76,6 +87,7 @@ describe("LEVIA HUB administrative shell", () => {
     fireEvent.click(screen.getByRole("button", { name: "Abrir menu" }));
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByRole("link", { name: /Núcleo Administrativo/ }));
+    expect(routerState.lastNavigation).toBe("/app/core");
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 

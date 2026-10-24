@@ -10,7 +10,32 @@
 | `/app/crm`           | `CrmPage`, dentro de `AdminShell`           |
 | `/app/core`          | `CorePage`, dentro de `AdminShell`          |
 
-O roteamento é feito exclusivamente com TanStack Router, por `src/routes/app.tsx`, `app.index.tsx` e as rotas filhas. `src/routeTree.gen.ts` é gerado pelo plugin existente; não editá-lo manualmente. O CI executa `bun run build` antes de TypeScript/Vitest para regeneração do manifesto.
+O roteamento é feito exclusivamente com TanStack Router, por `src/routes/app.tsx`, `app.index.tsx` e as rotas filhas. O plugin TanStack/Vite existente já gera `src/routeTree.gen.ts` a partir de `src/routes`; não adicionar CLI, gerador paralelo ou editar esse arquivo manualmente.
+
+## Política HUB-03-C01: árvore gerada não versionada
+
+A árvore `src/routeTree.gen.ts` anteriormente versionada registrava somente `/`, embora o build em CI regenerasse cinco rotas. Isso impedia que o checkout puro contivesse um registry coerente até o build. **A fonte de verdade são os arquivos `src/routes/*.tsx`; o manifesto gerado é ignorado pelo Git** com `src/routeTree.gen.ts` no `.gitignore`. O arquivo foi retirado do índice Git sem substituir o gerador do Lovable/TanStack. Continua excluído do Prettier.
+
+A geração declarada usa apenas o Vite já instalado:
+
+```bash
+bun install --frozen-lockfile
+bun run routes:prepare           # vite build, gera routeTree.gen.ts pelo plugin oficial
+bun run typecheck:generated      # usa a árvore recém-gerada
+bun run test:generated           # usa a árvore recém-gerada
+```
+
+Também funciona a partir de checkout limpo, sem qualquer etapa manual prévia:
+
+```bash
+bun run typecheck                # chama routes:prepare antes do tsc
+bun run test                     # chama routes:prepare antes do Vitest
+bun run test:watch               # chama routes:prepare antes do watcher
+```
+
+O CI executa `test ! -e src/routeTree.gen.ts` no checkout, depois `bun run build` e verifica que o arquivo gerado menciona `/`, `/app`, `/app/social-studio`, `/app/crm` e `/app/core`; por fim executa comandos `:generated` após o build para evitar compilações redundantes no runner. Essa escolha não altera `vite.config.ts`, o plugin Lovable, `src/router.tsx` nem o histórico existente.
+
+Referência externa: [TanStack Router — Vite e geração de rotas](https://tanstack.com/router/latest/docs/installation/with-vite).
 
 ## Componentes
 
