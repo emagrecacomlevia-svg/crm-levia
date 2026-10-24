@@ -22,7 +22,7 @@ A configuração de build de TanStack Start provida por `@lovable.dev/vite-tanst
 
 - Bun **1.3.2** (mesma versão utilizada no CI).
 - Git para clonar o repositório.
-- Nenhuma credencial, serviço externo, Supabase ou variável secreta é necessária para esta etapa.
+- Nenhuma credencial, variável secreta ou conexão Supabase é necessária para executar **esta interface demonstrativa**. O projeto de desenvolvimento `levia-hub-dev` foi provisionado separadamente na HUB-04A, **não integrado ao frontend**.
 
 ```bash
 git clone https://github.com/emagrecacomlevia-svg/crm-levia.git
@@ -71,6 +71,10 @@ O workflow de QA em Chromium é `.github/workflows/browser-qa.yml`: usa Playwrig
 
 Consulte [Arquitetura](docs/architecture/ARCHITECTURE.md), [ADR-001](docs/decisions/ADR-001.md), [Segurança](docs/security/SECURITY_BASELINE.md) e [Relatório HUB-02](docs/delivery-reports/HUB-02.md).
 
+## Supabase — fundação documental HUB-04A
+
+O ambiente lógico `levia-hub-dev` foi criado no plano **Free** e região `sa-east-1`, com custo de criação cotado em **US$ 0/mês**. Sua infraestrutura não está conectada à aplicação e **não contém tabelas empresariais**. Consulte [Ambientes e recuperação](docs/architecture/SUPABASE-ENVIRONMENTS.md), [Modelo de acesso](docs/security/ACCESS-MODEL.md), [Plano conceitual de RLS](docs/security/RLS-TEST-PLAN.md) e [Relatório HUB-04A](docs/delivery-reports/HUB-04A.md).
+
 ## Restrições
 
-Sem implantação, sem banco, sem autenticação, sem dados comerciais ou clínicos reais, sem conexão ao site institucional e sem consumo de créditos de IA Lovable. O projeto permanece público: revisões devem evitar informações confidenciais em arquivos, PRs, logs e artefatos.
+Sem implantação, sem **banco integrado à aplicação**, sem autenticação, sem dados comerciais ou clínicos reais, sem conexão ao site institucional e sem consumo de créditos de IA Lovable. A HUB-04A provisionou somente infraestrutura Supabase Free independente, sem schema empresarial ou uso pela aplicação. O projeto permanece público: revisões devem evitar informações confidenciais em arquivos, PRs, logs e artefatos.
