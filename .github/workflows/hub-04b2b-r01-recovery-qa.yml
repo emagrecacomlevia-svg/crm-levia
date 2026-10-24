@@ -44,11 +44,6 @@ jobs:
           rm -f "$asset" checksums.txt
           test "$(supabase --version)" = "$version"
           supabase --version
-      - name: Diagnose Markdown format without writing repository
-        shell: bash
-        run: |
-          npx --yes prettier@3.9.6 docs/delivery-reports/HUB-04B2B-R01.md | diff -u docs/delivery-reports/HUB-04B2B-R01.md - || true
-          npx --yes prettier@3.9.6 docs/operations/DATABASE-BACKUP-PLAN.md | diff -u docs/operations/DATABASE-BACKUP-PLAN.md - || true
       - name: Verify isolated CLI dump, restore, encryption, and negative tests
         shell: bash
         run: bash scripts/qa-database-recovery-r01.sh
