@@ -1,7 +1,12 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import type { ReactNode } from "react";
+import { describe, expect, it, vi } from "vitest";
 
 import { HubHome } from "@/app/hub-home";
+
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({ to, children }: { to: string; children: ReactNode }) => <a href={to}>{children}</a>,
+}));
 
 describe("LEVIA HUB foundation", () => {
   it("renders the initial page without crashing", () => {
@@ -30,5 +35,14 @@ describe("LEVIA HUB foundation", () => {
     expect(screen.getByRole("heading", { name: "Social Studio" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "CRM de Vendas" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Núcleo Administrativo" })).toBeInTheDocument();
+  });
+
+  it("links to the demonstration without suggesting login", () => {
+    render(<HubHome />);
+    expect(screen.getByRole("link", { name: /Abrir demonstração do HUB/ })).toHaveAttribute(
+      "href",
+      "/app",
+    );
+    expect(screen.queryByRole("button", { name: /entrar|autenticar|salvar|publicar/i })).toBeNull();
   });
 });

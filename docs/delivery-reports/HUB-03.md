@@ -1,0 +1,36 @@
+# HUB-03 — Interface Administrativa Navegável
+
+**Data de referência:** 23/10/2026. **Status:** implementação em branch para auditoria, não aprovada autonomamente.
+
+## Solicitado
+
+Preservar a página institucional e adicionar interface administrativa navegável com sidebar responsiva, dashboard demonstrativo e áreas estáticas para Social Studio, CRM e Núcleo. Conservar TanStack Start/Router, identidade LEVIA e segurança por ausência de dados sensíveis. Entrega em PR Draft sem merge.
+
+## Base verificada
+
+- Repositório público `emagrecacomlevia-svg/crm-levia`; ID `1431576812`.
+- HEAD original de `main`: `aaf2f8c0df136d1f2b593ae53dfd585e2276548b`.
+- PR #1 HUB-02 já integrado; não havia novo trabalho concorrente.
+- Nova branch `feature/hub-03-admin-shell`, criada diretamente da main verificada.
+- `AGENTS.md` e configurações de Lovable preservados. Nenhum force-push, rebase, integração externa ou deploy.
+
+## Executado
+
+- Rota institucional `/` preservada, com link TanStack **Abrir demonstração do HUB**.
+- Rota `/app` com visão geral ilustrativa, sem métricas empresariais fictícias.
+- Rotas `/app/social-studio`, `/app/crm` e `/app/core` com recursos apenas previstos e sem ações de negócio.
+- Único layout `AdminShell`, sidebar desktop, cabeçalho, breadcrumb textual de seção, aviso permanente e footer.
+- Menu móvel via Radix Dialog: abre/fecha, links com fechamento ao selecionar, foco gerenciado por Radix, link de pular conteúdo, estados ativos com `aria-current` e texto.
+- UI compartilhada tipada em `src/shared`; configuração em `src/app`; páginas específicas isoladas em `src/modules`. Sem dependências novas.
+- Suíte ampliada com testes de rotas, páginas, navegação e interações de menu.
+- Workflow GitHub Actions reordena build antes do typecheck/testes, pois a geração automática de `routeTree.gen.ts` ocorre por TanStack/Vite.
+
+## Segurança e limites
+
+Todas as páginas são **públicas, demonstrativas e sem autenticação**. Não existe banco, CRUD, integração com Google Drive, redes sociais, Supabase, Auth, RLS, publicação, aprovação real ou login. Não são utilizados dados reais, credenciais ou documentos institucionais confidenciais. A existência visual de cartões ou avisos não demonstra uma funcionalidade empresarial.
+
+## Testes e limitações
+
+Os resultados verificáveis do GitHub Actions e commits deverão ser relatados no PR. A ausência de navegador real para captura em ~320/390 e 1440 px, se confirmada, permanecerá **pendência de aceite visual**, não deve ser relatada como teste concluído.
+
+O consultor audita, o responsável aprova, o desenvolvedor apenas executa. Não realizar merge nem iniciar HUB-04.

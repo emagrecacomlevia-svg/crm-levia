@@ -2,7 +2,7 @@
 
 Centro administrativo digital da LEVIA BIOSCIENCE.
 
-**Estado:** HUB-02 — fundação técnica demonstrativa. Não é aplicação de produção. Todos os dados apresentados são sintéticos ou textos estáticos. Nenhum módulo de negócio foi implementado.
+**Estado:** HUB-03 — interface administrativa navegável demonstrativa. Não é aplicação de produção. Todos os dados apresentados são sintéticos ou textos estáticos. Nenhum módulo de negócio foi implementado e não existe autenticação nem persistência.
 
 ## Módulos previstos
 
@@ -27,7 +27,7 @@ A configuração de build de TanStack Start provida por `@lovable.dev/vite-tanst
 ```bash
 git clone https://github.com/emagrecacomlevia-svg/crm-levia.git
 cd crm-levia
-git checkout feature/hub-02-foundation
+git checkout feature/hub-03-admin-shell
 bun install --frozen-lockfile
 bun run dev
 ```
@@ -44,11 +44,25 @@ bun run build
 
 O CI executa estes comandos sem publicação. `bun run format` **modifica** arquivos; use somente para ajustes locais intencionais.
 
+## Rotas navegáveis da demonstração
+
+| Caminho | Conteúdo |
+| --- | --- |
+| `/` | Página institucional preservada, com entrada para a demonstração |
+| `/app` | Visão geral administrativa |
+| `/app/social-studio` | Planejamento editorial demonstrativo |
+| `/app/crm` | Área reservada CRM |
+| `/app/core` | Referência do núcleo administrativo |
+
+Todas as rotas estão **públicas e sem autenticação**. Navegação é real via TanStack Router; não há ações de salvar, aprovar, publicar ou operar dados. O menu móvel é implementado com Radix Dialog e fechamento acessível. A verificação de navegação contempla testes de UI e de matching do TanStack.
+
+A árvore `src/routeTree.gen.ts` é gerada pela integração TanStack/Vite. O CI roda `build` antes de `typecheck` e `test` para que as rotas recém-criadas sejam registradas sem editar manualmente o arquivo gerado. Consulte [Navegação](docs/architecture/NAVIGATION.md) e [Relatório HUB-03](docs/delivery-reports/HUB-03.md).
+
 ## Organização
 
-- `src/app/`: composição dos módulos em `config/hub-modules.ts`, apresentação e layout da página inicial.
-- `src/modules/`: metadados isolados das áreas planejadas.
-- `src/shared/`: UI, tipos e utilidades reutilizáveis, sem dependência de `src/modules/`.
+- `src/app/`: configuração de navegação, dashboard, apresentação e único layout administrativo.
+- `src/modules/`: páginas demonstrativas independentes de Social Studio, CRM e Núcleo.
+- `src/shared/`: componentes genéricos, tipos e utilidades sem importações de módulos de domínio.
 - `src/routes/`: rotas **TanStack** existentes (não criar segundo roteador).
 - `src/tests/` e `src/test/`: testes visuais e teste de roteamento já existente.
 - `docs/`: arquitetura, decisões, baseline de segurança e relatório da entrega.
