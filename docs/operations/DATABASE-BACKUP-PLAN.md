@@ -54,7 +54,7 @@ O ensaio e as limitações mensuradas constam de `DATABASE-RESTORE-TEST.md`. Ver
 
 ## Adendo R02 — preparo operacional AT-026 (24/10/2026)
 
-**Escopo desta autorização: somente metadados, documentação e planejamento.** Esta seção complementa o plano R01; não autoriza conexão de exportação, dump real, SQL, alteração de Data API, criação de usuário/role ou implantação. O procedimento e a CLI R01 **não** foram reexecutados nesta etapa.
+**Escopo desta autorização: somente metadados, documentação e planejamento.** Esta seção complementa o plano R01; não autoriza conexão de exportação, dump real, SQL, alteração de Data API, criação de usuário/role ou implantação. A R02 **não solicitou manualmente** reexecução da R01. O workflow já existente pode ser acionado automaticamente por `pull_request.paths` quando este plano é editado; essas execuções usam apenas PostgreSQL sintético e não constituem exportação remota.
 
 ### Baseline confirmado e limites do inventário
 
