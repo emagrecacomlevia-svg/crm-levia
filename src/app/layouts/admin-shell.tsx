@@ -1,10 +1,11 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Leaf, Menu, X } from "lucide-react";
+import { Leaf, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
 
 import { adminPageNames, type AdminPath } from "@/app/config/admin-navigation";
 import { AdminNavigation } from "@/app/layouts/admin-navigation";
+import { signOutFn } from "@/modules/identity/auth.functions";
 
 function AdminBrand() {
   return (
@@ -29,6 +30,22 @@ function AdminBrand() {
 export function AdminShell() {
   const currentPath = useRouterState({ select: (state) => state.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [logoutPending, setLogoutPending] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
+
+  async function handleLogout() {
+    if (logoutPending) return;
+    setLogoutError("");
+    setLogoutPending(true);
+    try {
+      // Even if remote revocation fails, local session is cleared server-side.
+      await signOutFn();
+      window.location.assign("/login");
+    } catch {
+      setLogoutError("Não foi possível encerrar a sessão. Tente novamente.");
+      setLogoutPending(false);
+    }
+  }
   const section = adminPageNames[currentPath as AdminPath] ?? "Área administrativa";
 
   return (
@@ -49,8 +66,8 @@ export function AdminShell() {
         </p>
         <AdminNavigation currentPath={currentPath} />
         <div className="mt-auto border-t border-border px-3 pt-5 text-xs leading-6 text-muted-foreground">
-          <p>HUB-03 · Interface demonstrativa</p>
-          <p>Sem acesso protegido ou dados reais.</p>
+          <p>HUB-04 · Área de acesso condicionado</p>
+          <p>Dados dos módulos ainda demonstrativos.</p>
         </div>
       </aside>
 
@@ -91,7 +108,7 @@ export function AdminShell() {
                       onNavigate={() => setMobileOpen(false)}
                     />
                     <p className="mt-auto border-t border-border pt-6 text-xs text-muted-foreground">
-                      Navegação demonstrativa, sem autenticação.
+                      Navegação administrativa protegida por autenticação e autorização.
                     </p>
                   </Dialog.Content>
                 </Dialog.Portal>
@@ -106,6 +123,16 @@ export function AdminShell() {
             <span className="rounded-full border border-olive/25 bg-sage/25 px-3 py-2 text-[11px] font-semibold text-forest sm:text-xs">
               Ambiente demonstrativo
             </span>
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={logoutPending}
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-3 text-sm font-semibold text-forest disabled:opacity-50"
+            >
+              <LogOut aria-hidden="true" className="size-4" />
+              {logoutPending ? "Encerrando..." : "Sair"}
+            </button>
+            {logoutError && <p role="alert" className="text-sm text-destructive">{logoutError}</p>}
           </div>
         </header>
 
@@ -121,8 +148,8 @@ export function AdminShell() {
 
         <footer className="border-t border-border bg-card px-4 py-4 text-xs text-muted-foreground sm:px-7 lg:px-10">
           <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-2">
-            <span>LEVIA HUB · HUB-03</span>
-            <span>Rotas públicas · Dados demonstrativos · Sem persistência</span>
+            <span>LEVIA HUB · HUB-04</span>
+            <span>Rotas protegidas · Dados demonstrativos · Sem persistência dos módulos</span>
           </div>
         </footer>
       </div>

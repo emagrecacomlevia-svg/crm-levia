@@ -6,6 +6,8 @@ import { AdminShell } from "@/app/layouts/admin-shell";
 
 const routerState = vi.hoisted(() => ({ pathname: "/app", lastNavigation: "" }));
 
+vi.mock("@/modules/identity/auth.functions", () => ({ signOutFn: vi.fn() }));
+
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
     to,
@@ -91,9 +93,10 @@ describe("LEVIA HUB administrative shell", () => {
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 
-  it("never pretends these routes are protected", () => {
+  it("labels protected routes truthfully and provides sign-out", () => {
     render(<AdminShell />);
-    expect(screen.getByText(/Rotas públicas · Dados demonstrativos/)).toBeInTheDocument();
+    expect(screen.getByText(/Rotas protegidas · Dados demonstrativos/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sair" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /login|salvar|aprovar|publicar/i })).toBeNull();
   });
 });
