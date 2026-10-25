@@ -14,9 +14,7 @@ export interface VerifiedIdentity {
 }
 
 export type AuthApiResult<T> =
-  | { kind: "ok"; data: T }
-  | { kind: "invalid" }
-  | { kind: "unavailable" };
+  { kind: "ok"; data: T } | { kind: "invalid" } | { kind: "unavailable" };
 
 function config(): { origin: string; key: string } | null {
   const raw = process.env.SUPABASE_URL;
@@ -57,7 +55,7 @@ async function goTrue(
       return { kind: "invalid" };
     }
     if (!response.ok) return { kind: "unavailable" };
-    return { kind: "ok", data: await response.json() as unknown };
+    return { kind: "ok", data: (await response.json()) as unknown };
   } catch {
     return { kind: "unavailable" };
   }
@@ -68,11 +66,18 @@ function decodeTokens(value: unknown): AuthApiResult<AuthTokens> {
   const v = value as Record<string, unknown>;
   const user = v.user as Record<string, unknown> | undefined;
   if (
-    typeof v.access_token !== "string" || !v.access_token ||
-    typeof v.refresh_token !== "string" || !v.refresh_token ||
-    typeof v.expires_in !== "number" || !Number.isFinite(v.expires_in) ||
-    v.expires_in <= 0 || !user || typeof user.id !== "string" || !user.id
-  ) return { kind: "unavailable" };
+    typeof v.access_token !== "string" ||
+    !v.access_token ||
+    typeof v.refresh_token !== "string" ||
+    !v.refresh_token ||
+    typeof v.expires_in !== "number" ||
+    !Number.isFinite(v.expires_in) ||
+    v.expires_in <= 0 ||
+    !user ||
+    typeof user.id !== "string" ||
+    !user.id
+  )
+    return { kind: "unavailable" };
   return {
     kind: "ok",
     data: {
@@ -84,10 +89,7 @@ function decodeTokens(value: unknown): AuthApiResult<AuthTokens> {
   };
 }
 
-export async function signIn(
-  email: string,
-  password: string,
-): Promise<AuthApiResult<AuthTokens>> {
+export async function signIn(email: string, password: string): Promise<AuthApiResult<AuthTokens>> {
   const result = await goTrue("/auth/v1/token?grant_type=password", "POST", {
     email,
     password,
@@ -102,7 +104,9 @@ export async function refreshTokens(refreshToken: string): Promise<AuthApiResult
   return result.kind === "ok" ? decodeTokens(result.data) : result;
 }
 
-export async function verifyIdentity(accessToken: string): Promise<AuthApiResult<VerifiedIdentity>> {
+export async function verifyIdentity(
+  accessToken: string,
+): Promise<AuthApiResult<VerifiedIdentity>> {
   const result = await goTrue("/auth/v1/user", "GET", undefined, accessToken);
   if (result.kind !== "ok") return result;
   const data = result.data;

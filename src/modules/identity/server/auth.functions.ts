@@ -1,6 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
 
-import { refreshTokens, revokeToken, signIn, verifyIdentity, type VerifiedIdentity } from "./auth-api.server";
+import {
+  refreshTokens,
+  revokeToken,
+  signIn,
+  verifyIdentity,
+  type VerifiedIdentity,
+} from "./auth-api.server";
 import { useLeviaSession, type LeviaSession } from "./session.server";
 
 export type AuthStatus =
@@ -62,18 +68,27 @@ export const getAuthStatusFn = createServerFn({ method: "GET" }).handler(current
 export const signInFn = createServerFn({ method: "POST" })
   .validator((data: { email: string; password: string }) => {
     if (
-      !data || typeof data.email !== "string" || typeof data.password !== "string" ||
-      data.email.length > 254 || data.password.length > 1024 || !data.email.includes("@") ||
+      !data ||
+      typeof data.email !== "string" ||
+      typeof data.password !== "string" ||
+      data.email.length > 254 ||
+      data.password.length > 1024 ||
+      !data.email.includes("@") ||
       !data.password
-    ) throw new Error("Credenciais inválidas.");
+    )
+      throw new Error("Credenciais inválidas.");
     return data;
   })
   .handler(async ({ data }) => {
     const result = await signIn(data.email.trim(), data.password);
     if (result.kind !== "ok") {
-      return { ok: false, message: result.kind === "invalid"
-        ? "E-mail ou senha inválidos."
-        : "Autenticação indisponível. Tente novamente mais tarde." };
+      return {
+        ok: false,
+        message:
+          result.kind === "invalid"
+            ? "E-mail ou senha inválidos."
+            : "Autenticação indisponível. Tente novamente mais tarde.",
+      };
     }
     try {
       const session = await useLeviaSession();

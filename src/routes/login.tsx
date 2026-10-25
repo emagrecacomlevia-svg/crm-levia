@@ -53,21 +53,47 @@ function LoginPage() {
         </p>
         <form onSubmit={submit} className="mt-7 space-y-5">
           <div>
-            <label htmlFor="email" className="mb-2 block text-sm font-medium">E-mail</label>
-            <input id="email" name="email" type="email" autoComplete="username" required
-              maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-lg border border-input bg-background px-4 py-3" />
+            <label htmlFor="email" className="mb-2 block text-sm font-medium">
+              E-mail
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="username"
+              required
+              maxLength={254}
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className="w-full rounded-lg border border-input bg-background px-4 py-3"
+            />
           </div>
           <div>
-            <label htmlFor="password" className="mb-2 block text-sm font-medium">Senha</label>
-            <input id="password" name="password" type="password" autoComplete="current-password"
-              required maxLength={1024} value={password}
+            <label htmlFor="password" className="mb-2 block text-sm font-medium">
+              Senha
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              maxLength={1024}
+              value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-lg border border-input bg-background px-4 py-3" />
+              className="w-full rounded-lg border border-input bg-background px-4 py-3"
+            />
           </div>
-          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-          <button type="submit" disabled={pending}
-            className="w-full rounded-lg bg-forest px-5 py-3 font-semibold text-white disabled:opacity-50">
+          {error && (
+            <p role="alert" className="text-sm text-destructive">
+              {error}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={pending}
+            className="w-full rounded-lg bg-forest px-5 py-3 font-semibold text-white disabled:opacity-50"
+          >
             {pending ? "Verificando..." : "Entrar"}
           </button>
         </form>

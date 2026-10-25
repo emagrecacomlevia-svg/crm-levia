@@ -36,13 +36,21 @@ function AccessDenied() {
         <ShieldX aria-hidden="true" className="mx-auto size-10 text-forest" />
         <h1 className="mt-5 font-serif text-3xl text-forest">Acesso administrativo indisponível</h1>
         <p className="mt-4 text-sm leading-7 text-muted-foreground">
-          Sua identidade não recebeu autorização administrativa verificável.
-          O acesso permanece negado até a ativação de uma verificação confiável no backend.
+          Sua identidade não recebeu autorização administrativa verificável. O acesso permanece
+          negado até a ativação de uma verificação confiável no backend.
         </p>
-        {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}
+        {error && (
+          <p role="alert" className="mt-4 text-sm text-destructive">
+            {error}
+          </p>
+        )}
         <div className="mt-7 flex justify-center gap-4">
-          <button type="button" disabled={pending} onClick={logout}
-            className="rounded-lg bg-forest px-5 py-3 text-sm font-semibold text-white disabled:opacity-50">
+          <button
+            type="button"
+            disabled={pending}
+            onClick={logout}
+            className="rounded-lg bg-forest px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+          >
             Encerrar sessão
           </button>
           <Link to="/" className="rounded-lg border border-input px-5 py-3 text-sm">

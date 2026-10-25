@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  AUDIT_EVENT_TYPES, CAPABILITIES, canAccess, canIssueGrant, isAuditEventType,
-  type AdminAccount, type PermissionGrant,
+  AUDIT_EVENT_TYPES,
+  CAPABILITIES,
+  canAccess,
+  canIssueGrant,
+  isAuditEventType,
+  type AdminAccount,
+  type PermissionGrant,
 } from "@/modules/identity/domain/permissions";
 
 const user = "synthetic-user";
@@ -18,9 +23,14 @@ const grant: PermissionGrant = {
 const now = new Date("2026-10-25T12:00:00Z");
 function allowed(change: Partial<Parameters<typeof canAccess>[0]> = {}) {
   return canAccess({
-    verifiedUserId: user, account, grants: [grant],
-    capability: "crm.read", scopeKind: "resource", scopeKey: "crm:team-a",
-    now, ...change,
+    verifiedUserId: user,
+    account,
+    grants: [grant],
+    capability: "crm.read",
+    scopeKind: "resource",
+    scopeKey: "crm:team-a",
+    now,
+    ...change,
   });
 }
 
