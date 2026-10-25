@@ -30,7 +30,7 @@ Isso comprova recuperação do **schema e dos dados de aplicação desta linha d
 
 O cadastro público na API Auth permanece habilitado (`disable_signup=false`), com confirmação por e-mail; não há cadastro na interface nem concessão automática de acesso ao HUB. Desabilitar o cadastro no painel continua pendente: o conector não oferece escrita dessa configuração e a sessão de navegador exige autenticação. Nenhuma configuração Auth foi declarada alterada sem confirmação efetiva.
 
-O plano Free não disponibiliza a proteção gerenciada contra senhas vazadas, conforme [documentação Supabase](https://supabase.com/docs/guides/auth/password-security). O advisor emite esse aviso; não foi contratado plano pago para suprimi-lo. A definição de senha no aplicativo exige 12 caracteres e acesso por link privado. A migração para proteção gerenciada e MFA deve preceder uso com dados empresariais sensíveis.
+O plano Free não disponibiliza a proteção gerenciada contra senhas vazadas, conforme [documentação Supabase](https://supabase.com/docs/guides/auth/password-security). Não foi contratado plano pago. A definição de senha no aplicativo exige 12 caracteres e acesso por link privado. A migração para proteção gerenciada e MFA deve preceder uso com dados empresariais sensíveis. A última consulta ao advisor de segurança retornou somente os quatro informes de RLS sem policies, sem erros ou avisos de nível WARN; isso não habilita o recurso pago.
 
 Os avisos informativos de RLS sem policies são esperados: o schema é privado e o acesso direto é intencionalmente negado. Não criar policies permissivas para eliminar esse aviso. Índices informados como ainda não utilizados em um banco recém-criado são preservados para as FKs e trilhas de auditoria.
 

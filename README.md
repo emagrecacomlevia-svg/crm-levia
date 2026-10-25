@@ -6,7 +6,7 @@ Centro administrativo modular da LEVIA BIOSCIENCE, em ambiente de desenvolviment
 
 ## Execução e verificação
 
-Bun **1.3.2**, React 19, TypeScript, TanStack Start/Router, Vite 8 e Tailwind 4. O lockfile existente é preservado.
+Bun **1.3.2**, React 19, TypeScript, TanStack Start/Router, Vite 8 e Tailwind 4. O lockfile versionado inclui as correções de segurança verificadas nesta entrega.
 
 ```bash
 bun install --frozen-lockfile
