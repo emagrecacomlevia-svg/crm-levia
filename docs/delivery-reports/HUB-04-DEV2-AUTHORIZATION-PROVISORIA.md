@@ -3,6 +3,7 @@
 **Status: PROVISÓRIO — NÃO ATIVADO NO SUPABASE REMOTO.**
 
 A PR #11 implementa:
+
 1. RPC servidor TanStack Start que confirma a identidade via Supabase Auth.
 2. Uma função Edge de leitura `hub-authorize` que verifica novamente o JWT e consulta `hub_private` usando SQL parametrizado, sob TLS com CA e identidade do servidor verificada.
 3. Gate positivo exclusivamente sob `{allowed:true}` do backend. Em caso de ausência de configuração, erro, rede, JWT inválido ou resposta irregular: acesso negado.
@@ -18,6 +19,7 @@ O requisito `LEVIA_DB_URL` é uma URL PostgreSQL sem senha, apenas do destino pr
 **AT-040:** a migration `20261024130000_identity_permissions.sql` permanece imutável e não aplicada remotamente. A saída read-only do conector confirmou `hub_private` ausente e ledger vazio. `apply_migration` por API não preserva comprovadamente a versão canônica do arquivo homologado; usar uma aplicação única controlada pelo CLI 2.122.0 no executor privado ou procedimento equivalente que preserve a versão, após decisão segura sobre recuperação PostgreSQL Free. Nunca executar `migration repair`.
 
 **Avisos funcionais:**
+
 - As rotas reais são fechadas enquanto a Edge Function não estiver homologada e o banco não contiver permissões efetivas.
 - Não existe bootstrap administrativo automático. A conta inicial habilitada e as concessões somente podem ser provisionadas fora da aplicação por operação confiável auditável e autorizada.
 - Sem escritor aprovado, a UI permanece somente leitura e não afirma persistir eventos.

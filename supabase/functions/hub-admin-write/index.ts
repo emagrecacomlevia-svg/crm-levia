@@ -13,14 +13,15 @@ function response(status: number, body: Record<string, unknown>) {
   });
 }
 function uuid(input: unknown): input is string {
-  return typeof input === "string" &&
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input);
+  return (
+    typeof input === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(input)
+  );
 }
 
 function configuration() {
   const url = Deno.env.get("SUPABASE_URL");
-  const key = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ??
-    Deno.env.get("SUPABASE_ANON_KEY");
+  const key = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY");
   const dbUrl = Deno.env.get("LEVIA_DB_URL");
   const password = Deno.env.get("LEVIA_DB_PASSWORD");
   const ca = Deno.env.get("LEVIA_DB_CA_PEM");
@@ -30,16 +31,22 @@ function configuration() {
     if (
       url !== "https://dfhjfajbmnsgrklhqtjk.supabase.co" ||
       !["postgres:", "postgresql:"].includes(parsed.protocol) ||
-      parsed.password || parsed.search || parsed.hash ||
+      parsed.password ||
+      parsed.search ||
+      parsed.hash ||
       parsed.pathname !== "/postgres" ||
       (parsed.port && parsed.port !== "5432") ||
       !(
         parsed.hostname === "db.dfhjfajbmnsgrklhqtjk.supabase.co" ||
         parsed.hostname === "aws-1-sa-east-1.pooler.supabase.com"
-      ) || !ca.includes("BEGIN CERTIFICATE")
-    ) return null;
+      ) ||
+      !ca.includes("BEGIN CERTIFICATE")
+    )
+      return null;
     return { url, key, dbUrl, password, ca };
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 Deno.serve(async (request) => {
@@ -65,7 +72,9 @@ Deno.serve(async (request) => {
     const verified: unknown = await identity.json();
     actor = (verified as { id?: unknown })?.id as string;
     if (!uuid(actor)) return response(401, { ok: false });
-  } catch { return response(503, { ok: false }); }
+  } catch {
+    return response(503, { ok: false });
+  }
 
   let payload: Record<string, unknown>;
   try {
@@ -74,7 +83,9 @@ Deno.serve(async (request) => {
       return response(400, { ok: false });
     }
     payload = data as Record<string, unknown>;
-  } catch { return response(400, { ok: false }); }
+  } catch {
+    return response(400, { ok: false });
+  }
 
   const action = payload["action"];
   const subject = payload["subject"];
@@ -85,25 +96,39 @@ Deno.serve(async (request) => {
   const enabled = payload["enabled"];
   const validUntil = payload["validUntil"];
 
-  const validScope = typeof scopeKey === "string" &&
+  const validScope =
+    typeof scopeKey === "string" &&
     /^[a-z][a-z0-9:_-]{0,127}$/.test(scopeKey) &&
-    !["all","global"].includes(scopeKey);
-  const validGrant = typeof capability === "string" &&
-    ["core.read", "users.manage", "crm.read", "crm.write", "social.read",
-      "social.write", "content.review_editorial", "content.review_scientific",
-      "content.approve_commercial"].includes(capability) &&
-    (scopeKind === "module" || scopeKind === "resource") && validScope &&
-    (validUntil === null || validUntil === undefined ||
+    !["all", "global"].includes(scopeKey);
+  const validGrant =
+    typeof capability === "string" &&
+    [
+      "core.read",
+      "users.manage",
+      "crm.read",
+      "crm.write",
+      "social.read",
+      "social.write",
+      "content.review_editorial",
+      "content.review_scientific",
+      "content.approve_commercial",
+    ].includes(capability) &&
+    (scopeKind === "module" || scopeKind === "resource") &&
+    validScope &&
+    (validUntil === null ||
+      validUntil === undefined ||
       (typeof validUntil === "string" &&
-       Number.isFinite(Date.parse(validUntil)) && validUntil.length <= 40));
+        Number.isFinite(Date.parse(validUntil)) &&
+        validUntil.length <= 40));
 
   if (
     (action === "create-account" && !uuid(subject)) ||
     (action === "set-enabled" && (!uuid(subject) || typeof enabled !== "boolean")) ||
     (action === "issue-grant" && (!uuid(subject) || !validGrant)) ||
     (action === "revoke-grant" && !uuid(grantId)) ||
-    !["create-account","set-enabled","issue-grant","revoke-grant"].includes(action as string)
-  ) return response(400, { ok: false });
+    !["create-account", "set-enabled", "issue-grant", "revoke-grant"].includes(action as string)
+  )
+    return response(400, { ok: false });
 
   const sql = postgres(cfg.dbUrl, {
     password: cfg.password,
