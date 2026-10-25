@@ -1,0 +1,45 @@
+name: HUB-04 Audited Writer SQL QA (Isolated)
+on:
+  pull_request:
+    paths:
+      - "supabase/drafts/hub04_audited_writers.sql"
+      - "supabase/tests/hub04_audited_writers.sql"
+      - ".github/workflows/hub04-audit-writers-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sql:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start isolated PostgreSQL 17, no network
+        run: |
+          docker run --rm -d --name levia-hub04-writer-pg --network none \
+            -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17
+          for i in $(seq 1 40); do
+            docker exec levia-hub04-writer-pg pg_isready -U postgres && exit 0
+            sleep 2
+          done
+          exit 1
+      - name: Apply immutable foundation only to disposable database
+        run: |
+          docker exec -i levia-hub04-writer-pg psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon nologin;
+          create role authenticated nologin;
+          create role service_role nologin;
+          create schema auth;
+          create table auth.users (id uuid primary key);
+          SQL
+          docker exec -i levia-hub04-writer-pg psql -U postgres -v ON_ERROR_STOP=1 \
+            < supabase/migrations/20261024130000_identity_permissions.sql
+      - name: Prepare and exercise synthetic audited writers
+        run: |
+          docker exec -i levia-hub04-writer-pg psql -U postgres -v ON_ERROR_STOP=1 \
+            < supabase/drafts/hub04_audited_writers.sql
+          docker exec -i levia-hub04-writer-pg psql -U postgres -v ON_ERROR_STOP=1 \
+            < supabase/tests/hub04_audited_writers.sql
+      - name: Dispose isolated database
+        if: always()
+        run: docker rm -f levia-hub04-writer-pg || true
