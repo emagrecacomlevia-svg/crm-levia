@@ -23,13 +23,15 @@ jobs:
           docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
           create role anon nologin;
           create role authenticated nologin;
-          create role service_role nologin bypassrls;
+          create role service_role nologin;
           create schema auth;
           create table auth.users(id uuid primary key, banned_until timestamptz, deleted_at timestamptz, is_anonymous boolean default false, raw_app_meta_data jsonb default '{}');
           create table auth.sessions(id uuid primary key, user_id uuid references auth.users(id) on delete cascade, created_at timestamptz default now(), not_after timestamptz);
           SQL
           docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261024130000_identity_permissions.sql
           docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/identity_permissions.sql
+          # Preserve the historical B1 stub contract, then reproduce managed BYPASSRLS.
+          docker exec levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 -c 'alter role service_role bypassrls'
           docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261025134600_audited_identity_writers.sql
           docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub04_audited_writers.sql
           docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub04_first_admin_bootstrap.sql
