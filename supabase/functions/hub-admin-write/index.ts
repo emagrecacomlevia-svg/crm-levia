@@ -140,19 +140,19 @@ Deno.serve(async (request) => {
   });
   try {
     if (action === "create-account") {
-      await sql`select hub_private.create_admin_account(${actor}::uuid,${subject}::uuid)`;
+      await sql`select hub_private.create_admin_account(${actor}::uuid,${subject as string}::uuid)`;
     } else if (action === "set-enabled") {
       await sql`select hub_private.set_admin_enabled(
-        ${actor}::uuid,${subject}::uuid,${enabled}::boolean)`;
+        ${actor}::uuid,${subject as string}::uuid,${enabled as boolean}::boolean)`;
     } else if (action === "issue-grant") {
       const rows = await sql`select hub_private.issue_capability_grant(
-        ${actor}::uuid,${subject}::uuid,
-        ${capability},${scopeKind},${scopeKey},
-        ${validUntil ?? null}::timestamptz) as id`;
+        ${actor}::uuid,${subject as string}::uuid,
+        ${capability as string},${scopeKind as string},${scopeKey as string},
+        ${validUntil == null ? null : (validUntil as string)}::timestamptz) as id`;
       return response(200, { ok: true, grantId: rows[0]?.id });
     } else if (action === "revoke-grant") {
       await sql`select hub_private.revoke_capability_grant(
-        ${actor}::uuid,${grantId}::uuid)`;
+        ${actor}::uuid,${grantId as string}::uuid)`;
     }
     return response(200, { ok: true });
   } catch (error) {
