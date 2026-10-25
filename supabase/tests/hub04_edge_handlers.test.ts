@@ -1,8 +1,8 @@
 // HUB-04 MOCK: isolated Edge request tests. No database connection or remote Auth call.
 import assert from "node:assert/strict";
 import type postgres from "npm:postgres@3.4.7";
-import { hubAuthorizeHandler } from "../functions/hub-authorize/index.ts";
-import { hubAdminWriteHandler } from "../functions/hub-admin-write/index.ts";
+import { hubAuthorizeHandler } from "../functions/hub-authorize/handler.ts";
+import { hubAdminWriteHandler } from "../functions/hub-admin-write/handler.ts";
 
 const verifiedUser = "10000000-0000-0000-0000-000000000001";
 const syntheticSubject = "10000000-0000-0000-0000-000000000002";
