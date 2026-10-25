@@ -28,8 +28,7 @@ function json(status: number, body: Record<string, unknown>) {
 
 function readConfiguration() {
   const authOrigin = Deno.env.get("SUPABASE_URL");
-  const key = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ??
-    Deno.env.get("SUPABASE_ANON_KEY");
+  const key = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY");
   const rawUrl = Deno.env.get("LEVIA_DB_URL");
   const password = Deno.env.get("LEVIA_DB_PASSWORD");
   const ca = Deno.env.get("LEVIA_DB_CA_PEM");
@@ -41,15 +40,17 @@ function readConfiguration() {
     if (
       auth.origin !== "https://dfhjfajbmnsgrklhqtjk.supabase.co" ||
       !["postgres:", "postgresql:"].includes(db.protocol) ||
-      db.password || db.hostname.length === 0 ||
+      db.password ||
+      db.hostname.length === 0 ||
       db.pathname !== "/postgres" ||
-      db.port && db.port !== "5432" ||
+      (db.port && db.port !== "5432") ||
       !(
         db.hostname === "db.dfhjfajbmnsgrklhqtjk.supabase.co" ||
         db.hostname === "aws-1-sa-east-1.pooler.supabase.com"
       ) ||
       !ca.includes("BEGIN CERTIFICATE")
-    ) return null;
+    )
+      return null;
     return { authOrigin: auth.origin, key, rawUrl, password, ca };
   } catch {
     return null;
@@ -82,12 +83,15 @@ Deno.serve(async (request) => {
   const scopeKind = body["scopeKind"];
   const scopeKey = body["scopeKey"];
   if (
-    typeof capability !== "string" || !capabilities.has(capability) ||
+    typeof capability !== "string" ||
+    !capabilities.has(capability) ||
     (scopeKind !== "module" && scopeKind !== "resource") ||
     typeof scopeKey !== "string" ||
     !/^[a-z][a-z0-9:_-]{0,127}$/.test(scopeKey) ||
-    scopeKey === "all" || scopeKey === "global"
-  ) return json(400, { allowed: false });
+    scopeKey === "all" ||
+    scopeKey === "global"
+  )
+    return json(400, { allowed: false });
 
   let verifiedId: string;
   try {
@@ -99,9 +103,11 @@ Deno.serve(async (request) => {
     if (!check.ok) return json(401, { allowed: false });
     const user: unknown = await check.json();
     if (
-      !user || typeof user !== "object" ||
+      !user ||
+      typeof user !== "object" ||
       typeof (user as Record<string, unknown>)["id"] !== "string"
-    ) return json(401, { allowed: false });
+    )
+      return json(401, { allowed: false });
     verifiedId = (user as { id: string }).id;
     if (!/^[0-9a-f-]{36}$/i.test(verifiedId)) return json(401, { allowed: false });
   } catch {

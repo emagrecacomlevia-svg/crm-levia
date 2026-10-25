@@ -8,7 +8,11 @@ import {
   type VerifiedIdentity,
 } from "./server/auth-api.server";
 import { getLeviaSession, type LeviaSession } from "./server/session.server";
-import { authorizeViaSupabase, isAuthorizationRequest, type AuthorizationRequest } from "./server/authorization-api.server";
+import {
+  authorizeViaSupabase,
+  isAuthorizationRequest,
+  type AuthorizationRequest,
+} from "./server/authorization-api.server";
 
 export type AuthStatus =
   | { state: "anonymous" }
@@ -135,9 +139,8 @@ async function authorizationStatus(request: AuthorizationRequest) {
   return { state: "authorization-unavailable" } as const;
 }
 
-export const getAdminAccessFn = createServerFn({ method: "GET" }).handler(
-  async () =>
-    authorizationStatus({ capability: "core.read", scopeKind: "module", scopeKey: "core" }),
+export const getAdminAccessFn = createServerFn({ method: "GET" }).handler(async () =>
+  authorizationStatus({ capability: "core.read", scopeKind: "module", scopeKey: "core" }),
 );
 
 export const checkCapabilityFn = createServerFn({ method: "POST" })
