@@ -9,7 +9,18 @@ const syntheticSubject = "10000000-0000-0000-0000-000000000002";
 const grantId = "10000000-0000-0000-0000-000000000003";
 const authUrl = "https://dfhjfajbmnsgrklhqtjk.supabase.co";
 const scopeRequest = { capability: "crm.read", scopeKind: "module", scopeKey: "crm" };
-const authHeaders = { authorization: "Bearer mock.jwt.token", "content-type": "application/json" };
+const authHeaders = {
+  authorization:
+    "Bearer a." +
+    btoa(
+      JSON.stringify({
+        session_id: "10000000-0000-0000-0000-000000000099",
+        exp: Math.floor(Date.now() / 1000) + 3600,
+      }),
+    ).replace(/=/g, "") +
+    ".c",
+  "content-type": "application/json",
+};
 
 function setMockEnvironment() {
   Deno.env.set("SUPABASE_URL", authUrl);
@@ -31,18 +42,23 @@ function fakeAuth(status = 200): typeof fetch {
       headers: { "content-type": "application/json" },
     });
 }
-function fakePg(result: { allowed?: boolean; id?: string }, code?: string) {
+function fakePg(
+  result: { allowed?: boolean; id?: string; result?: { grantId: string } },
+  code?: string,
+) {
   const queries: string[] = [];
+  const parameters: unknown[][] = [];
   const tag = Object.assign(
     async (template: TemplateStringsArray, ..._values: unknown[]) => {
       queries.push(template.join("?"));
+      parameters.push(_values);
       if (code) throw Object.assign(new Error("Mock database denial"), { code });
       return [result];
     },
-    { end: async () => undefined },
+    { end: async () => undefined, json: (value: unknown) => value },
   );
   const connect = (() => tag) as unknown as typeof postgres;
-  return { connect, queries };
+  return { connect, queries, parameters };
 }
 function post(path: string, data: unknown, authenticated = true) {
   return new Request(authUrl + "/functions/v1/" + path, {
@@ -120,7 +136,7 @@ Deno.test("MOCK: private DB failures fail closed and return no grants", async ()
 
 Deno.test("MOCK: authenticated writer dispatches only valid typed calls", async () => {
   setMockEnvironment();
-  const db = fakePg({ id: grantId });
+  const db = fakePg({ result: { grantId } });
   const create = await hubAdminWriteHandler(
     post("hub-admin-write", {
       action: "create-account",
@@ -151,11 +167,12 @@ Deno.test("MOCK: authenticated writer dispatches only valid typed calls", async 
   );
   assert.equal(revoked.status, 200);
   assert.equal(db.queries.length, 3);
+  assert.deepEqual(db.parameters[0][3], { action: "create-account", subject: syntheticSubject });
 });
 
 Deno.test("MOCK: writer blocks forged actor, self-grant escalation and DB denial", async () => {
   setMockEnvironment();
-  const db = fakePg({ id: grantId });
+  const db = fakePg({ result: { grantId } });
   const unauth = await hubAdminWriteHandler(
     post("hub-admin-write", {
       action: "set-enabled",

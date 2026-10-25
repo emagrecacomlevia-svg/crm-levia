@@ -1,13 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 
 import {
+  activatePassword,
   refreshTokens,
   revokeToken,
   signIn,
   verifyIdentity,
   type VerifiedIdentity,
 } from "./server/auth-api.server";
-import { getLeviaSession, type LeviaSession } from "./server/session.server";
+import { clearLeviaSession, getLeviaSession, type LeviaSession } from "./server/session.server";
 import {
   authorizeViaSupabase,
   isAuthorizationRequest,
@@ -19,13 +20,17 @@ export type AuthStatus =
   | { state: "authenticated"; user: VerifiedIdentity }
   | { state: "unavailable" };
 
+type SessionStore = Awaited<ReturnType<typeof getLeviaSession>>;
+
 async function currentIdentity(): Promise<AuthStatus> {
-  let session;
   try {
-    session = await getLeviaSession();
+    return await identityForSession(await getLeviaSession());
   } catch {
     return { state: "unavailable" };
   }
+}
+
+async function identityForSession(session: SessionStore): Promise<AuthStatus> {
   const stored = session.data;
   if (!stored.userId || !stored.accessToken || !stored.refreshToken) {
     return { state: "anonymous" };
@@ -113,11 +118,16 @@ export const signInFn = createServerFn({ method: "POST" })
   });
 
 export const signOutFn = createServerFn({ method: "POST" }).handler(async () => {
-  const session = await getLeviaSession();
-  const access = session.data.accessToken;
-  // Local sign-out always clears the cookie; failed remote revocation is surfaced.
-  const revoked = access ? await revokeToken(access) : true;
-  await session.clear();
+  let revoked = false;
+  try {
+    const session = await getLeviaSession();
+    const access = session.data.accessToken;
+    revoked = access ? await revokeToken(access) : true;
+  } catch {
+    // Preserve the distinction between local logout and verified remote revocation.
+  } finally {
+    clearLeviaSession();
+  }
   return { ok: true, remoteRevoked: revoked };
 });
 
@@ -128,9 +138,14 @@ export const signOutFn = createServerFn({ method: "POST" }).handler(async () => 
  * - preserve denial if the database/Edge Function is unavailable.
  */
 async function authorizationStatus(request: AuthorizationRequest) {
-  const auth = await currentIdentity();
+  let session: SessionStore;
+  try {
+    session = await getLeviaSession();
+  } catch {
+    return { state: "unavailable" } as const;
+  }
+  const auth = await identityForSession(session);
   if (auth.state !== "authenticated") return { state: auth.state } as const;
-  const session = await getLeviaSession();
   const token = session.data.accessToken;
   if (!token) return { state: "anonymous" } as const;
   const decision = await authorizeViaSupabase(token, request);
@@ -149,3 +164,26 @@ export const checkCapabilityFn = createServerFn({ method: "POST" })
     return data;
   })
   .handler(async ({ data }) => authorizationStatus(data));
+
+export const activatePasswordFn = createServerFn({ method: "POST" })
+  .validator((data: { tokenHash: string; password: string }) => {
+    if (
+      !data ||
+      typeof data.tokenHash !== "string" ||
+      !/^[a-f0-9]{64}$/i.test(data.tokenHash) ||
+      typeof data.password !== "string" ||
+      data.password.length < 12 ||
+      data.password.length > 128
+    ) {
+      throw new Error("Use um link válido e uma senha com 12 a 128 caracteres.");
+    }
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const result = await activatePassword(data.tokenHash, data.password);
+    if (result.kind !== "ok")
+      return { ok: false, message: "Link inválido, expirado ou já utilizado." };
+    // Password changes can revoke the recovery session; use the normal login next.
+    await revokeToken(result.data.accessToken);
+    return { ok: true, message: "Senha definida. Entre com seu e-mail e sua nova senha." };
+  });

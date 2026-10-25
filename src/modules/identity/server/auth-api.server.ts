@@ -17,8 +17,11 @@ export type AuthApiResult<T> =
   { kind: "ok"; data: T } | { kind: "invalid" } | { kind: "unavailable" };
 
 export function getPublicSupabaseSettings(): { origin: string; key: string } | null {
-  const raw = process.env["SUPABASE_URL"];
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["SUPABASE_ANON_KEY"];
+  const raw = process.env["SUPABASE_URL"] ?? "https://dfhjfajbmnsgrklhqtjk.supabase.co";
+  const key =
+    process.env["SUPABASE_PUBLISHABLE_KEY"] ??
+    process.env["SUPABASE_ANON_KEY"] ??
+    "sb_publishable_oxJlqRLvE8xL4A6kGQ6U9g_1PlQD852";
   if (!raw || !key) return null;
   try {
     const url = new URL(raw);
@@ -33,7 +36,7 @@ export function getPublicSupabaseSettings(): { origin: string; key: string } | n
 
 async function goTrue(
   path: string,
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "PUT",
   body?: Record<string, string>,
   bearer?: string,
 ): Promise<AuthApiResult<unknown>> {
@@ -123,4 +126,20 @@ export async function verifyIdentity(
 export async function revokeToken(accessToken: string): Promise<boolean> {
   const result = await goTrue("/auth/v1/logout", "POST", undefined, accessToken);
   return result.kind === "ok";
+}
+
+export async function activatePassword(
+  tokenHash: string,
+  password: string,
+): Promise<AuthApiResult<AuthTokens>> {
+  const verified = await goTrue("/auth/v1/verify", "POST", {
+    token_hash: tokenHash,
+    type: "recovery",
+  });
+  if (verified.kind !== "ok") return verified;
+  const tokens = decodeTokens(verified.data);
+  if (tokens.kind !== "ok") return tokens;
+  const changed = await goTrue("/auth/v1/user", "PUT", { password }, tokens.data.accessToken);
+  if (changed.kind !== "ok") return changed;
+  return tokens;
 }

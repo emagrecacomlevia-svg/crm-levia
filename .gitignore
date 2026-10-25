@@ -47,3 +47,9 @@ secrets/
 *.njsproj
 *.sln
 *.sw?
+
+supabase/.temp/
+artifacts/
+
+__pycache__/
+*.pyc

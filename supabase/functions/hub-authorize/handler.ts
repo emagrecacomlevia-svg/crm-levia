@@ -6,6 +6,7 @@
  * No service_role key, no database grants, no anonymous browser CORS.
  */
 import postgres from "npm:postgres@3.4.7";
+import { edgeConfiguration, verifiedSessionId, boundedJson } from "../_shared/configuration.ts";
 
 const capabilities = new Set([
   "core.read",
@@ -26,37 +27,6 @@ function json(status: number, body: Record<string, unknown>) {
   });
 }
 
-function readConfiguration() {
-  const authOrigin = Deno.env.get("SUPABASE_URL");
-  const key = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY");
-  const rawUrl = Deno.env.get("LEVIA_DB_URL");
-  const password = Deno.env.get("LEVIA_DB_PASSWORD");
-  const ca = Deno.env.get("LEVIA_DB_CA_PEM");
-  if (!authOrigin || !key || !rawUrl || !password || !ca) return null;
-
-  try {
-    const auth = new URL(authOrigin);
-    const db = new URL(rawUrl);
-    if (
-      auth.origin !== "https://dfhjfajbmnsgrklhqtjk.supabase.co" ||
-      !["postgres:", "postgresql:"].includes(db.protocol) ||
-      db.password ||
-      db.hostname.length === 0 ||
-      db.pathname !== "/postgres" ||
-      (db.port && db.port !== "5432") ||
-      !(
-        db.hostname === "db.dfhjfajbmnsgrklhqtjk.supabase.co" ||
-        db.hostname === "aws-1-sa-east-1.pooler.supabase.com"
-      ) ||
-      !ca.includes("BEGIN CERTIFICATE")
-    )
-      return null;
-    return { authOrigin: auth.origin, key, rawUrl, password, ca };
-  } catch {
-    return null;
-  }
-}
-
 export async function hubAuthorizeHandler(
   request: Request,
   dependencies: { fetcher?: typeof fetch; connect?: typeof postgres } = {},
@@ -69,18 +39,18 @@ export async function hubAuthorizeHandler(
   if (!/^Bearer [A-Za-z0-9._~-]+$/.test(bearer)) {
     return json(401, { allowed: false });
   }
-  const config = readConfiguration();
+  const config = edgeConfiguration();
   if (!config) return json(503, { allowed: false });
 
   let body: Record<string, unknown>;
   try {
-    const value: unknown = await request.json();
+    const value: unknown = await boundedJson(request, 2048);
     if (typeof value !== "object" || value === null || Array.isArray(value)) {
       return json(400, { allowed: false });
     }
     body = value as Record<string, unknown>;
-  } catch {
-    return json(400, { allowed: false });
+  } catch (error) {
+    return json(error instanceof RangeError ? 413 : 400, { allowed: false });
   }
   const capability = body["capability"];
   const scopeKind = body["scopeKind"];
@@ -117,11 +87,14 @@ export async function hubAuthorizeHandler(
     return json(503, { allowed: false });
   }
 
+  const sessionId = verifiedSessionId(bearer);
+  if (!sessionId) return json(401, { allowed: false });
+
   // Read only; the SQL query itself binds EVERY untrusted value.
   // The database is never exposed through PostgREST / public schema.
   const sql = (dependencies.connect ?? postgres)(config.rawUrl, {
     password: config.password,
-    ssl: { rejectUnauthorized: true, ca: config.ca },
+    ssl: { rejectUnauthorized: true, ...(config.ca ? { ca: config.ca } : {}) },
     max: 1,
     prepare: false,
     connect_timeout: 8,
@@ -137,6 +110,7 @@ export async function hubAuthorizeHandler(
         inner join hub_private.capabilities c
           on c.code = g.capability_code
         where a.auth_user_id = ${verifiedId}::uuid
+          and hub_private.session_is_active(${verifiedId}::uuid, ${sessionId}::uuid)
           and a.is_enabled is true
           and a.disabled_at is null
           and g.capability_code = ${capability}

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  activatePassword,
   refreshTokens,
   revokeToken,
   signIn,
@@ -88,7 +89,30 @@ describe("HUB-04 GoTrue server adapter", () => {
       vi.fn().mockResolvedValue(new Response(JSON.stringify({ role: "admin" }))),
     );
     expect((await signIn("user@example.invalid", "synthetic")).kind).toBe("unavailable");
-    delete process.env["SUPABASE_URL"];
+    process.env["SUPABASE_URL"] = "invalid-url";
     expect((await signIn("user@example.invalid", "synthetic")).kind).toBe("unavailable");
+  });
+  it("changes password only after a valid one-use recovery token", async () => {
+    const spy = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify(goodTokens)))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "synthetic-user" })));
+    vi.stubGlobal("fetch", spy);
+    expect((await activatePassword("synthetic-token-hash", "a-long-synthetic-password")).kind).toBe(
+      "ok",
+    );
+    expect(spy.mock.calls[0]?.[0]).toBe("https://synthetic.supabase.co/auth/v1/verify");
+    expect(spy.mock.calls[1]?.[1]).toMatchObject({
+      method: "PUT",
+      headers: { authorization: "Bearer synthetic-access-token" },
+    });
+  });
+  it("does not update a password when recovery verification fails", async () => {
+    const spy = vi.fn().mockResolvedValue(new Response("{}", { status: 403 }));
+    vi.stubGlobal("fetch", spy);
+    expect((await activatePassword("invalid-hash", "a-long-synthetic-password")).kind).toBe(
+      "invalid",
+    );
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,0 +1,15 @@
+{
+  "environment": "Local TanStack SSR with REAL Supabase Auth and synthetic QA manager",
+  "checks": [
+    "Real password login reaches protected SSR dashboard",
+    "Opaque HttpOnly SameSite=Lax development session cookie",
+    "Delegated CRM scope allows protected route",
+    "Missing Social capability denies route despite valid login",
+    "Core capability allows protected route",
+    "Authenticated mobile navigation and Escape",
+    "Logout clears SSR session",
+    "Replayed cookie denied after remote logout"
+  ],
+  "errors": [],
+  "completed": true
+}

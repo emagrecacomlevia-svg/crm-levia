@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Leaf, LockKeyhole } from "lucide-react";
 
 import { signInFn } from "@/modules/identity/auth.functions";
@@ -14,6 +14,8 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
   const navigate = useNavigate();
   const router = useRouter();
 
@@ -51,7 +53,7 @@ function LoginPage() {
         <p className="mt-3 text-sm text-muted-foreground">
           Autenticação não concede automaticamente acesso administrativo.
         </p>
-        <form onSubmit={submit} className="mt-7 space-y-5">
+        <form method="post" onSubmit={submit} className="mt-7 space-y-5">
           <div>
             <label htmlFor="email" className="mb-2 block text-sm font-medium">
               E-mail
@@ -91,7 +93,7 @@ function LoginPage() {
           )}
           <button
             type="submit"
-            disabled={pending}
+            disabled={pending || !hydrated}
             className="w-full rounded-lg bg-forest px-5 py-3 font-semibold text-white disabled:opacity-50"
           >
             {pending ? "Verificando..." : "Entrar"}

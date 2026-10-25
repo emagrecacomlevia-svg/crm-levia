@@ -1,94 +1,65 @@
 # LEVIA HUB — LEVIA BIOSCIENCE
 
-Centro administrativo digital da LEVIA BIOSCIENCE.
+Centro administrativo modular da LEVIA BIOSCIENCE, em ambiente de desenvolvimento.
 
-**Estado:** HUB-03 — interface administrativa navegável demonstrativa. Não é aplicação de produção. Todos os dados apresentados são sintéticos ou textos estáticos. Nenhum módulo de negócio foi implementado e não existe autenticação nem persistência.
+**Estado atual:** HUB-04 com migrations e backend de autenticação, autorização e auditoria implantados no Supabase. A ativação do primeiro administrador real permanece bloqueada por revisão automática de autorização. Os módulos Social Studio, CRM e catálogo continuam demonstrativos e pertencem às etapas seguintes.
 
-## Módulos previstos
+## Execução e verificação
 
-- **Social Studio:** primeiro módulo funcional próprio, condicionado a futuras etapas de desenvolvimento.
-- **CRM de Vendas:** espaço reservado; construção de CRM próprio depende de decisão empresarial.
-- **Núcleo Administrativo:** base compartilhada futura de identidade, papéis, referências, versões e auditoria.
-
-Os cartões da página inicial **não** indicam recursos disponíveis, autenticação ou segurança operacional.
-
-## Tecnologias existentes preservadas
-
-React 19, TypeScript 5.8, TanStack Start/Router, Vite 8, Tailwind CSS 4, componentes Radix/shadcn, Bun (lockfile `bun.lock`), Vitest e React Testing Library.
-
-A configuração de build de TanStack Start provida por `@lovable.dev/vite-tanstack-config` foi mantida, assim como o roteamento em `src/routes` e os recursos do Lovable já conectados ao projeto.
-
-## Requisitos de desenvolvimento
-
-- Bun **1.3.2** (mesma versão utilizada no CI).
-- Git para clonar o repositório.
-- Nenhuma credencial, variável secreta ou conexão Supabase é necessária para executar **esta interface demonstrativa**. O projeto de desenvolvimento `levia-hub-dev` foi provisionado separadamente na HUB-04A, **não integrado ao frontend**.
+Bun **1.3.2**, React 19, TypeScript, TanStack Start/Router, Vite 8 e Tailwind 4. O lockfile existente é preservado.
 
 ```bash
-git clone https://github.com/emagrecacomlevia-svg/crm-levia.git
-cd crm-levia
-git checkout feature/hub-03-admin-shell
 bun install --frozen-lockfile
 bun run dev
-```
-
-Acesse o endereço local indicado pelo Vite. Para verificar:
-
-```bash
 bun run lint
 bun run format:check
 bun run build
-bun run typecheck
-bun run test
+bun run typecheck:generated
+bun run test:generated
 ```
 
-O CI executa estes comandos sem publicação. `bun run format` **modifica** arquivos; use somente para ajustes locais intencionais.
+O servidor usa a URL e a chave **publicável** do projeto exclusivo de desenvolvimento. Podem ser substituídas por `SUPABASE_URL` e `SUPABASE_PUBLISHABLE_KEY`; não definir chaves administrativas no frontend. A sessão cifrada é emitida e validada por `hub-session` no Supabase: nenhum segredo adicional precisa ser configurado no Lovable. Falha no Auth, na sessão ou na autorização nega o acesso.
 
-## Rotas navegáveis da demonstração
+## Rotas
 
-| Caminho              | Conteúdo                                                         |
-| -------------------- | ---------------------------------------------------------------- |
-| `/`                  | Página institucional preservada, com entrada para a demonstração |
-| `/app`               | Visão geral administrativa                                       |
-| `/app/social-studio` | Planejamento editorial demonstrativo                             |
-| `/app/crm`           | Área reservada CRM                                               |
-| `/app/core`          | Referência do núcleo administrativo                              |
+| Caminho              | Acesso e finalidade                                               |
+| -------------------- | ----------------------------------------------------------------- |
+| `/`                  | Apresentação pública                                              |
+| `/login`             | Login real por e-mail e senha                                     |
+| `/activate`          | Definição de senha por link privado, de uso único                 |
+| `/demo`              | Simulação pública, inteiramente sintética e sem privilégios reais |
+| `/access-denied`     | Estado de acesso negado                                           |
+| `/app`, `/app/core`  | Sessão válida e capacidade `core.read` no escopo `core`           |
+| `/app/crm`           | Acesso administrativo mais `crm.read` no escopo `crm`             |
+| `/app/social-studio` | Acesso administrativo mais `social.read` no escopo `social`       |
 
-Todas as rotas estão **públicas e sem autenticação**. Navegação é real via TanStack Router; não há ações de salvar, aprovar, publicar ou operar dados. O menu móvel é implementado com Radix Dialog e fechamento acessível. A verificação de navegação contempla testes de UI e de matching do TanStack.
+A autenticação não atribui permissões. Não existe cadastro público na interface. Tokens não são retornados por funções SSR ao JavaScript do navegador; o cookie de produção é cifrado, HttpOnly, Secure, SameSite=Lax e usa o prefixo `__Host-`.
 
-A árvore `src/routeTree.gen.ts` é **gerada pela integração TanStack/Vite e ignorada pelo Git**. A partir de checkout limpo, `bun run typecheck`, `bun run test` e `bun run test:watch` executam `routes:prepare` (build Vite) antes da verificação. No CI, o build único precede `typecheck:generated` e `test:generated`, evitando duplicar compilação. Consulte [Navegação](docs/architecture/NAVIGATION.md) e [Relatório HUB-03](docs/delivery-reports/HUB-03.md). Consulte [Navegação](docs/architecture/NAVIGATION.md) e [Relatório HUB-03](docs/delivery-reports/HUB-03.md).
+## Banco e fronteiras de segurança
 
-## Organização
+- Quatro tabelas em `hub_private`, nove capacidades, RLS habilitada e acesso direto negado a `anon`, `authenticated` e `service_role`.
+- `hub-authorize` revalida a identidade no Auth e consulta conta habilitada, concessão, escopo, vigência e sessão viva.
+- `hub-admin-write` usa a mesma identidade verificada e executa alterações e eventos em uma transação. Autoatribuição e delegação além da autorização original são negadas.
+- `hub-session` usa AES-GCM por JWE e uma chave derivada dentro do runtime privado do Supabase. O host web recebe somente o envelope opaco e opera como backend para a interface.
+- Todas as conexões PostgreSQL das funções exigem TLS e validação de certificado. O schema privado não é usado como API pública.
+- A auditoria conserva a identificação original do ator mesmo quando o Auth remove sua referência. Atualizações e exclusões comuns dos eventos são proibidas.
 
-- `src/app/`: configuração de navegação, dashboard, apresentação e único layout administrativo.
-- `src/modules/`: páginas demonstrativas independentes de Social Studio, CRM e Núcleo.
-- `src/shared/`: componentes genéricos, tipos e utilidades sem importações de módulos de domínio.
-- `src/routes/`: rotas **TanStack** existentes (não criar segundo roteador).
-- `src/tests/` e `src/test/`: testes visuais e teste de roteamento já existente.
-- `docs/`: arquitetura, decisões, baseline de segurança e relatório da entrega.
+O runtime Edge usa a credencial PostgreSQL gerenciada da plataforma, exclusivamente no backend. Sua custódia e rotação continuam sendo atribuição do proprietário do projeto. Os testes com papéis reais e a validação de sessão são independentes dessa credencial privilegiada.
 
-O workflow de QA em Chromium é `.github/workflows/browser-qa.yml`: usa Playwright 1.56.1 somente no runner temporário, sem adicionar dependência ou lockfile ao projeto. Testa cinco rotas nas larguras 320, 390, 768, 1280 e 1440 px, grava capturas e publica o artefato GitHub `hub-03-browser-qa` por 14 dias. Para reproduzir localmente com navegador instalado, consulte [Navegação](docs/architecture/NAVIGATION.md).
+## Migrations e recuperação
 
-Consulte [Arquitetura](docs/architecture/ARCHITECTURE.md), [ADR-001](docs/decisions/ADR-001.md), [Segurança](docs/security/SECURITY_BASELINE.md) e [Relatório HUB-02](docs/delivery-reports/HUB-02.md).
+A migration original mantém o blob auditado `7e954d9ce51ce0e3e96021809241a1bb9a439c59`. A aplicação gerenciada gera versões remotas próprias. A correspondência entre versão, arquivo e SHA-256 está em [deployment-manifest.json](supabase/deployment-manifest.json).
 
-## Supabase — fundação documental HUB-04A
+**Não executar `db push` diretamente da pasta canônica**, pois seus timestamps históricos diferem dos timestamps atribuídos pela plataforma. Prepare uma cópia compatível com o ledger, sem editar SQL ou reparar histórico:
 
-O ambiente lógico `levia-hub-dev` foi criado no plano **Free** e região `sa-east-1`, com custo de criação cotado em **US$ 0/mês**. Sua infraestrutura não está conectada à aplicação e **não contém tabelas empresariais**. Consulte [Ambientes e recuperação](docs/architecture/SUPABASE-ENVIRONMENTS.md), [Modelo de acesso](docs/security/ACCESS-MODEL.md), [Plano conceitual de RLS](docs/security/RLS-TEST-PLAN.md) e [Relatório HUB-04A](docs/delivery-reports/HUB-04A.md).
+```bash
+node scripts/stage-managed-migrations.mjs /tmp/levia-managed-staging
+```
 
-## Restrições
+[Relatório de execução](docs/delivery-reports/HUB-04-WORK-EXECUTION.md), [operação e recuperação](docs/operations/HUB-04-OPERATIONS.md) e [evidências](docs/evidence/hub04/) descrevem o estado atual. Relatórios anteriores conservam o estado histórico e suas antigas restrições; não devem ser interpretados como a situação atual.
 
-Sem implantação, sem **banco integrado à aplicação**, sem autenticação, sem dados comerciais ou clínicos reais, sem conexão ao site institucional e sem consumo de créditos de IA Lovable. A HUB-04A provisionou somente infraestrutura Supabase Free independente, sem schema empresarial ou uso pela aplicação. O projeto permanece público: revisões devem evitar informações confidenciais em arquivos, PRs, logs e artefatos.
+## Organização e limites
 
-## HUB-04B1 — identidades e permissões, somente SQL candidato
+`src/app` compõe os módulos; `src/modules` contém domínio e integrações; `src/shared` não importa módulos. O roteador único continua sendo TanStack, com árvore gerada pelo build e ignorada no Git.
 
-O PR desta etapa adiciona migration e testes de segurança **sem aplicação ao
-Supabase remoto**: [Modelo de dados](docs/architecture/DATABASE-SCHEMA.md),
-[Modelo de acesso](docs/security/ACCESS-MODEL.md),
-[Plano de testes](docs/security/RLS-TEST-PLAN.md) e
-[Relatório HUB-04B1](docs/delivery-reports/HUB-04B1.md).
-
-O workflow isolado `.github/workflows/identity-sql.yml` executa PostgreSQL 17
-num contêiner efêmero sem rede. A aplicação demonstrativa e as rotas públicas
-não mudam. Não existem login, permissões empresariais efetivas, RLS aplicada,
-credenciais ou dados reais. **Não executar a migration em produção ou no
-projeto `levia-hub-dev` sem autorização posterior.**
+O Supabase é exclusivo do HUB. Não foram conectados o site institucional ou QR/rastreabilidade, nem importados acervos, dados clínicos ou financeiros. Não foram enviados comandos de desenvolvimento ao Lovable. Nenhum serviço pago foi contratado e nenhum módulo das HUB-05 a HUB-11 foi antecipado.

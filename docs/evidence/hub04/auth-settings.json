@@ -1,0 +1,11 @@
+{
+  "project": "dfhjfajbmnsgrklhqtjk",
+  "observed_at": "2026-10-25",
+  "disable_signup": false,
+  "mailer_autoconfirm": false,
+  "phone_enabled": false,
+  "anonymous_users_enabled": false,
+  "enabled_provider": "email",
+  "public_signup_grants_hub_access": false,
+  "configuration_change_blocker": "Supabase connector does not expose Auth configuration writes; dashboard requires an authenticated user session"
+}

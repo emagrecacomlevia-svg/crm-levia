@@ -1,5 +1,5 @@
 // HUB-04 browser QA: public presentation and default-denied administrative paths.
-// All checks use loopback and synthetic inputs; no remote authentication or writes.
+// All checks use loopback and synthetic inputs; invalid synthetic login cannot create identities or grants.
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -117,12 +117,25 @@ async function run() {
       await page.getByRole("navigation", { name: "Navegação administrativa" }).count(),
       0,
     );
-    record("login sintético sem configuração remota retorna erro e não libera acesso");
+    record("login sintético inválido retorna erro e não libera acesso");
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(base + "/app", { waitUntil: "networkidle" });
     await expectDenied(page, "/app/mobile", 390);
     await screenshot(page, "access-denied-mobile-390.png");
+
+    const noScript = await browser.newContext({ javaScriptEnabled: false });
+    const noScriptPage = await noScript.newPage();
+    await noScriptPage.goto(base + "/login");
+    assert.equal(await noScriptPage.locator("form").getAttribute("method"), "post");
+    assert.equal(
+      await noScriptPage.getByRole("button", { name: "Entrar", exact: true }).isDisabled(),
+      true,
+    );
+    record(
+      "sem JavaScript, login permanece bloqueado e formulário usa POST, sem credenciais na URL",
+    );
+    await noScript.close();
 
     assert.deepEqual(result.errors, [], `Erros no navegador: ${JSON.stringify(result.errors)}`);
     result.completed = true;

@@ -20,5 +20,6 @@ jobs:
         run: |
           deno check --config supabase/functions/hub-authorize/deno.json supabase/functions/hub-authorize/index.ts
           deno check --config supabase/functions/hub-admin-write/deno.json supabase/functions/hub-admin-write/index.ts
+          deno check --config supabase/functions/hub-session/deno.json supabase/functions/hub-session/index.ts
       - name: Isolated HTTP/authorization contract tests (MOCK Auth and DB)
         run: deno test --config supabase/functions/hub-authorize/deno.json --allow-env --deny-net --cached-only supabase/tests/hub04_edge_handlers.test.ts

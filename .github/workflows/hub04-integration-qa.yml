@@ -1,0 +1,81 @@
+name: HUB-04 Full Migration Chain and Recovery
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  database:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start isolated PostgreSQL 17
+        run: |
+          docker run --rm -d --name levia-full-pg --network none -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17
+          for i in $(seq 1 40); do
+            docker exec levia-full-pg pg_isready -U postgres && exit 0
+            sleep 2
+          done
+          exit 1
+      - name: Auth stub, immutable migrations and historical regression tests
+        run: |
+          docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon nologin;
+          create role authenticated nologin;
+          create role service_role nologin bypassrls;
+          create schema auth;
+          create table auth.users(id uuid primary key, banned_until timestamptz, deleted_at timestamptz, is_anonymous boolean default false, raw_app_meta_data jsonb default '{}');
+          create table auth.sessions(id uuid primary key, user_id uuid references auth.users(id) on delete cascade, created_at timestamptz default now(), not_after timestamptz);
+          SQL
+          docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261024130000_identity_permissions.sql
+          docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/identity_permissions.sql
+          docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261025134600_audited_identity_writers.sql
+          docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub04_audited_writers.sql
+          docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub04_first_admin_bootstrap.sql
+      - name: Live-session and immutable audit regression tests
+        run: |
+          docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261025173020_session_bound_authorization.sql
+          docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261025173659_synthetic_audit_bootstrap_compatibility.sql
+          docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub04_session_bound.sql
+      - name: Restore application snapshot and prove logical backup round-trip
+        run: |
+          docker exec -i levia-full-pg psql -U postgres -v ON_ERROR_STOP=1 < docs/evidence/hub04/application-snapshot.sql
+          docker exec levia-full-pg pg_dump -U postgres --format=custom --schema=hub_private --file=/tmp/levia-app.dump
+          docker exec levia-full-pg createdb -U postgres levia_restore
+          docker exec -i levia-full-pg psql -U postgres -d levia_restore -v ON_ERROR_STOP=1 <<'SQL'
+          create schema auth;
+          create table auth.users(id uuid primary key, banned_until timestamptz, deleted_at timestamptz, is_anonymous boolean default false, raw_app_meta_data jsonb default '{}');
+          create table auth.sessions(id uuid primary key, user_id uuid references auth.users(id) on delete cascade, created_at timestamptz default now(), not_after timestamptz);
+          SQL
+          docker exec levia-full-pg pg_restore -U postgres -d levia_restore --exit-on-error /tmp/levia-app.dump
+          query="select md5(string_agg(to_jsonb(t)::text,',' order by id)) from hub_private.permission_audit_events t"
+          a=$(docker exec levia-full-pg psql -U postgres -Atc "$query")
+          b=$(docker exec levia-full-pg psql -U postgres -d levia_restore -Atc "$query")
+          test "$a" = "$b"
+          test "$(docker exec levia-full-pg psql -U postgres -d levia_restore -Atc 'select count(*) from hub_private.capabilities')" = 9
+          test "$(docker exec levia-full-pg psql -U postgres -d levia_restore -Atc \"select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='hub_private' and c.relkind='r' and c.relrowsecurity\")" = 4
+          docker exec -i levia-full-pg psql -U postgres -d levia_restore -v ON_ERROR_STOP=1 <<'SQL'
+          do $$ declare role_name text; relation_name text; operation_name text; begin
+            foreach role_name in array array['anon','authenticated','service_role'] loop
+              if has_schema_privilege(role_name,'hub_private','USAGE') then raise exception 'Restored schema ACL exposed'; end if;
+              foreach relation_name in array array['admin_accounts','capabilities','permission_grants','permission_audit_events'] loop
+                foreach operation_name in array array['SELECT','INSERT','UPDATE','DELETE'] loop
+                  if has_table_privilege(role_name,'hub_private.'||relation_name,operation_name) then raise exception 'Restored table ACL exposed'; end if;
+                end loop;
+              end loop;
+            end loop;
+          end $$;
+          SQL
+          mkdir -p artifacts/recovery
+          docker cp levia-full-pg:/tmp/levia-app.dump artifacts/recovery/levia-app.dump
+          sha256sum artifacts/recovery/levia-app.dump > artifacts/recovery/SHA256SUMS
+          echo "PASS: application schema/data restored, audit digest and RLS equal"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hub04-application-recovery
+          path: artifacts/recovery/
+          retention-days: 14
+      - name: Dispose
+        if: always()
+        run: docker rm -f levia-full-pg || true

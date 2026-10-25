@@ -1,0 +1,161 @@
+{
+  "environment": "Supabase levia-hub-dev; REAL Auth and PostgreSQL; synthetic identities only",
+  "checks": [
+    {
+      "test": "real Auth password manager",
+      "result": "PASS"
+    },
+    {
+      "test": "real Auth password subject",
+      "result": "PASS"
+    },
+    {
+      "test": "real Auth password outsider",
+      "result": "PASS"
+    },
+    {
+      "test": "manager core allowed",
+      "result": "PASS"
+    },
+    {
+      "test": "manager crm allowed",
+      "result": "PASS"
+    },
+    {
+      "test": "ungranted write denied",
+      "result": "PASS"
+    },
+    {
+      "test": "authenticated outsider denied",
+      "result": "PASS"
+    },
+    {
+      "test": "no bearer rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "forged JWT rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "global scope rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "cross scope denied",
+      "result": "PASS"
+    },
+    {
+      "test": "forged subject ignored",
+      "result": "PASS"
+    },
+    {
+      "test": "outsider cannot write",
+      "result": "PASS"
+    },
+    {
+      "test": "manager creates account",
+      "result": "PASS"
+    },
+    {
+      "test": "disabled account denied",
+      "result": "PASS"
+    },
+    {
+      "test": "manager enables account",
+      "result": "PASS"
+    },
+    {
+      "test": "audited grant succeeds",
+      "result": "PASS"
+    },
+    {
+      "test": "positive delegated permission",
+      "result": "PASS"
+    },
+    {
+      "test": "manager cannot self grant",
+      "result": "PASS"
+    },
+    {
+      "test": "manager disables subject",
+      "result": "PASS"
+    },
+    {
+      "test": "disabled account with valid JWT denied",
+      "result": "PASS"
+    },
+    {
+      "test": "manager re-enables subject",
+      "result": "PASS"
+    },
+    {
+      "test": "revokes grant",
+      "result": "PASS"
+    },
+    {
+      "test": "revoked grant denied",
+      "result": "PASS"
+    },
+    {
+      "test": "short-lived grant",
+      "result": "PASS"
+    },
+    {
+      "test": "expired grant denied",
+      "result": "PASS"
+    },
+    {
+      "test": "real refresh rotation",
+      "result": "PASS"
+    },
+    {
+      "test": "server session seal",
+      "result": "PASS"
+    },
+    {
+      "test": "encrypted cookie fits",
+      "result": "PASS"
+    },
+    {
+      "test": "plaintext token absent from cookie",
+      "result": "PASS"
+    },
+    {
+      "test": "session open",
+      "result": "PASS"
+    },
+    {
+      "test": "session correct identity",
+      "result": "PASS"
+    },
+    {
+      "test": "tampered session rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "real logout",
+      "result": "PASS"
+    },
+    {
+      "test": "logged-out envelope rejected",
+      "result": "PASS"
+    },
+    {
+      "test": "logged-out access token denied",
+      "result": "PASS"
+    },
+    {
+      "test": "logged-out writer denied",
+      "result": "PASS"
+    },
+    {
+      "test": "user-editable metadata accepted by Auth",
+      "result": "PASS"
+    },
+    {
+      "test": "metadata escalation denied",
+      "result": "PASS"
+    }
+  ]
+}
