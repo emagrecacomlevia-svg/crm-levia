@@ -4,6 +4,8 @@ on:
     paths:
       - ".github/workflows/hub-04b2b-g01-cli-qa.yml"
       - "scripts/qa-supabase-cli-g01.sh"
+      - "scripts/qa-supabase-cli-e02-c02-dburl-auth.sh"
+      - "docs/operations/HUB-04B2B-E02-C02-DBURL-AUTH-QA.md"
       - "supabase/migrations/20261024130000_identity_permissions.sql"
       - "supabase/tests/managed_preflight_assertions.sql"
   workflow_dispatch:
@@ -15,7 +17,7 @@ jobs:
   local-only:
     name: Pinned CLI 2.122.0 / PostgreSQL 17 / no remote project
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     env:
       SUPABASE_TELEMETRY_DISABLED: "1"
       SUPABASE_ACCESS_TOKEN: ""
@@ -32,6 +34,7 @@ jobs:
           curl -fL --retry 3 "$base/$asset" -o "$asset"
           curl -fL --retry 3 "$base/checksums.txt" -o checksums.txt
           grep -F "$asset" checksums.txt | sha256sum -c -
+          printf '59ed066847b98d7461c60e9109d40cab6b9756177ce06ebb05b51338519f5136  %s\n' "$asset" | sha256sum -c -
           cli_dir=$(mktemp -d)
           tar -xzf "$asset" -C "$cli_dir" supabase
           sudo install -m 0755 "$cli_dir/supabase" /usr/local/bin/supabase
@@ -42,3 +45,6 @@ jobs:
       - name: Real CLI ledger / dry run / rollback / drift / reconstruction — disposable DB only
         shell: bash
         run: bash scripts/qa-supabase-cli-g01.sh
+      - name: E02-C02 genuine SCRAM / protected PGPASSFILE / db-url read-only preview — disposable DB only
+        shell: bash
+        run: bash scripts/qa-supabase-cli-e02-c02-dburl-auth.sh
