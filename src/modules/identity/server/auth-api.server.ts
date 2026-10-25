@@ -55,6 +55,7 @@ async function goTrue(
       return { kind: "invalid" };
     }
     if (!response.ok) return { kind: "unavailable" };
+    if (response.status === 204) return { kind: "ok", data: null };
     return { kind: "ok", data: (await response.json()) as unknown };
   } catch {
     return { kind: "unavailable" };
