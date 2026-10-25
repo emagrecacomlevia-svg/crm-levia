@@ -32,9 +32,9 @@ const goodTokens = {
 
 describe("HUB-04 GoTrue server adapter", () => {
   it("logs in through HTTPS without an administrative key", async () => {
-    const spy = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify(goodTokens), { status: 200 }),
-    );
+    const spy = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(goodTokens), { status: 200 }));
     vi.stubGlobal("fetch", spy);
     expect(await signIn("user@example.invalid", "synthetic-password")).toEqual({
       kind: "ok",
@@ -63,9 +63,11 @@ describe("HUB-04 GoTrue server adapter", () => {
   });
 
   it("verifies identity using a bearer token", async () => {
-    const spy = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ id: "synthetic-user", email: "user@example.invalid" })),
-    );
+    const spy = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ id: "synthetic-user", email: "user@example.invalid" })),
+      );
     vi.stubGlobal("fetch", spy);
     expect(await verifyIdentity("synthetic-access-token")).toEqual({
       kind: "ok",
@@ -81,7 +83,10 @@ describe("HUB-04 GoTrue server adapter", () => {
   });
 
   it("fails closed on malformed Auth responses and unavailable configuration", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ role: "admin" }))));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ role: "admin" }))),
+    );
     expect((await signIn("user@example.invalid", "synthetic")).kind).toBe("unavailable");
     delete process.env["SUPABASE_URL"];
     expect((await signIn("user@example.invalid", "synthetic")).kind).toBe("unavailable");
