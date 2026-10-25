@@ -17,8 +17,8 @@ export type AuthApiResult<T> =
   { kind: "ok"; data: T } | { kind: "invalid" } | { kind: "unavailable" };
 
 function config(): { origin: string; key: string } | null {
-  const raw = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
+  const raw = process.env["SUPABASE_URL"];
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["SUPABASE_ANON_KEY"];
   if (!raw || !key) return null;
   try {
     const url = new URL(raw);
@@ -65,27 +65,27 @@ async function goTrue(
 function decodeTokens(value: unknown): AuthApiResult<AuthTokens> {
   if (typeof value !== "object" || value === null) return { kind: "unavailable" };
   const v = value as Record<string, unknown>;
-  const user = v.user as Record<string, unknown> | undefined;
+  const user = v["user"] as Record<string, unknown> | undefined;
   if (
-    typeof v.access_token !== "string" ||
-    !v.access_token ||
-    typeof v.refresh_token !== "string" ||
-    !v.refresh_token ||
-    typeof v.expires_in !== "number" ||
-    !Number.isFinite(v.expires_in) ||
-    v.expires_in <= 0 ||
+    typeof v["access_token"] !== "string" ||
+    !v["access_token"] ||
+    typeof v["refresh_token"] !== "string" ||
+    !v["refresh_token"] ||
+    typeof v["expires_in"] !== "number" ||
+    !Number.isFinite(v["expires_in"]) ||
+    v["expires_in"] <= 0 ||
     !user ||
-    typeof user.id !== "string" ||
-    !user.id
+    typeof user["id"] !== "string" ||
+    !user["id"]
   )
     return { kind: "unavailable" };
   return {
     kind: "ok",
     data: {
-      accessToken: v.access_token,
-      refreshToken: v.refresh_token,
-      expiresIn: v.expires_in,
-      userId: user.id,
+      accessToken: v["access_token"],
+      refreshToken: v["refresh_token"],
+      expiresIn: v["expires_in"],
+      userId: user["id"],
     },
   };
 }
@@ -113,10 +113,10 @@ export async function verifyIdentity(
   const data = result.data;
   if (!data || typeof data !== "object") return { kind: "unavailable" };
   const user = data as Record<string, unknown>;
-  if (typeof user.id !== "string" || !user.id) return { kind: "unavailable" };
+  if (typeof user["id"] !== "string" || !user["id"]) return { kind: "unavailable" };
   return {
     kind: "ok",
-    data: { id: user.id, email: typeof user.email === "string" ? user.email : null },
+    data: { id: user["id"], email: typeof user["email"] === "string" ? user["email"] : null },
   };
 }
 
