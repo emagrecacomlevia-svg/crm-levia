@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 import { refreshTokens, revokeToken, signIn, verifyIdentity, type VerifiedIdentity } from "./auth-api.server";
-import { leviaSession, type LeviaSession } from "./session.server";
+import { useLeviaSession, type LeviaSession } from "./session.server";
 
 export type AuthStatus =
   | { state: "anonymous" }
@@ -11,7 +11,7 @@ export type AuthStatus =
 async function currentIdentity(): Promise<AuthStatus> {
   let session;
   try {
-    session = await leviaSession();
+    session = await useLeviaSession();
   } catch {
     return { state: "unavailable" };
   }
@@ -76,7 +76,7 @@ export const signInFn = createServerFn({ method: "POST" })
         : "Autenticação indisponível. Tente novamente mais tarde." };
     }
     try {
-      const session = await leviaSession();
+      const session = await useLeviaSession();
       const state: LeviaSession = {
         userId: result.data.userId,
         accessToken: result.data.accessToken,
@@ -93,7 +93,7 @@ export const signInFn = createServerFn({ method: "POST" })
   });
 
 export const signOutFn = createServerFn({ method: "POST" }).handler(async () => {
-  const session = await leviaSession();
+  const session = await useLeviaSession();
   const access = session.data.accessToken;
   // Local sign-out always clears the cookie; failed remote revocation is surfaced.
   const revoked = access ? await revokeToken(access) : true;

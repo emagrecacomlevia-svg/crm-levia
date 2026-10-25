@@ -1,0 +1,40 @@
+name: HUB-04 Branch Formatter
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'dev/hub-04-authz-at040-20261025'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev/hub-04-authz-at040-20261025
+          persist-credentials: true
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.2
+      - run: bun install --frozen-lockfile
+      - name: Format only changed source and report
+        run: |
+          ./node_modules/.bin/prettier --write \
+            src/modules/identity/domain/permissions.ts \
+            src/modules/identity/server/session.server.ts \
+            src/modules/identity/server/auth-api.server.ts \
+            src/modules/identity/server/auth.functions.ts \
+            src/routes/login.tsx src/routes/access-denied.tsx \
+            src/routes/app.tsx src/test/identity-policy.test.ts \
+            docs/delivery-reports/HUB-04-DEV2-AT040.md
+      - name: Commit only formatting changes to isolated branch
+        run: |
+          git add src/modules/identity src/routes/login.tsx src/routes/access-denied.tsx src/routes/app.tsx src/test/identity-policy.test.ts docs/delivery-reports/HUB-04-DEV2-AT040.md
+          if ! git diff --cached --quiet; then
+            git config user.name "LEVIA HUB CI Formatter"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "style(hub-04): autoformat isolated implementation"
+            git push origin HEAD:refs/heads/dev/hub-04-authz-at040-20261025
+          fi
