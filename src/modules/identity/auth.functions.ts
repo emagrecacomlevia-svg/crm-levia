@@ -7,7 +7,7 @@ import {
   verifyIdentity,
   type VerifiedIdentity,
 } from "./server/auth-api.server";
-import { useLeviaSession, type LeviaSession } from "./server/session.server";
+import { getLeviaSession, type LeviaSession } from "./server/session.server";
 
 export type AuthStatus =
   | { state: "anonymous" }
@@ -17,7 +17,7 @@ export type AuthStatus =
 async function currentIdentity(): Promise<AuthStatus> {
   let session;
   try {
-    session = await useLeviaSession();
+    session = await getLeviaSession();
   } catch {
     return { state: "unavailable" };
   }
@@ -91,7 +91,7 @@ export const signInFn = createServerFn({ method: "POST" })
       };
     }
     try {
-      const session = await useLeviaSession();
+      const session = await getLeviaSession();
       const state: LeviaSession = {
         userId: result.data.userId,
         accessToken: result.data.accessToken,
@@ -108,7 +108,7 @@ export const signInFn = createServerFn({ method: "POST" })
   });
 
 export const signOutFn = createServerFn({ method: "POST" }).handler(async () => {
-  const session = await useLeviaSession();
+  const session = await getLeviaSession();
   const access = session.data.accessToken;
   // Local sign-out always clears the cookie; failed remote revocation is surfaced.
   const revoked = access ? await revokeToken(access) : true;
