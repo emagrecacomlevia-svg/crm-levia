@@ -6,8 +6,8 @@ import {
   signIn,
   verifyIdentity,
   type VerifiedIdentity,
-} from "./auth-api.server";
-import { useLeviaSession, type LeviaSession } from "./session.server";
+} from "./server/auth-api.server";
+import { useLeviaSession, type LeviaSession } from "./server/session.server";
 
 export type AuthStatus =
   | { state: "anonymous" }

@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { AdminShell } from "@/app/layouts/admin-shell";
-import { getAdminAccessFn } from "@/modules/identity/server/auth.functions";
+import { getAdminAccessFn } from "@/modules/identity/auth.functions";
 
 export const Route = createFileRoute("/app")({
   headers: () => ({ "Cache-Control": "private, no-store" }),

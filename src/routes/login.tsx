@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-r
 import { useState, type FormEvent } from "react";
 import { Leaf, LockKeyhole } from "lucide-react";
 
-import { signInFn } from "@/modules/identity/server/auth.functions";
+import { signInFn } from "@/modules/identity/auth.functions";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,

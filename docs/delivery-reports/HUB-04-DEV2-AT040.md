@@ -27,3 +27,5 @@
 ## Não constitui
 
 Não representa HUB-04 em produção ou completamente aprovada. Não cria identidades, privilégios, políticas permissivas, buckets, schema ou concessões reais.
+
+CI: corrigida restrição de importação cliente/servidor ao mover as declarações createServerFn para módulo isomórfico fora de /server/; implementações privadas permanecem em arquivos .server.ts.

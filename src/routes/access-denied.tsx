@@ -2,7 +2,7 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { ShieldX } from "lucide-react";
 import { useState } from "react";
 
-import { signOutFn } from "@/modules/identity/server/auth.functions";
+import { signOutFn } from "@/modules/identity/auth.functions";
 
 export const Route = createFileRoute("/access-denied")({
   component: AccessDenied,
