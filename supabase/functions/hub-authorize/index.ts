@@ -57,7 +57,10 @@ function readConfiguration() {
   }
 }
 
-Deno.serve(async (request) => {
+export async function hubAuthorizeHandler(
+  request: Request,
+  dependencies: { fetcher?: typeof fetch; connect?: typeof postgres } = {},
+) {
   if (request.method !== "POST") return json(405, { allowed: false });
   if (Number(request.headers.get("content-length") ?? "0") > 2048) {
     return json(413, { allowed: false });
@@ -95,7 +98,7 @@ Deno.serve(async (request) => {
 
   let verifiedId: string;
   try {
-    const check = await fetch(config.authOrigin + "/auth/v1/user", {
+    const check = await (dependencies.fetcher ?? fetch)(config.authOrigin + "/auth/v1/user", {
       headers: { apikey: config.key, authorization: bearer },
       cache: "no-store",
       signal: AbortSignal.timeout(8000),
@@ -116,7 +119,7 @@ Deno.serve(async (request) => {
 
   // Read only; the SQL query itself binds EVERY untrusted value.
   // The database is never exposed through PostgREST / public schema.
-  const sql = postgres(config.rawUrl, {
+  const sql = (dependencies.connect ?? postgres)(config.rawUrl, {
     password: config.password,
     ssl: { rejectUnauthorized: true, ca: config.ca },
     max: 1,
@@ -150,4 +153,6 @@ Deno.serve(async (request) => {
   } finally {
     await sql.end({ timeout: 2 });
   }
-});
+}
+
+if (import.meta.main) Deno.serve((request) => hubAuthorizeHandler(request));

@@ -49,7 +49,10 @@ function configuration() {
   }
 }
 
-Deno.serve(async (request) => {
+export async function hubAdminWriteHandler(
+  request: Request,
+  dependencies: { fetcher?: typeof fetch; connect?: typeof postgres } = {},
+) {
   if (request.method !== "POST") return response(405, { ok: false });
   if (Number(request.headers.get("content-length") ?? "0") > 4096) {
     return response(413, { ok: false });
@@ -63,7 +66,7 @@ Deno.serve(async (request) => {
 
   let actor: string;
   try {
-    const identity = await fetch(cfg.url + "/auth/v1/user", {
+    const identity = await (dependencies.fetcher ?? fetch)(cfg.url + "/auth/v1/user", {
       headers: { authorization, apikey: cfg.key },
       cache: "no-store",
       signal: AbortSignal.timeout(8000),
@@ -130,7 +133,7 @@ Deno.serve(async (request) => {
   )
     return response(400, { ok: false });
 
-  const sql = postgres(cfg.dbUrl, {
+  const sql = (dependencies.connect ?? postgres)(cfg.dbUrl, {
     password: cfg.password,
     ssl: { rejectUnauthorized: true, ca: cfg.ca },
     max: 1,
@@ -166,4 +169,6 @@ Deno.serve(async (request) => {
   } finally {
     await sql.end({ timeout: 2 });
   }
-});
+}
+
+if (import.meta.main) Deno.serve((request) => hubAdminWriteHandler(request));
