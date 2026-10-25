@@ -58,13 +58,13 @@ jobs:
             exit 1
           fi
           docker exec -i levia-hub04-writer-pg psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
-          do $
+          do $$
           begin
             if to_regclass('hub_private.hub04_rollback_probe') is not null then
               raise exception 'SQL failure did not roll back DDL';
             end if;
             raise notice 'PASS: DDL rolls back after error';
-          end $;
+          end $$;
           SQL
       - name: Dispose isolated database
         if: always()
