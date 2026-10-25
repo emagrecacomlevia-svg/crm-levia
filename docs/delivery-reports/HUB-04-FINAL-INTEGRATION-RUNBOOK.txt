@@ -1,0 +1,81 @@
+LEVIA HUB - HUB-04 - AT-040 - OPERACAO CONTROLADA
+Documento tecnico do ciclo de 25/10/2026 - SEGURANCA: FAIL CLOSED
+
+1. ESTADO E ORDEM DAS MIGRATIONS
+Original imutavel: supabase/migrations/20261024130000_identity_permissions.sql
+Git blob: 7e954d9ce51ce0e3e96021809241a1bb9a439c59
+Complementar: supabase/migrations/20261025134600_audited_identity_writers.sql
+Complementar versionada pelo padrao timestamp da Supabase; nao foi executado
+supabase migration new na CLI 2.122.0 local neste ciclo.
+Ambas estao apenas na branch de desenvolvimento, sem aplicacao remota.
+PR #11 permanece DRAFT e main permanece no AT-040.
+
+2. PROVAS ISOLADAS (NAO CONFUNDIR COM PRODUCAO)
+.github/workflows/hub04-audit-writers-qa.yml aplica as duas migrations
+EM ORDEM em PostgreSQL 17 descartavel, Docker sem rede, e verifica
+regras, RLS/ACL, writers, grants, bootstrap e rollback com erro intencional.
+supabase/tests/hub04_first_admin_bootstrap.sql exige um operador distinto,
+somente core.read e users.manage iniciais, quatro eventos atomicos;
+rejeita bootstrap repetido, autor ausente e autoatribuicao; forca falha
+no registro de auditoria e confirma nenhum estado parcialmente salvo.
+.github/workflows/hub04-deno-qa.yml verifica tipos de ambas Edge Functions
+e executa testes HTTP com JWT/identidades/Auth/DB MOCK, sem rede remota.
+Os contratos mocked nao homologam a credencial TLS ou o Supabase Auth real.
+
+3. DADOS DO PROJETO REMOTO - DIAGNOSTICOS SOMENTE LEITURA
+Destino: levia-hub-dev, dfhjfajbmnsgrklhqtjk, sa-east-1, PostgreSQL 17.11.
+Conector SQL: executor postgres, privilegio CREATE e REFERENCES confirmado.
+Canal do conector: TLSv1.3, mas isto NAO demonstra verify-full na CLI
+Windows 2.122.0, nem DNS/TCP do hostname no computador executor.
+hub_private e historico de migration remotos inexistentes; auth.users vazio.
+Sem copia logica restauravel validada de PostgreSQL Free e procedimento
+de recuperacao, NAO aplicar primeira migration no banco remoto.
+
+4. ALERTA DE VERSIONAMENTO - NAO APLICAR DUAS DE UMA VEZ
+A branch de trabalho contem DUAS migrations. Fazer db push a partir dela
+poderia instalar a original e a complementar em uma mesma operacao.
+Se a autorizacao de execucao cobrir somente a primeira, usar checkout
+isolado e limpo da main CANONICA AT-040 (somente a migration original).
+Primeiro garantir endpoint, CA verify-full, credencial privada via passfile,
+historico vazio, compatibilidade CLI v2.122.0, e plano de recuperacao
+comprovado. Executar uma unica vez; auditar ACL/RLS/objetos/historico.
+A migration complementar so pode ser aplicada DEPOIS da verificacao da
+primeira e sob um novo gate de seguranca. Proibido db reset/repair.
+
+5. BOOTSTRAP UNICO DO PRIMEIRO ADMINISTRADOR
+Precondicoes: ambas migrations instaladas e validadas; duas identidades
+ja criadas via Supabase Auth e previamente verificadas fora da interface;
+operador e beneficiario distintos; aprovacao auditavel do responsavel.
+Somente sessao PostgreSQL privada com current_user postgres.
+Nao expor este metodo via public/anon/authenticated/service_role.
+Executar numa transacao privada, sem armazenar credenciais ou UUIDs no git:
+
+BEGIN;
+SELECT hub_private.bootstrap_first_admin(
+  '<UUID_DO_OPERADOR>'::uuid,
+  '<UUID_DO_PRIMEIRO_ADMIN>'::uuid,
+  'Motivo autorizado, especifico e documentado no registro da mudanca'
+);
+-- Verificar 1 conta habilitada, 2 grants, 4 eventos na transacao.
+COMMIT;
+
+O helper exige auth.users existentes, operador e beneficiario diferentes,
+motivo com 15-500 caracteres, schema de contas/grants/auditoria vazio,
+advisory lock transacional e current_user postgres. Qualquer falha aborta
+sem conta ou grant parcial. Nao cria automaticamente usuario de Auth.
+
+6. EDGE FUNCTIONS - GATES DE SEGURANCA
+hub-authorize: verifica JWT novamente em Auth e consulta SQL privado
+parametrizado por sujeito, capability, escopo, vigencia e revogacao.
+hub-admin-write: exige JWT real revalidado e chama funcoes SQL privadas;
+ator diferente do sujeito, escopo efetivo, audit trail na mesma transacao.
+As funcoes TypeScript nao estao implantadas no Supabase. Nenhum segredo
+ou CA pode ir para o navegador. Sem TLS valido/configuracao, NEGAR.
+
+7. CRITERIOS PARA ACEITE INTEGRAL
+Backup e restauro PostgreSQL verificados; primeira migration registrada;
+segunda migration registrada sem reparos de ledger; Edge Functions
+implantadas e testadas com contas sinteticas e tokens reais; JWT revogado,
+expiracao, acesso cruzado, contas desabilitadas, auditoria persistente e
+RLS/ACL de papeis reais testados; inexistencia de falhas criticas.
+Somente apos esses resultados chamar HUB-04 de operacional/concluida.
