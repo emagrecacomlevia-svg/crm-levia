@@ -104,7 +104,10 @@ async function run() {
     await page.getByLabel("Senha").fill("not-a-real-password");
     await page.getByRole("button", { name: "Entrar" }).click();
     await page.getByRole("alert").waitFor();
-    assert.equal(await page.getByRole("navigation", { name: "Navegação administrativa" }).count(), 0);
+    assert.equal(
+      await page.getByRole("navigation", { name: "Navegação administrativa" }).count(),
+      0,
+    );
     record("login sintético sem configuração remota retorna erro e não libera acesso");
 
     await page.setViewportSize({ width: 390, height: 844 });
