@@ -36,6 +36,36 @@ begin
   end if;
 end $$;
 
+
+-- MOCK: force audit-event persistence error and verify atomic rollback.
+create function pg_temp.reject_mock_audit() returns trigger
+language plpgsql as $$
+begin
+  raise exception 'synthetic audit storage failure' using errcode = '23514';
+end;
+$$;
+create trigger hub04_reject_mock_audit before insert
+on hub_private.permission_audit_events
+for each row execute function pg_temp.reject_mock_audit();
+do $$
+begin
+  begin
+    perform hub_private.bootstrap_first_admin(
+      '20000000-0000-0000-0000-000000000001',
+      '20000000-0000-0000-0000-000000000002',
+      'Attempted isolated bootstrap with audit persistence failure');
+    raise exception 'audit failure was ignored';
+  exception when check_violation then null;
+  end;
+  if (select count(*) from hub_private.admin_accounts) <> 0
+     or (select count(*) from hub_private.permission_grants) <> 0
+     or (select count(*) from hub_private.permission_audit_events) <> 0 then
+    raise exception 'audit failure left a partially provisioned admin';
+  end if;
+end;
+$$;
+drop trigger hub04_reject_mock_audit on hub_private.permission_audit_events;
+
 select hub_private.bootstrap_first_admin(
   '20000000-0000-0000-0000-000000000001',
   '20000000-0000-0000-0000-000000000002',
