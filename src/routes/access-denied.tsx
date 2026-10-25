@@ -36,8 +36,8 @@ function AccessDenied() {
         <ShieldX aria-hidden="true" className="mx-auto size-10 text-forest" />
         <h1 className="mt-5 font-serif text-3xl text-forest">Acesso administrativo indisponível</h1>
         <p className="mt-4 text-sm leading-7 text-muted-foreground">
-          Esta conta pode estar desabilitada, sem permissões suficientes ou com a verificação
-          de autorização indisponível. Nenhum acesso é concedido sem confirmação do backend.
+          Esta conta pode estar desabilitada, sem permissões suficientes ou com a verificação de
+          autorização indisponível. Nenhum acesso é concedido sem confirmação do backend.
         </p>
         {error && (
           <p role="alert" className="mt-4 text-sm text-destructive">

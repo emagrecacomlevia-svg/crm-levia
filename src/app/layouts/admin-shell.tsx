@@ -132,7 +132,11 @@ export function AdminShell() {
               <LogOut aria-hidden="true" className="size-4" />
               {logoutPending ? "Encerrando..." : "Sair"}
             </button>
-            {logoutError && <p role="alert" className="text-sm text-destructive">{logoutError}</p>}
+            {logoutError && (
+              <p role="alert" className="text-sm text-destructive">
+                {logoutError}
+              </p>
+            )}
           </div>
         </header>
 
