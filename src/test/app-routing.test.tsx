@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { routeTree } from "@/routeTree.gen";
 
 // Match routes without running loaders or rendering: jsdom cannot load CSS requested by SSR.
-const paths = ["/", "/app", "/app/social-studio", "/app/crm", "/app/core"] as const;
+const paths = ["/", "/demo", "/login", "/access-denied", "/app", "/app/social-studio", "/app/crm", "/app/core"] as const;
 
 describe("App routing", () => {
   it.each(paths)("matches %s to a page instead of a not-found root", (path) => {

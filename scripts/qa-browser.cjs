@@ -76,6 +76,7 @@ async function run() {
       for (const [route, heading] of [
         ["/", "LEVIA HUB"],
         ["/login", "Acesso ao LEVIA HUB"],
+        ["/demo", "Laboratório de acesso"],
         ["/access-denied", "Acesso administrativo indisponível"],
       ]) {
         const response = await page.goto(base + route, {
@@ -96,6 +97,14 @@ async function run() {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(base + "/", { waitUntil: "networkidle" });
     await screenshot(page, "home-desktop-1440.png");
+
+    await page.goto(base + "/demo", { waitUntil: "networkidle" });
+    await page.getByLabel("Selecionar cenário").selectOption("allowed");
+    await page.getByTestId("demo-result").getByText("Permitido no cenário fictício").waitFor();
+    await page.getByLabel("Selecionar cenário").selectOption("revoked");
+    await page.getByTestId("demo-result").getByText("Acesso negado").waitFor();
+    record("simulador sintético permite apenas cenário válido e nega revogação");
+    await screenshot(page, "demo-desktop-1440.png");
 
     await page.goto(base + "/login", { waitUntil: "networkidle" });
     await screenshot(page, "login-desktop-1440.png");

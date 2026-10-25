@@ -41,7 +41,7 @@ describe("LEVIA HUB foundation", () => {
     render(<HubHome />);
     expect(screen.getByRole("link", { name: /Abrir demonstração do HUB/ })).toHaveAttribute(
       "href",
-      "/app",
+      "/demo",
     );
     expect(screen.queryByRole("button", { name: /entrar|autenticar|salvar|publicar/i })).toBeNull();
   });

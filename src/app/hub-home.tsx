@@ -33,7 +33,7 @@ export function HubHome() {
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-4">
               <Link
-                to="/app"
+                to="/demo"
                 className="inline-flex min-h-12 items-center justify-center rounded-xl bg-sage px-6 py-3 text-sm font-semibold text-forest transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
               >
                 Abrir demonstração do HUB
