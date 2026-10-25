@@ -170,5 +170,3 @@ export async function hubAdminWriteHandler(
     await sql.end({ timeout: 2 });
   }
 }
-
-

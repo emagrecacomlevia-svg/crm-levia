@@ -154,5 +154,3 @@ export async function hubAuthorizeHandler(
     await sql.end({ timeout: 2 });
   }
 }
-
-
