@@ -20,7 +20,9 @@
 - URL CLI sem senha: `postgresql://qa_executor@127.0.0.1:55433/qa_auth?sslmode=disable`.
 - CLI executada sob UID separado e ambiente limpo (`env -i`), sem `--linked`.
 - Firewall bloqueia todo tráfego desse UID fora do loopback IPv4, inclusive IPv6.
-- Proxy administrativo sintético local observa tentativas HTTP(S) e nega acesso.
+- Proxy administrativo sintético local registra e nega tentativas HTTP(S).
+- A consulta de versão em `api.github.com` pode ser tentada, mas é bloqueada.
+- Qualquer outro destino HTTP(S), inclusive API Supabase, reprova o teste.
 - Casos negativos: senha ausente e senha incorreta, ambos devem ser rejeitados.
 - Caso positivo: autenticação da CLI via `db query` e identificação SQL da sessão.
 - Prévia: `db push --db-url ... --skip-vault --dry-run`, sem executar o SQL.

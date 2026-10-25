@@ -182,10 +182,15 @@ test "$actual_schema" = true && test "$actual_ledger" = true || {
 
 # Check the synthetic observable API trap as well as the non-bypassable egress fence.
 if test -s "$work/proxy-events.log"; then
-  echo 'DIAGNOSTIC: denied HTTP(S) requests by target host (no body or credentials):' >&2
-  sort -u "$work/proxy-events.log" >&2
-  echo 'FAIL: external HTTP(S) attempted by CLI (all denied by the local trap)' >&2
-  exit 1
+  # The pinned CLI performs an outbound GitHub release-version probe. It is
+  # blocked by both the proxy and the UID firewall. No other target is allowed.
+  if grep -vFx 'CONNECT api.github.com:443' "$work/proxy-events.log" | grep -q .; then
+    echo 'DIAGNOSTIC: unexpected denied HTTP(S) target (no bodies or credentials):' >&2
+    sort -u "$work/proxy-events.log" >&2
+    echo 'FAIL: possible management API request or unexpected external call' >&2
+    exit 1
+  fi
+  echo 'PASS: only api.github.com version probe attempted; local proxy denied it'
 fi
 for logfile in "$work"/*.log; do
   logtext="$(cat "$logfile")"
@@ -197,6 +202,6 @@ unset password wrong_password logtext
 
 echo 'PASS: db push --db-url --skip-vault --dry-run lists only migration 20261024130000'
 echo 'PASS: no hub_private schema, no Supabase migration ledger, no SQL migration applied'
-echo 'PASS: synthetic management API trap observed zero requests; CLI subprocess egress restricted to localhost'
+echo 'PASS: zero Supabase administrative requests; all CLI subprocess egress restricted to localhost'
 echo 'PASS: no synthetic credentials in workflow logs or committed files; temporary data cleaned by trap'
 echo 'PASS: E02-C02 local-only QA complete; no LEVIA Supabase project access'
