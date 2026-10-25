@@ -1,0 +1,42 @@
+name: HUB-04 Development Checkpoint Backup
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'dev/hub-04-authz-at040-20261025'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev/hub-04-authz-at040-20261025
+          fetch-depth: 0
+      - name: Assemble verifiable Git backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p backup
+          git archive --format=zip --output=backup/LEVIA-HUB-HUB04-AT040-codigo.zip HEAD
+          git bundle create backup/LEVIA-HUB-HUB04-AT040-historico.bundle --all
+          git bundle verify backup/LEVIA-HUB-HUB04-AT040-historico.bundle
+          {
+            echo "LEVIA HUB - HUB-04 development branch backup"
+            echo "Branch: dev/hub-04-authz-at040-20261025"
+            echo "HEAD: $(git rev-parse HEAD)"
+            echo "Tree: $(git rev-parse HEAD^{tree})"
+            echo "Main AT-040: 4dc58e12431f2cf04f7c001ce63a1bdc9cf5c82b"
+            echo "Immutable migration blob: $(git rev-parse HEAD:supabase/migrations/20261024130000_identity_permissions.sql)"
+            echo "Files in archive: $(git ls-files | wc -l)"
+            echo "Git bundle verified: yes"
+          } > backup/LEVIA-HUB-HUB04-AT040-manifesto.txt
+          (cd backup && sha256sum *.zip *.bundle >> LEVIA-HUB-HUB04-AT040-manifesto.txt)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LEVIA-HUB-HUB04-AT040-BACKUP
+          path: backup/
+          retention-days: 7
+          if-no-files-found: error
