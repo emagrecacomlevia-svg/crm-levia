@@ -1,0 +1,16 @@
+{
+  "unauthenticated_status": {
+    "hub-authorize": 401,
+    "hub-admin-write": 401,
+    "hub-session": 401,
+    "hub04-maintenance": 410
+  },
+  "synthetic_accounts_deleted": 4,
+  "auth_users_after_cleanup": 0,
+  "auth_sessions_after_cleanup": 0,
+  "accounts_after_cleanup": 0,
+  "grants_after_cleanup": 0,
+  "audit_events_retained": 11,
+  "actor_snapshots_retained": 11,
+  "real_owner_account_created": false
+}

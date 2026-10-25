@@ -1,0 +1,25 @@
+name: HUB-04 Deno Edge Static QA
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/**"
+      - ".github/workflows/hub04-deno-qa.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deno:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Check Deno Edge function types without deployment
+        run: |
+          deno check --config supabase/functions/hub-authorize/deno.json supabase/functions/hub-authorize/index.ts
+          deno check --config supabase/functions/hub-admin-write/deno.json supabase/functions/hub-admin-write/index.ts
+          deno check --config supabase/functions/hub-session/deno.json supabase/functions/hub-session/index.ts
+      - name: Isolated HTTP/authorization contract tests (MOCK Auth and DB)
+        run: deno test --config supabase/functions/hub-authorize/deno.json --allow-env --deny-net --cached-only supabase/tests/hub04_edge_handlers.test.ts

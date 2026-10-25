@@ -1,0 +1,28 @@
+{
+  "captured_at": "2026-10-25T17:30:23.7854Z",
+  "project": "levia-hub-dev",
+  "before_first_migration": {
+    "auth_user_count": 0,
+    "storage_object_count": 0,
+    "application_relations": 0
+  },
+  "postgres": "17.11",
+  "managed_connector_tls": "TLSv1.3",
+  "edge_direct_database_tls": {
+    "version": "TLSv1.3",
+    "rejectUnauthorized": true
+  },
+  "managed_role_acl_tests": {
+    "attempts": 48,
+    "expected_sqlstate": "42501",
+    "passed": 48
+  },
+  "audit_storage_failure_atomic_rollback": "PASS",
+  "original_migration_git_blob": "7e954d9ce51ce0e3e96021809241a1bb9a439c59",
+  "data_api_private_schema_test": {
+    "status": 406,
+    "code": "PGRST106",
+    "exposed_schemas": ["public", "graphql_public"],
+    "hub_private_exposed": false
+  }
+}

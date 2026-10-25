@@ -1,0 +1,26 @@
+{
+  "projectRef": "dfhjfajbmnsgrklhqtjk",
+  "method": "Supabase managed apply_migration; remote versions are allocated by the platform",
+  "migrations": [
+    {
+      "remoteVersion": "20261025173102",
+      "source": "20261024130000_identity_permissions.sql",
+      "sha256": "3a6a9593911b5a54731e943e3ef89963457d754fa7dfd621be17e080aa2a2eaf"
+    },
+    {
+      "remoteVersion": "20261025173114",
+      "source": "20261025134600_audited_identity_writers.sql",
+      "sha256": "d67f8039442fc0186fc3098ff9b862a8e57d8356a6943a8cdbc836a47e308c65"
+    },
+    {
+      "remoteVersion": "20261025173422",
+      "source": "20261025173020_session_bound_authorization.sql",
+      "sha256": "c59eeebad5d8d3a10c788b1c912027d438f363b52f3fd67c91931607aaf1ce5e"
+    },
+    {
+      "remoteVersion": "20261025173722",
+      "source": "20261025173659_synthetic_audit_bootstrap_compatibility.sql",
+      "sha256": "0a18354871e7e2b5a7debe9fa4327daab6bc4eb1bc354f166a65ef4ed14cce3a"
+    }
+  ]
+}

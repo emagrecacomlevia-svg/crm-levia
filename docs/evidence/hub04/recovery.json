@@ -1,0 +1,17 @@
+{
+  "run_id": 40239620472,
+  "commit": "df60d525953b3c40f58c696c325b881e32a8418b",
+  "artifact_id": 12616291919,
+  "archive_sha256": "420931bfd55571b72f40fb6ca5b55dc6e2e33f654009485d7ff54f6cd5156fa7",
+  "dump_sha256": "938c4b93da7c92defc9b80fedf96f302a81c5e04c528875e3a70870ed0997ab6",
+  "migration_chain": "PASS",
+  "historical_regressions": "PASS",
+  "session_bound_regressions": "PASS",
+  "custom_dump_restore": "PASS",
+  "audit_digest_equal": true,
+  "rls_tables_restored": 4,
+  "capabilities_restored": 9,
+  "restored_acl_checks": "PASS",
+  "drive_file_id": "1AiJzoPbTJ4xckK1P1rCihG8zNUpalbI1",
+  "drive_download_sha256_verified": true
+}
