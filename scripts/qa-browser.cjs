@@ -1,5 +1,5 @@
-// Browser QA for the public, data-free LEVIA HUB demonstration.
-// Runs only against a loopback server; never creates a deployment.
+// HUB-04 browser QA: public presentation and default-denied administrative paths.
+// All checks use loopback and synthetic inputs; no remote authentication or writes.
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -7,13 +7,7 @@ const path = require("node:path");
 const { chromium } = require(process.env.QA_PLAYWRIGHT);
 const base = process.env.QA_BASE_URL || "http://127.0.0.1:4173";
 const out = path.resolve("artifacts/browser-qa");
-const routes = [
-  ["/", "LEVIA HUB"],
-  ["/app", "LEVIA HUB — Visão Geral"],
-  ["/app/social-studio", "Social Studio"],
-  ["/app/crm", "CRM de Vendas"],
-  ["/app/core", "Núcleo Administrativo"],
-];
+const restricted = ["/app", "/app/core", "/app/crm", "/app/social-studio"];
 const widths = [320, 390, 768, 1280, 1440];
 const result = { base, checks: [], errors: [], screenshots: [], completed: false };
 
@@ -23,8 +17,7 @@ function record(name) {
 }
 
 async function screenshot(page, name) {
-  const destination = path.join(out, name);
-  await page.screenshot({ path: destination, fullPage: true });
+  await page.screenshot({ path: path.join(out, name), fullPage: true });
   result.screenshots.push(name);
   record(`captura ${name}`);
 }
@@ -40,6 +33,25 @@ async function noOverflow(page, route, width) {
   );
 }
 
+async function expectDenied(page, from, width) {
+  await page.waitForURL(/\/(login|access-denied)(?:\?.*)?$/, { timeout: 15000 });
+  const url = new URL(page.url());
+  assert.ok(["/login", "/access-denied"].includes(url.pathname));
+  assert.equal(
+    await page.getByRole("navigation", { name: "Navegação administrativa" }).count(),
+    0,
+    `Navegação interna exposta em ${from}`,
+  );
+  await page
+    .getByRole("heading", {
+      level: 1,
+      name: /Acesso ao LEVIA HUB|Acesso administrativo indisponível/,
+    })
+    .waitFor();
+  await noOverflow(page, from, width);
+  record(`acesso negado ${from}, largura ${width}px`);
+}
+
 async function run() {
   fs.mkdirSync(out, { recursive: true });
   const browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
@@ -51,9 +63,7 @@ async function run() {
     });
     page.on("pageerror", (error) => result.errors.push(`pageerror: ${error.message}`));
     page.on("console", (message) => {
-      if (message.type() === "error") {
-        result.errors.push(`console: ${message.text()}`);
-      }
+      if (message.type() === "error") result.errors.push(`console: ${message.text()}`);
     });
     page.on("response", (response) => {
       if (response.status() >= 500) {
@@ -63,91 +73,46 @@ async function run() {
 
     for (const width of widths) {
       await page.setViewportSize({ width, height: 900 });
-      for (const [route, heading] of routes) {
-        const response = await page.goto(`${base}${route}`, {
+      for (const [route, heading] of [
+        ["/", "LEVIA HUB"],
+        ["/login", "Acesso ao LEVIA HUB"],
+        ["/access-denied", "Acesso administrativo indisponível"],
+      ]) {
+        const response = await page.goto(base + route, {
           waitUntil: "networkidle",
           timeout: 30000,
         });
-        assert.equal(response.status(), 200, `HTTP direto em ${route} (${width}px)`);
+        assert.equal(response.status(), 200, `HTTP ${route} a ${width}px`);
         await page.getByRole("heading", { level: 1, name: heading }).waitFor();
         await noOverflow(page, route, width);
-        if (route.startsWith("/app")) {
-          let navigation;
-          if (width < 1024) {
-            await page.getByRole("button", { name: "Abrir menu" }).click();
-            navigation = page
-              .getByRole("dialog", { name: "Navegação do LEVIA HUB" })
-              .getByRole("navigation", { name: "Navegação administrativa" });
-          } else {
-            navigation = page.getByRole("navigation", { name: "Navegação administrativa" });
-          }
-          const current = await navigation
-            .getByRole("link", { name: /ATUAL/ })
-            .first()
-            .getAttribute("aria-current");
-          assert.equal(current, "page", `Estado ativo de ${route}`);
-          if (width < 1024) {
-            await page.keyboard.press("Escape");
-            await page.getByRole("dialog").waitFor({ state: "hidden" });
-          }
-          assert.equal(await page.getByText("Ambiente demonstrativo").count(), 1);
-        }
-        record(`acesso direto ${route}, largura ${width}px e sem overflow`);
+        record(`página pública ${route}, largura ${width}px`);
+      }
+      for (const route of restricted) {
+        await page.goto(base + route, { waitUntil: "networkidle", timeout: 30000 });
+        await expectDenied(page, route, width);
       }
     }
 
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(`${base}/app`, { waitUntil: "networkidle" });
-    assert.equal(
-      await page.getByRole("navigation", { name: "Navegação administrativa" }).isVisible(),
-      true,
-    );
-    await screenshot(page, "dashboard-desktop-1440.png");
+    await page.goto(base + "/", { waitUntil: "networkidle" });
+    await screenshot(page, "home-desktop-1440.png");
 
-    await page
-      .getByRole("navigation", { name: "Navegação administrativa" })
-      .getByRole("link", { name: /Social Studio/ })
-      .click();
-    await page.waitForURL("**/app/social-studio");
-    await page.getByRole("heading", { level: 1, name: "Social Studio" }).waitFor();
-    await screenshot(page, "social-studio-desktop-1440.png");
-    record("navegação TanStack desktop para módulo");
+    await page.goto(base + "/login", { waitUntil: "networkidle" });
+    await screenshot(page, "login-desktop-1440.png");
+
+    await page.getByRole("textbox", { name: "E-mail" }).fill("synthetic@example.invalid");
+    await page.getByLabel("Senha").fill("not-a-real-password");
+    await page.getByRole("button", { name: "Entrar" }).click();
+    await page.getByRole("alert").waitFor();
+    assert.equal(await page.getByRole("navigation", { name: "Navegação administrativa" }).count(), 0);
+    record("login sintético sem configuração remota retorna erro e não libera acesso");
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(`${base}/`, { waitUntil: "networkidle" });
-    await page.getByRole("link", { name: /Abrir demonstração do HUB/ }).click();
-    await page.waitForURL("**/app");
-    await page.getByRole("heading", { level: 1, name: "LEVIA HUB — Visão Geral" }).waitFor();
-    record("entrada SPA institucional para /app");
+    await page.goto(base + "/app", { waitUntil: "networkidle" });
+    await expectDenied(page, "/app/mobile", 390);
+    await screenshot(page, "access-denied-mobile-390.png");
 
-    await screenshot(page, "dashboard-mobile-390.png");
-    const trigger = page.getByRole("button", { name: "Abrir menu" });
-    await trigger.click();
-    const dialog = page.getByRole("dialog", { name: "Navegação do LEVIA HUB" });
-    await dialog.waitFor();
-    assert.equal(
-      await page.evaluate(() => Boolean(document.activeElement?.closest('[role="dialog"]'))),
-      true,
-      "Foco deve permanecer no diálogo aberto",
-    );
-    await screenshot(page, "menu-mobile-aberto-390.png");
-    await page.keyboard.press("Escape");
-    await dialog.waitFor({ state: "hidden" });
-    assert.equal(await trigger.evaluate((element) => element === document.activeElement), true);
-    record("menu: abre, captura, Escape fecha e foco retorna");
-
-    await trigger.click();
-    await dialog.getByRole("link", { name: /Núcleo Administrativo/ }).click();
-    await page.waitForURL("**/app/core");
-    await dialog.waitFor({ state: "hidden" });
-    await page.getByRole("heading", { level: 1, name: "Núcleo Administrativo" }).waitFor();
-    record("menu: seleção troca seção e fecha o diálogo");
-
-    await page.goto(`${base}/app/crm`, { waitUntil: "networkidle" });
-    assert.equal(await page.getByRole("textbox").count(), 0);
-    assert.equal(await page.getByRole("button", { name: /salvar|publicar|aprovar/i }).count(), 0);
-    record("CRM demonstrativo sem formulários ou comandos operacionais");
-    assert.deepEqual(result.errors, [], `Erros em navegador: ${JSON.stringify(result.errors)}`);
+    assert.deepEqual(result.errors, [], `Erros no navegador: ${JSON.stringify(result.errors)}`);
     result.completed = true;
   } finally {
     await browser.close();
