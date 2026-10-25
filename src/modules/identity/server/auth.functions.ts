@@ -1,0 +1,113 @@
+import { createServerFn } from "@tanstack/react-start";
+
+import { refreshTokens, revokeToken, signIn, verifyIdentity, type VerifiedIdentity } from "./auth-api.server";
+import { leviaSession, type LeviaSession } from "./session.server";
+
+export type AuthStatus =
+  | { state: "anonymous" }
+  | { state: "authenticated"; user: VerifiedIdentity }
+  | { state: "unavailable" };
+
+async function currentIdentity(): Promise<AuthStatus> {
+  let session;
+  try {
+    session = await leviaSession();
+  } catch {
+    return { state: "unavailable" };
+  }
+  const stored = session.data;
+  if (!stored.userId || !stored.accessToken || !stored.refreshToken) {
+    return { state: "anonymous" };
+  }
+  // The session cannot be renewed indefinitely. This is independent of token expiry.
+  if (!stored.issuedAt || Date.now() - stored.issuedAt > 7 * 24 * 60 * 60 * 1000) {
+    await session.clear();
+    return { state: "anonymous" };
+  }
+  let token = stored.accessToken;
+  if (!stored.accessExpiresAt || stored.accessExpiresAt <= Date.now() + 30_000) {
+    const refreshed = await refreshTokens(stored.refreshToken);
+    if (refreshed.kind === "invalid") {
+      await session.clear();
+      return { state: "anonymous" };
+    }
+    if (refreshed.kind !== "ok") return { state: "unavailable" };
+    if (refreshed.data.userId !== stored.userId) {
+      await session.clear();
+      return { state: "anonymous" };
+    }
+    token = refreshed.data.accessToken;
+    await session.update({
+      ...stored,
+      accessToken: token,
+      refreshToken: refreshed.data.refreshToken,
+      accessExpiresAt: Date.now() + refreshed.data.expiresIn * 1000,
+    });
+  }
+  const checked = await verifyIdentity(token);
+  if (checked.kind === "invalid") {
+    await session.clear();
+    return { state: "anonymous" };
+  }
+  if (checked.kind !== "ok") return { state: "unavailable" };
+  if (checked.data.id !== stored.userId) {
+    await session.clear();
+    return { state: "anonymous" };
+  }
+  return { state: "authenticated", user: checked.data };
+}
+
+export const getAuthStatusFn = createServerFn({ method: "GET" }).handler(currentIdentity);
+
+export const signInFn = createServerFn({ method: "POST" })
+  .validator((data: { email: string; password: string }) => {
+    if (
+      !data || typeof data.email !== "string" || typeof data.password !== "string" ||
+      data.email.length > 254 || data.password.length > 1024 || !data.email.includes("@") ||
+      !data.password
+    ) throw new Error("Credenciais inválidas.");
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const result = await signIn(data.email.trim(), data.password);
+    if (result.kind !== "ok") {
+      return { ok: false, message: result.kind === "invalid"
+        ? "E-mail ou senha inválidos."
+        : "Autenticação indisponível. Tente novamente mais tarde." };
+    }
+    try {
+      const session = await leviaSession();
+      const state: LeviaSession = {
+        userId: result.data.userId,
+        accessToken: result.data.accessToken,
+        refreshToken: result.data.refreshToken,
+        accessExpiresAt: Date.now() + result.data.expiresIn * 1000,
+        issuedAt: Date.now(),
+      };
+      await session.clear();
+      await session.update(state);
+      return { ok: true, message: "" };
+    } catch {
+      return { ok: false, message: "Configuração de sessão indisponível." };
+    }
+  });
+
+export const signOutFn = createServerFn({ method: "POST" }).handler(async () => {
+  const session = await leviaSession();
+  const access = session.data.accessToken;
+  // Local sign-out always clears the cookie; failed remote revocation is surfaced.
+  const revoked = access ? await revokeToken(access) : true;
+  await session.clear();
+  return { ok: true, remoteRevoked: revoked };
+});
+
+/**
+ * NO privileged DB connection, exposed private schema, or approved audited
+ * writer exists yet. Never fabricate a positive permission response from JWT
+ * role/email or client-supplied objects.
+ */
+export const getAdminAccessFn = createServerFn({ method: "GET" }).handler(async () => {
+  const auth = await currentIdentity();
+  if (auth.state !== "authenticated") return { state: auth.state } as const;
+  return { state: "authorization-unavailable" } as const;
+});
