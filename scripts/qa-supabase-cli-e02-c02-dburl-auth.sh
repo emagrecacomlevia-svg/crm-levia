@@ -83,8 +83,12 @@ from pathlib import Path
 path = Path(sys.argv[1])
 class Deny(http.server.BaseHTTPRequestHandler):
     def handle_one(self):
+        from urllib.parse import urlsplit
+        host = urlsplit(self.path).netloc or self.headers.get('Host', '')
+        if self.command == 'CONNECT':
+            host = self.path
         with path.open('a', encoding='utf8') as out:
-            out.write(self.command + '\n')
+            out.write(self.command + ' ' + host + '\n')
         self.send_response(502)
         self.end_headers()
     do_CONNECT = handle_one
@@ -177,7 +181,12 @@ test "$actual_schema" = true && test "$actual_ledger" = true || {
 }
 
 # Check the synthetic observable API trap as well as the non-bypassable egress fence.
-test ! -s "$work/proxy-events.log" || { echo 'FAIL: attempted administrative HTTP(S) request detected' >&2; exit 1; }
+if test -s "$work/proxy-events.log"; then
+  echo 'DIAGNOSTIC: denied HTTP(S) requests by target host (no body or credentials):' >&2
+  sort -u "$work/proxy-events.log" >&2
+  echo 'FAIL: external HTTP(S) attempted by CLI (all denied by the local trap)' >&2
+  exit 1
+fi
 for logfile in "$work"/*.log; do
   logtext="$(cat "$logfile")"
   if [[ "$logtext" == *"$password"* || "$logtext" == *"$wrong_password"* ]]; then
