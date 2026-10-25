@@ -7,6 +7,7 @@ export const Route = createFileRoute("/app")({
   headers: () => ({ "Cache-Control": "private, no-store" }),
   beforeLoad: async () => {
     const access = await getAdminAccessFn();
+    if (access.state === "authorized") return;
     if (access.state === "anonymous") throw redirect({ to: "/login" });
     // A failed Auth provider check or unverified database authorization
     // always denies the internal route. UI state is never an access grant.

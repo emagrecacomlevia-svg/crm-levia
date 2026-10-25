@@ -8,6 +8,7 @@ import {
   type VerifiedIdentity,
 } from "./server/auth-api.server";
 import { getLeviaSession, type LeviaSession } from "./server/session.server";
+import { authorizeViaSupabase, isAuthorizationRequest, type AuthorizationRequest } from "./server/authorization-api.server";
 
 export type AuthStatus =
   | { state: "anonymous" }
@@ -117,12 +118,31 @@ export const signOutFn = createServerFn({ method: "POST" }).handler(async () => 
 });
 
 /**
- * NO privileged DB connection, exposed private schema, or approved audited
- * writer exists yet. Never fabricate a positive permission response from JWT
- * role/email or client-supplied objects.
+ * Every access decision runs exclusively in the backend. In particular:
+ * - never infer a grant from a verified JWT alone;
+ * - accept positive access only from the dedicated read-only DB adapter;
+ * - preserve denial if the database/Edge Function is unavailable.
  */
-export const getAdminAccessFn = createServerFn({ method: "GET" }).handler(async () => {
+async function authorizationStatus(request: AuthorizationRequest) {
   const auth = await currentIdentity();
   if (auth.state !== "authenticated") return { state: auth.state } as const;
+  const session = await getLeviaSession();
+  const token = session.data.accessToken;
+  if (!token) return { state: "anonymous" } as const;
+  const decision = await authorizeViaSupabase(token, request);
+  if (decision === "allow") return { state: "authorized" } as const;
+  if (decision === "deny") return { state: "denied" } as const;
   return { state: "authorization-unavailable" } as const;
-});
+}
+
+export const getAdminAccessFn = createServerFn({ method: "GET" }).handler(
+  async () =>
+    authorizationStatus({ capability: "core.read", scopeKind: "module", scopeKey: "core" }),
+);
+
+export const checkCapabilityFn = createServerFn({ method: "POST" })
+  .validator((data: AuthorizationRequest) => {
+    if (!isAuthorizationRequest(data)) throw new Error("Invalid authorization request.");
+    return data;
+  })
+  .handler(async ({ data }) => authorizationStatus(data));

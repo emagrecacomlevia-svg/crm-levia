@@ -16,7 +16,7 @@ export interface VerifiedIdentity {
 export type AuthApiResult<T> =
   { kind: "ok"; data: T } | { kind: "invalid" } | { kind: "unavailable" };
 
-function config(): { origin: string; key: string } | null {
+export function getPublicSupabaseSettings(): { origin: string; key: string } | null {
   const raw = process.env["SUPABASE_URL"];
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["SUPABASE_ANON_KEY"];
   if (!raw || !key) return null;
@@ -37,7 +37,7 @@ async function goTrue(
   body?: Record<string, string>,
   bearer?: string,
 ): Promise<AuthApiResult<unknown>> {
-  const settings = config();
+  const settings = getPublicSupabaseSettings();
   if (!settings) return { kind: "unavailable" };
   try {
     const response = await fetch(settings.origin + path, {
