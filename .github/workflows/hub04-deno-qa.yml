@@ -18,5 +18,5 @@ jobs:
           deno-version: v2.x
       - name: Check Deno Edge function types without deployment
         run: |
-          deno check supabase/functions/hub-authorize/index.ts
-          deno check supabase/functions/hub-admin-write/index.ts
+          deno check --config supabase/functions/hub-authorize/deno.json supabase/functions/hub-authorize/index.ts
+          deno check --config supabase/functions/hub-admin-write/deno.json supabase/functions/hub-admin-write/index.ts
