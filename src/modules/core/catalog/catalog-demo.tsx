@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { cloneElement, useId, useState, type FormEvent, type ReactElement } from "react";
 import { BookOpen, History, Megaphone, RotateCcw } from "lucide-react";
 
 import { createCatalogFixture } from "./fixture";
@@ -20,12 +20,15 @@ const buttonClass =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-forest px-4 py-2.5 text-sm font-semibold text-white hover:bg-forest/90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-olive";
 const cardClass = "min-w-0 rounded-2xl border border-border bg-card p-5 sm:p-7";
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+function Field({ label, children }: { label: string; children: ReactElement<{ id?: string }> }) {
+  const id = useId();
   return (
-    <label className="block text-sm font-medium text-forest">
-      <span>{label}</span>
-      {children}
-    </label>
+    <div className="text-sm font-medium text-forest">
+      <label htmlFor={id} className="block">
+        {label}
+      </label>
+      {cloneElement(children, { id })}
+    </div>
   );
 }
 

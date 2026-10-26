@@ -3,6 +3,15 @@ import { describe, expect, it } from "vitest";
 import { CatalogDemo } from "@/modules/core/catalog/catalog-demo";
 
 describe("HUB-05 synthetic workspace", () => {
+  it("gives select fields stable accessible names without their option text", () => {
+    render(<CatalogDemo />);
+    expect(screen.getByLabelText("Campanha", { exact: true })).toHaveAttribute("name", "campaign");
+    expect(screen.getByLabelText("Tabela de referência", { exact: true }).tagName).toBe("SELECT");
+    expect(screen.getByLabelText("Item de referência", { exact: true })).toHaveAttribute(
+      "name",
+      "catalog",
+    );
+  });
   it("starts without a selected table and labels all amounts as fictional", () => {
     render(<CatalogDemo />);
     expect(screen.getByText("DADOS 100% FICTÍCIOS.")).toBeInTheDocument();
