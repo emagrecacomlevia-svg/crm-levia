@@ -1,3 +1,9 @@
+REGISTRO HISTORICO AT-040 — NAO EXECUTAR COMO ESTADO ATUAL
+As migrations e funcoes abaixo ja foram implantadas e testadas.
+Para o estado vigente e pendencias pessoais, consultar HUB-04-WORK-EXECUTION.md,
+incluindo a retomada de 26/10/2026 apos autenticacao manual.
+Nao reaplicar migrations nem reconstruir ledger a partir deste registro.
+
 LEVIA HUB - HUB-04 - AT-040 - OPERACAO CONTROLADA
 Documento tecnico do ciclo de 25/10/2026 - SEGURANCA: FAIL CLOSED
 

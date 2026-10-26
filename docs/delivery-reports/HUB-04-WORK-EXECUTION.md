@@ -1,6 +1,6 @@
 # HUB-04 — Execução WORK de 25/10/2026
 
-**Estado:** backend de desenvolvimento implantado e validado com Auth, PostgreSQL e navegador reais. A conclusão operacional para o titular depende da criação do primeiro administrador real, bloqueada pela revisão automática da plataforma. Não há administrador real ativo. Não declarar produção homologada.
+**Estado atualizado em 26/10/2026:** backend de desenvolvimento implantado e validado. Sessão do painel recuperada pelo titular; política de senha do provedor configurada e conferida. A ativação do primeiro administrador foi expressamente solicitada, mas ainda requer definição privada da credencial e identificação do operador distinto exigido pelo bootstrap. Não há administrador real ativo nem homologação operacional completa.
 
 ## Histórico reconciliado e pendências
 
@@ -79,3 +79,17 @@ As três funções protegidas continuam negando chamadas sem identidade autentic
 O PR #11 foi incorporado por merge normal em `4cf9a56978af3fb5a26201837bb46f36666a99e8`; sua árvore é idêntica à do head aprovado pelos oito checks de CI. O [backup desse estado da main no Drive](https://drive.google.com/file/d/1LTdQfj1ZuPCpby8GuLtp2ygOhBV1IeAr/view) conserva código e histórico completo; SHA-256 do ZIP `1ff7b6a2652749170b58267f8a6417b5c385d7f8e858cc5d7fbe91d5e9921456`, verificado após baixar a cópia persistida. Este fechamento altera somente documentação e evidências; não altera a árvore de código testada, migrations ou funções implantadas.
 
 A HUB-04 permanece tecnicamente implantada em desenvolvimento, com cadastro público bloqueado. A operação pelo titular ainda depende do primeiro administrador real; não há identidade privilegiada criada nem homologação de produção.
+
+## Retomada após autenticação manual — 26/10/2026
+
+A sessão autenticada no painel foi confirmada no projeto correto, `levia-hub-dev`. A nova ordem do titular solicita expressamente a ativação do primeiro administrador; a rejeição anterior permanece no histórico e não foi contornada por outra via.
+
+A configuração do provedor Email foi salva com **mínimo de 12 caracteres** e **Secure password change habilitado**. A persistência foi confirmada após recarregar e reabrir o painel. A troca segura de e-mail e a confirmação de e-mail continuam habilitadas; cadastro público, login anônimo e vinculação manual continuam desabilitados. OTP: oito dígitos e validade de 3.600 segundos. A aplicação limita a nova senha a 128 caracteres; esse limite máximo não é apresentado como configuração do provedor. A opção de exigir a senha atual não foi habilitada, pois a ativação por recuperação define uma senha sem conhecer a anterior. A proteção contra senhas vazadas continua restrita ao plano Pro.
+
+[Registro verificável da configuração e da leitura de banco](../evidence/hub04/dashboard-security-20261026.json). [Captura preservada no Drive oficial](https://drive.google.com/file/d/10CMq3kj4hZNs22tkTjwm3dJfCktfina1/view?usp=drivesdk). A API pública confirmou `disable_signup=true`; o banco manteve zero usuários, sessões, contas administrativas e grants, nove capacidades e 11 eventos sintéticos. O advisor de segurança tem somente os quatro informes esperados de RLS privado sem policies.
+
+O bootstrap instalado exige **dois usuários Auth existentes e distintos**, operador e beneficiário. A sessão administrativa do painel Supabase não cria automaticamente um usuário Auth da aplicação. Não existe operador real indicado; criar uma identidade fictícia para atribuir a concessão produziria uma auditoria enganosa. A senha do titular será definida por ele no fluxo privado do navegador. A concessão inicial prevista permanece limitada a `core.read` e `users.manage` no escopo `core`, em transação auditada.
+
+A configuração de URLs também foi inspecionada: Site URL ainda é `http://localhost:3000`, sem redirects adicionais. A leitura dos metadados de CRM Levia no Lovable confirma `is_published=false`. Portanto, convites e recuperação por e-mail ainda precisam de um destino de aplicação homologado antes do uso; nenhum convite foi enviado. Login por senha não depende desses redirects. Nenhuma publicação ou comando ao Lovable foi executado.
+
+Esta retomada não reaplica migrations, não altera funções ou grants e não repete as suítes já aprovadas: o código permanece o de `3529606`, com 62 testes, 14 verificações do laboratório e regressões HUB-04 aprovadas. As novas verificações cobrem a configuração alterada e o estado real após o acesso ao painel. A homologação com o titular continua pendente das identidades pessoais e do login real; não confundir esse aceite com os ensaios sintéticos já concluídos.

@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-26",
+  "project": "levia-hub-dev",
+  "project_ref": "dfhjfajbmnsgrklhqtjk",
+  "dashboard_session_verified": true,
+  "verification_method": "Save, reload, reopen Email settings; screenshot; read-only SQL; public Auth settings API",
+  "email_provider": {
+    "minimum_password_length": 12,
+    "secure_password_change": true,
+    "secure_email_change": true,
+    "require_current_password": false,
+    "leaked_password_protection": false,
+    "leaked_password_protection_limitation": "Pro plan required",
+    "otp_expiration_seconds": 3600,
+    "otp_length": 8
+  },
+  "signup_settings": {
+    "disable_signup": true,
+    "anonymous_signins": false,
+    "confirm_email_dashboard": true
+  },
+  "database_readback": {
+    "auth_users": 0,
+    "auth_sessions": 0,
+    "admin_accounts": 0,
+    "permission_grants": 0,
+    "permission_audit_events": 11,
+    "capabilities": 9
+  },
+  "security_advisor": {
+    "errors": 0,
+    "warnings": 0,
+    "info_rls_enabled_no_policy": 4,
+    "interpretation": "Private tables intentionally deny API roles; no positive policies expected"
+  },
+  "bootstrap": {
+    "executed": false,
+    "requires_distinct_existing_auth_actor_and_subject": true,
+    "initial_capabilities": ["core.read", "users.manage"],
+    "personal_steps": [
+      "Administrator chooses own credential privately",
+      "Responsible identifies a distinct authorized bootstrap operator"
+    ]
+  },
+  "redirect_settings": {
+    "site_url": "http://localhost:3000",
+    "redirect_urls": [],
+    "modified": false,
+    "reason": "No published application URL confirmed; password login is independent of email redirects"
+  },
+  "lovable_read_only": {
+    "project_id": "83c750f7-9e88-4997-a06d-b86c37d59b5b",
+    "is_published": false,
+    "commands_sent": false
+  },
+  "screenshot": {
+    "drive_url": "https://drive.google.com/file/d/10CMq3kj4hZNs22tkTjwm3dJfCktfina1/view?usp=drivesdk",
+    "sha256": "71e4827c0f863bad2f4e41011b8344524a6b7f2da0751ab3ef2b40e4cec73732",
+    "bytes": 83427
+  },
+  "status": "Awaiting personal identity setup; not operationally homologated"
+}
