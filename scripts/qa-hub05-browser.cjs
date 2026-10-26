@@ -114,6 +114,13 @@ async function run() {
       await page.screenshot({ path: path.join(out, file), fullPage: true });
       result.screenshots.push(file);
     }
+    await page
+      .getByRole("navigation", { name: "Navegação principal" })
+      .getByRole("link", { name: "Módulos", exact: true })
+      .click();
+    await page.waitForURL(base + "/#modulos");
+    await page.getByRole("heading", { name: "Áreas do LEVIA HUB" }).waitFor();
+    record("global navigation returns from catalog to home modules");
     assert.deepEqual(result.supabaseRequests, [], "Synthetic workspace called Supabase");
     assert.deepEqual(result.errors, [], "Browser runtime errors");
     record("no Supabase requests or browser runtime errors");
