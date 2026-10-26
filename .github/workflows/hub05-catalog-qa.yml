@@ -1,0 +1,57 @@
+name: HUB-05 Catalog Candidate and Recovery
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  catalog:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start disposable PostgreSQL 17 without network
+        run: |
+          docker run --rm -d --name levia-hub05-pg --network none -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17
+          for i in $(seq 1 30); do
+            docker exec levia-hub05-pg pg_isready -U postgres && exit 0
+            sleep 2
+          done
+          exit 1
+      - name: Apply isolated candidate and run integrity, ACL and RLS tests
+        run: |
+          docker exec -i levia-hub05-pg psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon nologin;
+          create role authenticated nologin;
+          create role service_role nologin bypassrls;
+          SQL
+          docker exec -i levia-hub05-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/candidates/hub05/20261026033532_catalog_campaigns.sql
+          docker exec -i levia-hub05-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub05_catalog_candidate.sql
+      - name: Restore synthetic catalog into another empty database
+        run: |
+          docker exec levia-hub05-pg pg_dump -U postgres --format=custom --schema=hub_catalog_private --file=/tmp/hub05.dump
+          docker exec levia-hub05-pg createdb -U postgres hub05_restore
+          docker exec levia-hub05-pg pg_restore -U postgres -d hub05_restore --exit-on-error /tmp/hub05.dump
+          query="select md5(string_agg(to_jsonb(t)::text,',' order by id)) from hub_catalog_private.audit_events t"
+          a=$(docker exec levia-hub05-pg psql -U postgres -Atc "$query")
+          b=$(docker exec levia-hub05-pg psql -U postgres -d hub05_restore -Atc "$query")
+          test "$a" = "$b"
+          docker exec -i levia-hub05-pg psql -U postgres -d hub05_restore -v ON_ERROR_STOP=1 <<'SQL'
+          do $$ begin
+            if hub_catalog_private.current_commercial_version('2026-11-01') is not null then raise exception 'Historic version revived after restore'; end if;
+            if (select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='hub_catalog_private' and c.relkind='r' and c.relrowsecurity) <> 8 then raise exception 'Restored RLS differs'; end if;
+            if has_schema_privilege('anon','hub_catalog_private','USAGE') or has_schema_privilege('service_role','hub_catalog_private','USAGE') then raise exception 'Restored ACL exposed'; end if;
+          end $$;
+          SQL
+          mkdir -p artifacts/hub05-recovery
+          docker cp levia-hub05-pg:/tmp/hub05.dump artifacts/hub05-recovery/hub05.dump
+          sha256sum artifacts/hub05-recovery/hub05.dump > artifacts/hub05-recovery/SHA256SUMS
+          echo 'PASS: isolated PG17 restore, audit digest, RLS, ACL and no historical fallback'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hub05-synthetic-recovery
+          path: artifacts/hub05-recovery/
+          retention-days: 14
+      - name: Dispose
+        if: always()
+        run: docker rm -f levia-hub05-pg || true

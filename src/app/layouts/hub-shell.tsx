@@ -7,7 +7,7 @@ export function HubShell({ children }: { children: ReactNode }) {
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-5 px-6 py-5 lg:px-10">
           <a
-            href="#inicio"
+            href="/#inicio"
             aria-label="LEVIA BIOSCIENCE — início"
             className="inline-flex items-center gap-3 text-forest"
           >
@@ -21,10 +21,10 @@ export function HubShell({ children }: { children: ReactNode }) {
           </a>
 
           <nav aria-label="Navegação principal" className="flex items-center gap-6">
-            <a href="#modulos" className="text-sm font-medium text-foreground hover:text-olive">
+            <a href="/#modulos" className="text-sm font-medium text-foreground hover:text-olive">
               Módulos
             </a>
-            <a href="#sobre" className="text-sm font-medium text-foreground hover:text-olive">
+            <a href="/#sobre" className="text-sm font-medium text-foreground hover:text-olive">
               Sobre a fundação
             </a>
           </nav>
