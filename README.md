@@ -6,6 +6,8 @@ Centro administrativo modular da LEVIA BIOSCIENCE, em ambiente de desenvolviment
 
 Cadastro público do Auth desativado e verificado por API em 26/10/2026: novas inscrições retornam `signup_disabled`. [Evidência](docs/evidence/hub04/auth-settings.json).
 
+**Próxima etapa em desenvolvimento:** HUB-05 — catálogo, versões e campanhas fictícias em `/catalog-demo`, independente de login. As alterações da simulação duram somente até recarregar a página. A migration candidata é testada em banco descartável e não foi aplicada ao Supabase. [Escopo e testes](docs/delivery-reports/HUB-05-DEVELOPMENT.md).
+
 ## Execução e verificação
 
 Bun **1.3.2**, React 19, TypeScript, TanStack Start/Router, Vite 8 e Tailwind 4. O lockfile versionado inclui as correções de segurança verificadas nesta entrega.
@@ -30,6 +32,7 @@ O servidor usa a URL e a chave **publicável** do projeto exclusivo de desenvolv
 | `/login`             | Login real por e-mail e senha                                     |
 | `/activate`          | Definição de senha por link privado, de uso único                 |
 | `/demo`              | Simulação pública, inteiramente sintética e sem privilégios reais |
+| `/catalog-demo`      | Laboratório HUB-05: catálogo, tabelas e campanhas fictícias       |
 | `/access-denied`     | Estado de acesso negado                                           |
 | `/app`, `/app/core`  | Sessão válida e capacidade `core.read` no escopo `core`           |
 | `/app/crm`           | Acesso administrativo mais `crm.read` no escopo `crm`             |
@@ -64,4 +67,4 @@ node scripts/stage-managed-migrations.mjs /tmp/levia-managed-staging
 
 `src/app` compõe os módulos; `src/modules` contém domínio e integrações; `src/shared` não importa módulos. O roteador único continua sendo TanStack, com árvore gerada pelo build e ignorada no Git.
 
-O Supabase é exclusivo do HUB. Não foram conectados o site institucional ou QR/rastreabilidade, nem importados acervos, dados clínicos ou financeiros. Não foram enviados comandos de desenvolvimento ao Lovable. Nenhum serviço pago foi contratado e nenhum módulo das HUB-05 a HUB-11 foi antecipado.
+O Supabase é exclusivo do HUB. Não foram conectados o site institucional ou QR/rastreabilidade, nem importados acervos, dados clínicos ou financeiros. Não foram enviados comandos de desenvolvimento ao Lovable. Nenhum serviço pago foi contratado. A HUB-05 avança somente em desenvolvimento isolado; as HUB-06 a HUB-11 permanecem futuras.

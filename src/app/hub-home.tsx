@@ -39,6 +39,12 @@ export function HubHome() {
                 Abrir demonstração do HUB
                 <ArrowDownRight aria-hidden="true" className="ml-2 size-4" />
               </Link>
+              <Link
+                to="/catalog-demo"
+                className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/30 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10"
+              >
+                Catálogo e campanhas · laboratório
+              </Link>
             </div>
             <div className="mt-5 inline-flex items-center gap-3 rounded-full border border-white/20 px-4 py-2 text-xs font-semibold tracking-[0.14em] text-sage">
               <span aria-hidden="true" className="size-2 rounded-full bg-sage" />
