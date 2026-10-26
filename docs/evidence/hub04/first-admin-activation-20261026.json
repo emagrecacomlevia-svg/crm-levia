@@ -1,0 +1,122 @@
+{
+  "activated_at_utc": "2026-10-26T22:35:14.058862Z",
+  "project": "levia-hub-dev",
+  "method": "Existing private bootstrap_first_admin invoked as postgres, with validated real identities and transactional postconditions",
+  "authorization": "Owner explicitly requested first-administrator activation and designated the distinct operator; both Auth accounts were manually created and confirmed",
+  "identities": {
+    "auth_users": 2,
+    "confirmed_users": 2,
+    "owner_and_operator_distinct": true,
+    "credentials_read_or_changed_by_agent": false
+  },
+  "result": {
+    "enabled_admin_accounts": 1,
+    "permission_grants": 2,
+    "capabilities": ["core.read", "users.manage"],
+    "scope": "module:core",
+    "operator_receives_admin_access": false,
+    "audit_events_total": 15,
+    "retained_synthetic_events": 11,
+    "new_real_audit_events": 4,
+    "real_event_types": ["account_created", "account_enabled", "grant_created", "grant_created"],
+    "all_actor_snapshots_match": true
+  },
+  "verification": {
+    "repeated_bootstrap_denied": true,
+    "repetition_check_transaction_rolled_back": true,
+    "owner_core_allowed": true,
+    "owner_management_allowed": true,
+    "wrong_scope_denied": true,
+    "owner_crm_denied": true,
+    "owner_social_denied": true,
+    "operator_management_denied": true,
+    "private_tables_with_rls": 4,
+    "roles_without_schema_usage_and_bootstrap_execute": ["anon", "authenticated", "service_role"],
+    "database_counts_after_checks": {
+      "admin_accounts": 1,
+      "permission_grants": 2,
+      "audit_events": 15
+    },
+    "http": {
+      "checked_at_utc": "2026-10-26T22:39:02.680653+00:00",
+      "checks": [
+        {
+          "name": "auth_settings",
+          "status": 200,
+          "pass": true,
+          "disable_signup": true,
+          "anonymous_users_enabled": false,
+          "anonymous_setting_source": "external.anonymous_users",
+          "mailer_autoconfirm": false,
+          "checked_at_utc": "2026-10-26T22:40:46.592351+00:00"
+        },
+        {
+          "name": "authorize_unauthenticated",
+          "status": 401,
+          "pass": true
+        },
+        {
+          "name": "admin_write_unauthenticated",
+          "status": 401,
+          "pass": true
+        },
+        {
+          "name": "session_seal_unauthenticated",
+          "status": 401,
+          "pass": true
+        },
+        {
+          "name": "session_invalid_envelope",
+          "status": 401,
+          "pass": true
+        },
+        {
+          "name": "maintenance_disabled",
+          "status": 410,
+          "pass": true
+        },
+        {
+          "name": "private_schema_not_exposed",
+          "status": 406,
+          "pass": true
+        }
+      ],
+      "all_passed": true
+    }
+  },
+  "advisors": {
+    "security_errors": 0,
+    "security_warnings": ["auth_leaked_password_protection"],
+    "security_info": {
+      "rls_enabled_no_policy": 4
+    },
+    "performance_errors": 0,
+    "performance_warnings": 0,
+    "performance_info": {
+      "unused_index": 1
+    },
+    "leaked_password_protection": "Unavailable on current Free plan; no paid upgrade authorized or performed",
+    "remediation_url": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+  },
+  "backup": {
+    "scope": "Four application tables only; no Auth credentials, sessions, Storage or managed secrets",
+    "file_name": "LEVIA_HUB_HUB04_FIRST_ADMIN_APPLICATION_SNAPSHOT_20261026.json",
+    "destination": "Existing official private Drive backup folder",
+    "permissions_observed": ["owner"],
+    "bytes": 11513,
+    "sha256": "a9cfd7e8951e7cc43a9b79cd9389056c768168da4038c817ada50a68ecdf4fd0",
+    "download_roundtrip_identical": true,
+    "real_data_in_public_git": false,
+    "restore_dependencies": "Matching schema and required Auth UUIDs; not a complete managed-platform backup"
+  },
+  "application_acceptance": {
+    "owner_login_verified": false,
+    "lovable_is_published": false,
+    "lovable_latest_commit_observed": "be36a43d025cdcbccea018a24f2debe42e928516",
+    "preview_navigation": "Redirected to Lovable workspace sign-in before application login",
+    "email_redirect_destination_validated": false,
+    "lovable_write_commands_sent": false
+  },
+  "code_schema_or_edge_changes_this_step": false,
+  "operational_homologation_complete": false
+}

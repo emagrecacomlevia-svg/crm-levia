@@ -12,11 +12,13 @@ As funções `hub-authorize`, `hub-admin-write` e `hub-session` usam somente os 
 
 ## Primeiro administrador
 
-A criação de uma identidade real foi rejeitada pela revisão automática de autorização. Não foi criada conta para o e-mail real nem enviada mensagem. O bootstrap continua privado, limitado a `postgres`, com operador e beneficiário distintos e motivo auditável. Inicializa somente `core.read` e `users.manage`, sem CRM ou poderes editoriais.
+**Ativado em 26/10/2026:** após a criação manual das duas identidades com e-mails confirmados e a designação expressa do operador pelo titular, o bootstrap foi executado pelo conector como `postgres`. Há uma conta administrativa habilitada para o titular, com somente `core.read` e `users.manage` no escopo `module:core`. O operador não recebeu privilégios. A rejeição anterior à criação automatizada de credenciais permanece no histórico; as credenciais foram definidas privadamente pelo usuário.
 
 Os testes HTTP usaram identidades explicitamente sintéticas com `app_metadata.purpose=hub04-qa-synthetic`, criado somente pela API administrativa. Seu histórico é preservado com marca de QA gerada no banco. O bootstrap real tolera exclusivamente esse histórico sintético e continua negado após qualquer bootstrap real. Nenhuma marca fornecida pelo cliente pode transformar um evento real em QA.
 
-Após autorização específica, criar a identidade do titular pelo Supabase Auth, verificar a titularidade, usar um operador independente e executar `hub_private.bootstrap_first_admin` em sessão privada. Não publicar credenciais no Git, PR, logs ou documentação. Links de recuperação devem ser privados e nunca usados como convite público. A rota `/activate` permite definir uma senha de 12 a 128 caracteres usando o hash de recuperação em fragmento, removido imediatamente do endereço e sem envio de e-mail por esta entrega.
+**Não repetir o bootstrap nem executar fixtures sintéticas neste banco real.** A verificação controlada confirmou a recusa de repetição, com contagens preservadas: uma conta, duas concessões, 11 eventos sintéticos anteriores e quatro eventos reais com snapshot de ator. Os próximos usuários devem seguir o fluxo administrativo auditado; nunca inserir grants diretamente. [Evidência atual](../evidence/hub04/first-admin-activation-20261026.json).
+
+Não publicar credenciais no Git, PR, logs ou documentação. Links de recuperação devem ser privados e nunca usados como convite público. A rota `/activate` permite definir uma senha de 12 a 128 caracteres usando o hash de recuperação em fragmento, removido imediatamente do endereço. O login real do titular ainda precisa de validação no aplicativo; a confirmação do e-mail e a concessão no banco não substituem esse teste.
 
 ## Recuperação verificada
 
@@ -26,14 +28,18 @@ O pacote de aplicação contém SQL canônico, manifesto de versões/hashes e sn
 
 Isso comprova recuperação do **schema e dos dados de aplicação desta linha de base vazia/sintética**. Não constitui dump integral dos serviços gerenciados Auth/Storage, PITR ou backup operacional de um futuro ambiente com dados reais. Quando esses dados existirem, a política e o canal privado de backup deverão abranger seus conteúdos e dependências. Não reutilizar o fluxo público de CI para esses dados.
 
+Após a ativação real, foi preservado um snapshot privado das quatro tabelas em `LEVIA HUB - BACKUPS OFICIAIS`, com uma conta, nove capacidades, duas concessões e 15 eventos. SHA-256 `a9cfd7e8951e7cc43a9b79cd9389056c768168da4038c817ada50a68ecdf4fd0`, 11.513 bytes, conferido após novo download. Esse snapshot não inclui credenciais Auth, sessões, Storage ou segredos gerenciados. Sua restauração exige tratar explicitamente as dependências de UUID Auth; não aplicar o snapshot sintético antigo sobre o banco atual.
+
 ## Controles e limites restantes
 
 O cadastro público na API Auth está desabilitado. Em 26/10/2026, o GET `/auth/v1/settings` confirmou `disable_signup=true`, confirmação de e-mail exigida e login anônimo desativado. Um POST de cadastro com endereço sintético reservado `.invalid` foi rejeitado com HTTP 422 e `signup_disabled`, sem criar usuário ou enviar mensagem. [Evidência atual](../evidence/hub04/auth-settings.json). Essa pendência está encerrada; não reabilitar o cadastro para provisionar o primeiro administrador.
 
-A sessão do painel expirou após a alteração e a solicitação segura de reconexão foi recusada. O conector e a API continuam acessíveis. A política mínima de senha configurada no próprio Auth ainda não foi inspecionada; os 12–128 caracteres abaixo são uma exigência comprovada da aplicação, não uma afirmação sobre a configuração do provedor.
+A política do provedor foi salva e conferida no painel em 26/10/2026: mínimo de 12 caracteres, troca segura de senha e de e-mail habilitadas. O limite máximo de 128 caracteres pertence à aplicação. [Evidência da configuração](../evidence/hub04/dashboard-security-20261026.json). O conector continua disponível independentemente da sessão do painel.
 
-O plano Free não disponibiliza a proteção gerenciada contra senhas vazadas, conforme [documentação Supabase](https://supabase.com/docs/guides/auth/password-security). Não foi contratado plano pago. A definição de senha no aplicativo exige 12 caracteres e acesso por link privado. A migração para proteção gerenciada e MFA deve preceder uso com dados empresariais sensíveis. A última consulta ao advisor de segurança retornou somente os quatro informes de RLS sem policies, sem erros ou avisos de nível WARN; isso não habilita o recurso pago.
+O plano Free não disponibiliza a proteção gerenciada contra senhas vazadas, conforme [documentação Supabase](https://supabase.com/docs/guides/auth/password-security). Não foi contratado plano pago. A definição de senha no aplicativo exige 12 caracteres e acesso por link privado. A migração para proteção gerenciada e MFA deve preceder uso com dados empresariais sensíveis. A consulta de 26/10/2026 às 19h34 retornou **um WARN de proteção contra senhas vazadas desabilitada** e quatro informes de RLS sem policies. A ausência desse WARN nas consultas históricas não significava que o recurso estava habilitado.
 
 Os avisos informativos de RLS sem policies são esperados: o schema é privado e o acesso direto é intencionalmente negado. Não criar policies permissivas para eliminar esse aviso. Índices informados como ainda não utilizados em um banco recém-criado são preservados para as FKs e trilhas de auditoria.
 
 Nenhum comando foi enviado ao agente Lovable. O código chega à branch vinculada por merge Git normal, sem rebase ou force-push. Publicação do site e configurações do Lovable não foram alteradas.
+
+O preview requer autenticação no Lovable e o projeto continua sem publicação. A validação do login do titular depende do acesso privado ao preview e da sua credencial de aplicação. Site URL foi observado como `http://localhost:3000`, sem redirects adicionais; deve ser atualizado somente quando houver destino de aplicação homologado. Não declarar homologação operacional completa enquanto o login real e o destino dos fluxos de e-mail estiverem pendentes.

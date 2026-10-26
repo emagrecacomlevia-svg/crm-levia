@@ -1,6 +1,6 @@
 # HUB-04 — Execução WORK de 25/10/2026
 
-**Estado atualizado em 26/10/2026, 17h58 (America/Sao_Paulo):** backend de desenvolvimento implantado e validado; projeto `ACTIVE_HEALTHY`. O titular criou sua credencial privadamente e o banco confirma uma identidade Auth com e-mail verificado. A ativação do primeiro administrador aguarda a identificação e existência do operador distinto exigido pelo bootstrap instalado. Há zero contas administrativas e zero grants; a homologação operacional completa continua pendente. O conector mantém acesso ao banco, embora a aba atual do painel solicite login novamente.
+**Estado atualizado em 26/10/2026, 19h35 (America/Sao_Paulo):** primeiro administrador real ativado no backend de desenvolvimento. Duas identidades Auth confirmadas, uma conta administrativa habilitada, duas concessões mínimas e quatro novos eventos de auditoria, preservando os 11 eventos sintéticos anteriores. A repetição do bootstrap foi negada. Falta verificar o login real do titular na aplicação; o preview exige autenticação no Lovable e não há site publicado. A homologação operacional completa ainda não foi declarada.
 
 ## Histórico reconciliado e pendências
 
@@ -105,3 +105,19 @@ O projeto foi confirmado como `ACTIVE_HEALTHY` pelo conector. A nova aba do pain
 A definição efetivamente instalada de `hub_private.bootstrap_first_admin` foi lida novamente. Ela exige execução como `postgres`, duas identidades Auth existentes e distintas, motivo auditável e ausência de contas, grants ou auditoria real anterior. Trata-se de uma regra da implementação da HUB-04, não de uma exigência geral do Supabase. Falta ao titular designar a identidade real do operador responsável; não foi criada identidade fictícia nem alterada a regra para permitir autoatribuição. Após esse pré-requisito, permanecem a concessão mínima auditada e a validação do login real na aplicação. O destino de aplicação para os fluxos de e-mail também continua pendente conforme a seção anterior.
 
 Esta atualização altera somente documentação e evidências. Migrations, Edge Functions, dados, permissões, senha e confirmação do e-mail foram preservados; nenhuma ação de desenvolvimento ou publicação foi enviada ao Lovable.
+
+## Primeiro administrador ativado — 26/10/2026, 19h35
+
+O titular designou expressamente a identidade operadora e criou a segunda conta no Auth pelo painel. A consulta anterior à concessão confirmou as duas identidades esperadas com e-mail verificado, sem contas administrativas, grants ou auditoria real anterior. As senhas foram definidas privadamente pelo usuário; nenhuma credencial foi lida, redefinida ou publicada.
+
+A função privada já instalada `hub_private.bootstrap_first_admin` foi executada pelo conector como `postgres`, com identidades distintas e motivo que registra a ordem expressa do titular, a designação do operador e a execução pelo conector. A transação validou seus pré-requisitos e resultados antes do commit. O titular recebeu somente `core.read` e `users.manage`, no escopo `module:core`; a identidade operadora não recebeu conta administrativa nem concessão.
+
+O banco contém **uma conta habilitada, duas concessões e 15 eventos**, sendo 11 sintéticos preservados e quatro reais: criação da conta, habilitação e duas concessões. Todos os eventos reais apontam para a identidade operadora designada e preservam seu snapshot. A verificação posterior confirmou que o titular pode administrar e que o operador não pode. A tentativa controlada de repetir o bootstrap foi recusada, dentro de transação revertida, sem alterações adicionais.
+
+Os papéis `anon`, `authenticated` e `service_role` continuam sem uso do schema privado e sem execução do bootstrap. As quatro tabelas conservam RLS. O advisor de segurança agora retorna um aviso `auth_leaked_password_protection`, além dos quatro informes esperados de RLS sem policies. A proteção contra senhas vazadas permanece indisponível no plano Free; não foi contratado upgrade nem criada policy permissiva para ocultar informes.
+
+O snapshot privado das quatro tabelas de aplicação foi salvo na pasta oficial de backups do Drive, com acesso somente ao proprietário segundo os metadados disponíveis. A cópia foi baixada novamente e seus 11.513 bytes conferidos: SHA-256 `a9cfd7e8951e7cc43a9b79cd9389056c768168da4038c817ada50a68ecdf4fd0`. O arquivo inclui as dependências de UUID Auth, sem senhas, tokens ou sessões. Não é backup integral de Auth/Storage nem prova de recuperação de produção. Os dados reais do snapshot não foram incluídos no Git público.
+
+A leitura do Lovable confirmou o código sincronizado na `main`, `is_published=false` e preview disponível por acesso autenticado ao workspace. A navegação para `/login` redirecionou à autenticação do Lovable antes de atingir o aplicativo. O teste do titular exige primeiro esse acesso ao preview e depois a entrada privada de sua senha na aplicação. Nenhum comando, publicação ou desenvolvimento foi enviado ao Lovable. O destino dos fluxos de e-mail ainda depende de uma URL de aplicação homologada; o Site URL anterior permanece `localhost` e não foi substituído por um endereço arbitrário.
+
+[Evidência sanitizada da ativação e dos controles](../evidence/hub04/first-admin-activation-20261026.json). Esta etapa alterou dados de aplicação pela função auditada existente e atualizou os registros; não alterou código, migrations ou Edge Functions. As suítes anteriores permanecem evidência da versão de código, e não são apresentadas como novo login real do titular.
