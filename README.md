@@ -4,6 +4,8 @@ Centro administrativo modular da LEVIA BIOSCIENCE, em ambiente de desenvolviment
 
 **Estado atual:** HUB-04 com migrations e backend de autenticação, autorização e auditoria implantados no Supabase. A ativação do primeiro administrador real permanece bloqueada por revisão automática de autorização. Os módulos Social Studio, CRM e catálogo continuam demonstrativos e pertencem às etapas seguintes.
 
+Cadastro público do Auth desativado e verificado por API em 26/10/2026: novas inscrições retornam `signup_disabled`. [Evidência](docs/evidence/hub04/auth-settings.json).
+
 ## Execução e verificação
 
 Bun **1.3.2**, React 19, TypeScript, TanStack Start/Router, Vite 8 e Tailwind 4. O lockfile versionado inclui as correções de segurança verificadas nesta entrega.

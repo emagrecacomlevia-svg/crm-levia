@@ -28,7 +28,9 @@ Isso comprova recuperação do **schema e dos dados de aplicação desta linha d
 
 ## Controles e limites restantes
 
-O cadastro público na API Auth permanece habilitado (`disable_signup=false`), com confirmação por e-mail; não há cadastro na interface nem concessão automática de acesso ao HUB. Desabilitar o cadastro no painel continua pendente: o conector não oferece escrita dessa configuração e a sessão de navegador exige autenticação. Nenhuma configuração Auth foi declarada alterada sem confirmação efetiva.
+O cadastro público na API Auth está desabilitado. Em 26/10/2026, o GET `/auth/v1/settings` confirmou `disable_signup=true`, confirmação de e-mail exigida e login anônimo desativado. Um POST de cadastro com endereço sintético reservado `.invalid` foi rejeitado com HTTP 422 e `signup_disabled`, sem criar usuário ou enviar mensagem. [Evidência atual](../evidence/hub04/auth-settings.json). Essa pendência está encerrada; não reabilitar o cadastro para provisionar o primeiro administrador.
+
+A sessão do painel expirou após a alteração e a solicitação segura de reconexão foi recusada. O conector e a API continuam acessíveis. A política mínima de senha configurada no próprio Auth ainda não foi inspecionada; os 12–128 caracteres abaixo são uma exigência comprovada da aplicação, não uma afirmação sobre a configuração do provedor.
 
 O plano Free não disponibiliza a proteção gerenciada contra senhas vazadas, conforme [documentação Supabase](https://supabase.com/docs/guides/auth/password-security). Não foi contratado plano pago. A definição de senha no aplicativo exige 12 caracteres e acesso por link privado. A migração para proteção gerenciada e MFA deve preceder uso com dados empresariais sensíveis. A última consulta ao advisor de segurança retornou somente os quatro informes de RLS sem policies, sem erros ou avisos de nível WARN; isso não habilita o recurso pago.
 

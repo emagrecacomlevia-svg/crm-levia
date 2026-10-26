@@ -1,11 +1,80 @@
 {
   "project": "dfhjfajbmnsgrklhqtjk",
-  "observed_at": "2026-10-25",
-  "disable_signup": false,
+  "observed_at": "2026-10-26T03:27:14.992678+00:00",
+  "disable_signup": true,
   "mailer_autoconfirm": false,
   "phone_enabled": false,
   "anonymous_users_enabled": false,
   "enabled_provider": "email",
   "public_signup_grants_hub_access": false,
-  "configuration_change_blocker": "Supabase connector does not expose Auth configuration writes; dashboard requires an authenticated user session"
+  "verification_method": "Public Auth settings GET and live negative signup POST using a reserved .invalid synthetic address; no message sent",
+  "http_checks": [
+    {
+      "name": "public_signup_rejected",
+      "http_status": 422,
+      "error_code": "signup_disabled",
+      "pass": true
+    },
+    {
+      "name": "hub-authorize",
+      "http_status": 401,
+      "pass": true
+    },
+    {
+      "name": "hub-admin-write",
+      "http_status": 401,
+      "pass": true
+    },
+    {
+      "name": "hub-session:seal",
+      "http_status": 401,
+      "pass": true
+    },
+    {
+      "name": "hub-session:open",
+      "http_status": 401,
+      "pass": true
+    },
+    {
+      "name": "hub04-maintenance",
+      "http_status": 410,
+      "pass": true
+    },
+    {
+      "name": "private_schema_not_exposed",
+      "http_status": 406,
+      "pass": true
+    }
+  ],
+  "security_advisor": {
+    "checked_at": "2026-10-26T03:23:18.566Z",
+    "errors": 0,
+    "warnings": 0,
+    "info_rls_enabled_no_policy": 4,
+    "interpretation": "Expected deny-all RLS on private schema; no permissive policy added"
+  },
+  "performance_advisor": {
+    "checked_at": "2026-10-26T03:26:47.453Z",
+    "errors": 0,
+    "warnings": 0,
+    "info_unused_index": 2
+  },
+  "database_after_checks": {
+    "checked_at": "2026-10-26T03:28:13.444242Z",
+    "auth_users": 0,
+    "auth_sessions": 0,
+    "accounts": 0,
+    "grants": 0,
+    "audit_events": 11,
+    "capabilities": 9,
+    "migration_versions": ["20261025173102", "20261025173114", "20261025173422", "20261025173722"]
+  },
+  "deployed_functions": {
+    "hub-authorize": 2,
+    "hub-admin-write": 4,
+    "hub-session": 2,
+    "hub04-maintenance": 6
+  },
+  "auth_password_policy_dashboard": "Not verified: browser dashboard session expired; secure reconnection declined",
+  "real_admin_provisioning": "Not executed; prior specific-identity approval rejection remains unresolved"
 }
