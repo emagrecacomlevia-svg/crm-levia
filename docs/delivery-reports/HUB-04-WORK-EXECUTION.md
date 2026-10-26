@@ -1,6 +1,6 @@
 # HUB-04 — Execução WORK de 25/10/2026
 
-**Estado atualizado em 26/10/2026:** backend de desenvolvimento implantado e validado. Sessão do painel recuperada pelo titular; política de senha do provedor configurada e conferida. A ativação do primeiro administrador foi expressamente solicitada, mas ainda requer definição privada da credencial e identificação do operador distinto exigido pelo bootstrap. Não há administrador real ativo nem homologação operacional completa.
+**Estado atualizado em 26/10/2026, 17h58 (America/Sao_Paulo):** backend de desenvolvimento implantado e validado; projeto `ACTIVE_HEALTHY`. O titular criou sua credencial privadamente e o banco confirma uma identidade Auth com e-mail verificado. A ativação do primeiro administrador aguarda a identificação e existência do operador distinto exigido pelo bootstrap instalado. Há zero contas administrativas e zero grants; a homologação operacional completa continua pendente. O conector mantém acesso ao banco, embora a aba atual do painel solicite login novamente.
 
 ## Histórico reconciliado e pendências
 
@@ -56,6 +56,8 @@ O [snapshot de aplicação](../evidence/hub04/application-snapshot.json) contém
 
 ## Impedimentos e limites reais
 
+Esta seção conserva o estado histórico anterior à criação manual da conta. Para o estado atual, consulte a atualização no início e a verificação de e-mail ao final deste relatório.
+
 1. **Primeiro administrador:** a revisão automática rejeitou criar uma conta persistente para o e-mail real do titular por uma chamada administrativa com nova senha, por considerar a ordem genérica insuficiente para essa identidade privilegiada específica. A tentativa não foi repetida por outro caminho. Não existe conta real criada, concessão real nem mensagem enviada. É necessária autorização específica para essa criação e posterior bootstrap.
 2. **Proteção contra senhas vazadas:** indisponível no plano Supabase Free. A limitação permanece documentada; nenhum upgrade pago foi contratado. A ativação exige senha de 12–128 caracteres. MFA e política de recuperação do titular dependem de sua identidade real e devem ser tratados antes de dados sensíveis.
 3. **Recuperação futura:** RPO/RTO corporativos, custódia de chaves e backup integral de futuros dados reais não podem ser comprovados com este ambiente vazio. A recuperação do schema e dos dados sintéticos de aplicação é testável e automatizada; ela não substitui essa decisão operacional futura.
@@ -93,3 +95,13 @@ O bootstrap instalado exige **dois usuários Auth existentes e distintos**, oper
 A configuração de URLs também foi inspecionada: Site URL ainda é `http://localhost:3000`, sem redirects adicionais. A leitura dos metadados de CRM Levia no Lovable confirma `is_published=false`. Portanto, convites e recuperação por e-mail ainda precisam de um destino de aplicação homologado antes do uso; nenhum convite foi enviado. Login por senha não depende desses redirects. Nenhuma publicação ou comando ao Lovable foi executado.
 
 Esta retomada não reaplica migrations, não altera funções ou grants e não repete as suítes já aprovadas: o código permanece o de `3529606`, com 62 testes, 14 verificações do laboratório e regressões HUB-04 aprovadas. As novas verificações cobrem a configuração alterada e o estado real após o acesso ao painel. A homologação com o titular continua pendente das identidades pessoais e do login real; não confundir esse aceite com os ensaios sintéticos já concluídos.
+
+## Confirmação da identidade real — 26/10/2026, 17h58
+
+Após a criação privada da senha e a confirmação do e-mail pelo titular, a leitura SQL independente confirmou **um usuário Auth e um e-mail verificado**, pertencente à identidade esperada. Não há outra identidade Auth, conta administrativa ou grant. Os 11 eventos sintéticos de auditoria permanecem intactos, sem evento de bootstrap real. [Evidência sem dados pessoais ou credenciais](../evidence/hub04/owner-confirmation-20261026.json).
+
+O projeto foi confirmado como `ACTIVE_HEALTHY` pelo conector. A nova aba do painel redirecionou para login; isso não impede as operações disponíveis no conector e não exige repetir a confirmação do e-mail. Nenhuma senha foi obtida, alterada ou redefinida nesta verificação.
+
+A definição efetivamente instalada de `hub_private.bootstrap_first_admin` foi lida novamente. Ela exige execução como `postgres`, duas identidades Auth existentes e distintas, motivo auditável e ausência de contas, grants ou auditoria real anterior. Trata-se de uma regra da implementação da HUB-04, não de uma exigência geral do Supabase. Falta ao titular designar a identidade real do operador responsável; não foi criada identidade fictícia nem alterada a regra para permitir autoatribuição. Após esse pré-requisito, permanecem a concessão mínima auditada e a validação do login real na aplicação. O destino de aplicação para os fluxos de e-mail também continua pendente conforme a seção anterior.
+
+Esta atualização altera somente documentação e evidências. Migrations, Edge Functions, dados, permissões, senha e confirmação do e-mail foram preservados; nenhuma ação de desenvolvimento ou publicação foi enviada ao Lovable.

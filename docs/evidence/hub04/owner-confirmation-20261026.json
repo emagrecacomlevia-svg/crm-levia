@@ -1,0 +1,43 @@
+{
+  "verified_at_utc": "2026-10-26T20:58:01.263172Z",
+  "project": "levia-hub-dev",
+  "project_status": "ACTIVE_HEALTHY",
+  "verification_method": "Read-only managed connector: project metadata, aggregate SQL, expected owner identity match and installed bootstrap definition; browser dashboard navigation",
+  "database_readback": {
+    "auth_users": 1,
+    "confirmed_users": 1,
+    "expected_owner_email_confirmed": true,
+    "other_auth_identities": 0,
+    "admin_accounts": 0,
+    "permission_grants": 0,
+    "permission_audit_events": 11,
+    "non_synthetic_audit_events": 0
+  },
+  "access": {
+    "managed_connector_database_access": true,
+    "browser_dashboard_session_verified_this_check": false,
+    "browser_observation": "Dashboard navigation redirected to sign-in"
+  },
+  "bootstrap": {
+    "executed": false,
+    "installed_definition_rechecked": true,
+    "requires_distinct_existing_auth_actor_and_subject": true,
+    "requirement_source": "HUB-04 application bootstrap implementation, not a general Supabase requirement",
+    "operator_identity_designated": false,
+    "initial_capabilities": ["core.read", "users.manage"],
+    "initial_scope": "module:core"
+  },
+  "credentials": {
+    "owner_password_created_privately_by_user": true,
+    "password_read_or_changed_by_agent_this_check": false,
+    "email_confirmation_needs_repeating": false
+  },
+  "changes_this_check": "Documentation and sanitized evidence only",
+  "remaining": [
+    "Designation and existence of the authorized bootstrap operator identity",
+    "Minimal audited first-administrator bootstrap",
+    "Real owner application login verification",
+    "Validated application destination for email redirects"
+  ],
+  "operational_homologation_complete": false
+}
