@@ -72,7 +72,7 @@ begin
   raise exception 'Unexpectedly allowed independent approval';
  exception when insufficient_privilege or unique_violation then null;
  end;
-end $;
+end $$;
 
 -- Without a genuine initial catalog grant, even the original Auth approver
 -- may not initialize renewal pre-approval.
