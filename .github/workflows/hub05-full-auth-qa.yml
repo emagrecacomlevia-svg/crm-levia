@@ -29,6 +29,7 @@ jobs:
             docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < "$file"
           done
           docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub05_authorization.sql
+          docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub05_first_catalog_bootstrap.sql
       - name: Cleanup
         if: always()
         run: docker rm -f hub05-full-pg || true
