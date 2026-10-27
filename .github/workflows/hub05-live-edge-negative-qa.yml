@@ -1,0 +1,25 @@
+name: HUB-05 Live Edge Fail-Closed Smoke (Development Only)
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - name: Verify deployed development Edge Function refuses unauthenticated catalog reads
+        run: |
+          set -Eeuo pipefail
+          url=https://dfhjfajbmnsgrklhqtjk.supabase.co/functions/v1/hub-catalog
+          status=$(curl --fail-with-body -sS -m 18 -X POST \
+            -H 'Content-Type: application/json' \
+            --data '{"action":"snapshot"}' -o /tmp/hub05-response -w '%{http_code}' "$url" || true)
+          echo "Unauthorized HTTP status: $status"
+          test "$status" = 401
+          grep -q '"ok":false' /tmp/hub05-response
+          status=$(curl -sS -m 18 -o /tmp/hub05-get -w '%{http_code}' "$url")
+          echo "Wrong-method HTTP status: $status"
+          test "$status" = 405
+          echo "PASS: deployed Edge blocks anonymous requests and unexpected methods"
