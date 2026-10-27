@@ -14,3 +14,5 @@ jobs:
         with:
           deno-version: v2.x
       - run: deno check --config supabase/functions/hub-catalog/deno.json supabase/functions/hub-catalog/index.ts
+      - name: Isolated HTTP contract and authorization QA (MOCK Auth/DB)
+        run: deno test --config supabase/functions/hub-catalog/deno.json --allow-env --deny-net --cached-only supabase/tests/hub05_edge_handlers.test.ts
