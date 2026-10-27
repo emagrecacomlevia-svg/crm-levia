@@ -39,7 +39,7 @@ describe("HUB-04 strict deny-by-default domain policy", () => {
     expect(CAPABILITIES).toHaveLength(11);
     expect(CAPABILITIES).toContain("catalog.read");
     expect(CAPABILITIES).toContain("catalog.write");
-    expect(new Set(CAPABILITIES).size).toBe(9);
+    expect(new Set(CAPABILITIES).size).toBe(11);
     expect(AUDIT_EVENT_TYPES).toHaveLength(6);
     expect(isAuditEventType("grant_revoked")).toBe(true);
     expect(isAuditEventType("admin_all_access")).toBe(false);
