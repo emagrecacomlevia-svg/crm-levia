@@ -52,9 +52,7 @@ if (
     const identity = await authResponse.json();
     assert.match(identity.id, /^[0-9a-f-]{36}$/i);
 
-    const tokenClaims = JSON.parse(
-      Buffer.from(token.split(".")[1], "base64url").toString("utf8"),
-    );
+    const tokenClaims = JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString("utf8"));
     assert.match(tokenClaims.session_id, /^[0-9a-f-]{36}$/i);
 
     // Real HTTP deny-by-default before the first authorized read/write.
@@ -94,7 +92,9 @@ if (
       "No transactional audit row bound to verified Auth actor and session",
     );
 
-    console.log("PASS: real Auth, catalog.read, catalog.write, reload, audit and anonymous denial.");
+    console.log(
+      "PASS: real Auth, catalog.read, catalog.write, reload, audit and anonymous denial.",
+    );
     console.log("QA item created in development (synthetic only); no secrets printed.");
   } catch (error) {
     console.error(
