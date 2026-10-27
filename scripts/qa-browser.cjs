@@ -110,7 +110,7 @@ async function run() {
     await screenshot(page, "login-desktop-1440.png");
 
     await page.getByRole("textbox", { name: "E-mail" }).fill("synthetic@example.invalid");
-    await page.getByLabel("Senha").fill("not-a-real-password");
+    await page.getByRole("textbox", { name: "Senha", exact: true }).fill("not-a-real-password");
     await page.getByRole("button", { name: "Entrar" }).click();
     await page.getByRole("alert").waitFor();
     assert.equal(
