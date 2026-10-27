@@ -19,16 +19,21 @@ function ActivatePage() {
     if (parsed) setCredential(parsed);
     window.history.replaceState(null, "", "/activate");
   }, []);
-  async function submit(event: FormEvent) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending || !credential) return;
-    if (password !== confirmation) {
+    const fields = new FormData(event.currentTarget);
+    const submittedPassword = String(fields.get("password") ?? "");
+    const submittedConfirmation = String(fields.get("confirmation") ?? "");
+    if (submittedPassword !== submittedConfirmation) {
       setMessage("As senhas devem ser iguais.");
       return;
     }
     setPending(true);
     try {
-      const result = await activatePasswordFn({ data: { credential, password } });
+      const result = await activatePasswordFn({
+        data: { credential, password: submittedPassword },
+      });
       setMessage(result.message);
       if (result.ok) {
         setDone(true);
@@ -56,6 +61,7 @@ function ActivatePage() {
               Nova senha
               <input
                 aria-label="Nova senha"
+                name="password"
                 type="password"
                 autoComplete="new-password"
                 required
@@ -70,6 +76,7 @@ function ActivatePage() {
               Confirmar senha
               <input
                 aria-label="Confirmar senha"
+                name="confirmation"
                 type="password"
                 autoComplete="new-password"
                 required

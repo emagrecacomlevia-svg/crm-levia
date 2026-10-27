@@ -71,3 +71,27 @@ Validação local: build de produção, TypeScript, lint e 68 testes automatizad
 incluindo fragmentos padrão/personalizado, rejeição de token inválido, recusa de
 senha pelo provedor e revogação após sucesso. Sem alterações em banco, grants,
 migrations ou Edge Functions.
+
+## Recuperação confirmada e correção de autofill (27/10/2026)
+
+Logs do projeto confirmam `user_updated_password` do titular em
+2026-10-27T02:55:22Z (26/10 às 23:55:22 em São Paulo), acompanhado de PUT /user
+200 e logout 204. A tentativa seguinte, às 02:55:39Z, retornou
+`invalid_credentials` (POST /token 400). Não confundir o evento `login` da
+verificação do link de recuperação com login por senha homologado.
+
+A configuração de retorno deixou de bloquear essa recuperação; nenhum template
+SMTP personalizado foi necessário. O preview reconheceu o fragmento padrão em
+teste sintético, sem envio de senha. A atualização real foi confirmada nos logs.
+
+Corrigida a coleta de credenciais nos formulários de login e ativação: FormData
+obtém os valores presentes nos campos no instante da submissão, evitando enviar
+estado React antigo quando autofill não dispara onChange. Senhas não são
+normalizadas, registradas ou persistidas. Testes reproduzem alteração direta dos
+campos sem eventos React, incluindo confirmação divergente. A causa da tentativa
+real ainda não está comprovada; não atribuir automaticamente ao usuário ou autofill.
+
+Validação: build de produção, TypeScript, lint dos arquivos alterados e 71 testes
+aprovados. Sem mudanças em contas, banco, grants ou Edge Functions. Próxima ação
+pessoal: recarregar /login e digitar privadamente a senha recém-definida, evitando
+a sugestão antiga do gerenciador. A homologação depende desse login real.

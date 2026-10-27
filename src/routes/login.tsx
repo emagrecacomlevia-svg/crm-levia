@@ -22,10 +22,15 @@ function LoginPage() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending) return;
+    const fields = new FormData(event.currentTarget);
+    const submittedEmail = String(fields.get("email") ?? "");
+    const submittedPassword = String(fields.get("password") ?? "");
     setError("");
     setPending(true);
     try {
-      const result = await signInFn({ data: { email, password } });
+      const result = await signInFn({
+        data: { email: submittedEmail, password: submittedPassword },
+      });
       if (!result.ok) {
         setError(result.message);
         return;
