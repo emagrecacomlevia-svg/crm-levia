@@ -23,3 +23,24 @@ jobs:
           echo "Wrong-method HTTP status: $status"
           test "$status" = 405
           echo "PASS: deployed Edge blocks anonymous requests and unexpected methods"
+      - name: Verify independent renewal approval endpoint denies anonymous and invalid JWTs
+        run: |
+          set -Eeuo pipefail
+          url=https://dfhjfajbmnsgrklhqtjk.supabase.co/functions/v1/hub-catalog-renew-approve
+          valid_until=2026-11-02T12:00:00Z
+          payload="{\"action\":\"approve-renewal\",\"requestRef\":\"LEVIA-HUB05R-LIVENEGATIVEQA001\",\"subject\":\"e0000000-0000-4000-8000-000000000002\",\"validUntil\":\"$valid_until\"}"
+          status=$(curl -sS -m 18 -X POST -H 'content-type: application/json' \
+            --data "$payload" -o /tmp/hub05-renew-anon -w '%{http_code}' "$url")
+          echo "Anonymous approval HTTP status: $status"
+          test "$status" = 401
+          grep -q '"ok":false' /tmp/hub05-renew-anon
+          status=$(curl -sS -m 18 -o /tmp/hub05-renew-get -w '%{http_code}' "$url")
+          echo "Renewal wrong-method status: $status"
+          test "$status" = 405
+          status=$(curl -sS -m 18 -X POST -H 'content-type: application/json' \
+            -H 'Authorization: Bearer invalid.invalid.invalid' \
+            --data "$payload" -o /tmp/hub05-renew-invalid -w '%{http_code}' "$url")
+          echo "Invalid JWT approval HTTP status: $status"
+          test "$status" = 401
+          grep -q '"ok":false' /tmp/hub05-renew-invalid
+          echo 'PASS: live renewal approval endpoint refuses anonymous, bad method and invalid bearer'
