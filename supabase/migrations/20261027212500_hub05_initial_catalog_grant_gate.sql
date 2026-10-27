@@ -108,6 +108,8 @@ begin
       pg_catalog.jsonb_build_object(
         'operation','hub05-initial-catalog-grant',
         'approval_ref',p_approval_ref,
+        'executor_role',current_user,
+        'approver_provenance','original-real-hub04-bootstrap',
         'reason',pg_catalog.btrim(p_reason),
         'capability',v_cap,
         'scope_kind','module',

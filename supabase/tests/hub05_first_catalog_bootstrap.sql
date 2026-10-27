@@ -153,7 +153,9 @@ begin
          and context->>'approval_ref'='LEVIA-HUB05-20261027QA001'
          and context->>'actor_snapshot'='c0000000-0000-4000-8000-000000000001'
          and actor_auth_user_id='c0000000-0000-4000-8000-000000000001'
-         and context->>'scope_key'='catalog') <> 2 then
+         and context->>'scope_key'='catalog'
+         and context->>'executor_role'='postgres'
+         and context->>'approver_provenance'='original-real-hub04-bootstrap') <> 2 then
     raise exception 'Atomic bootstrap capability, audit or provenance mismatch';
   end if;
   if not hub_catalog_private.actor_has_access(
