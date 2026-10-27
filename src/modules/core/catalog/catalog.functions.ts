@@ -4,8 +4,10 @@ import { getVerifiedServerAccessToken } from "@/modules/identity/auth.functions"
 import { getPublicSupabaseSettings } from "@/modules/identity/server/auth-api.server";
 import { isCatalogCommand, type CatalogCommand, type CatalogSnapshot } from "./persistent";
 
-type CatalogResult = { ok: true; snapshot: CatalogSnapshot } | { ok: true; id: string } |
-  { ok: false; message: string };
+type CatalogResult =
+  | { ok: true; snapshot: CatalogSnapshot }
+  | { ok: true; id: string }
+  | { ok: false; message: string };
 
 async function gateway(request: Record<string, string | number>): Promise<CatalogResult> {
   const token = await getVerifiedServerAccessToken();
@@ -16,7 +18,8 @@ async function gateway(request: Record<string, string | number>): Promise<Catalo
     const res = await fetch(cfg.origin + "/functions/v1/hub-catalog", {
       method: "POST",
       headers: {
-        apikey: cfg.key, authorization: "Bearer " + token,
+        apikey: cfg.key,
+        authorization: "Bearer " + token,
         "content-type": "application/json",
       },
       body: JSON.stringify(request),
@@ -37,7 +40,16 @@ async function gateway(request: Record<string, string | number>): Promise<Catalo
         ? { ok: true, id: raw["id"] }
         : { ok: false, message: "Persistência não confirmada." };
     }
-    const names = ["items", "versions", "tables", "prices", "selections", "campaigns", "references", "audit"] as const;
+    const names = [
+      "items",
+      "versions",
+      "tables",
+      "prices",
+      "selections",
+      "campaigns",
+      "references",
+      "audit",
+    ] as const;
     if (names.some((name) => !Array.isArray(raw[name])))
       return { ok: false, message: "Resposta incompleta do catálogo." };
     return { ok: true, snapshot: raw as unknown as CatalogSnapshot };
@@ -46,8 +58,8 @@ async function gateway(request: Record<string, string | number>): Promise<Catalo
   }
 }
 
-export const getCatalogSnapshotFn = createServerFn({ method: "GET" }).handler(
-  async () => gateway({ action: "snapshot" }),
+export const getCatalogSnapshotFn = createServerFn({ method: "GET" }).handler(async () =>
+  gateway({ action: "snapshot" }),
 );
 
 export const writeCatalogFn = createServerFn({ method: "POST" })

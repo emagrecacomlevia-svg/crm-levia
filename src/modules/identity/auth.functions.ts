@@ -217,7 +217,6 @@ export const activatePasswordFn = createServerFn({ method: "POST" })
     }
   });
 
-
 /** Private backend helper. Never expose bearer tokens via a createServerFn return. */
 export async function getVerifiedServerAccessToken(): Promise<string | null> {
   try {
