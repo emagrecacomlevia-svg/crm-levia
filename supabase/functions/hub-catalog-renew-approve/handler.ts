@@ -13,8 +13,10 @@ function answer(status: number, data: Record<string, unknown>) {
   });
 }
 function uuid(x: unknown): x is string {
-  return typeof x === "string" &&
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(x);
+  return (
+    typeof x === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(x)
+  );
 }
 function approvalPayload(x: unknown): x is {
   action: "approve-renewal";
@@ -24,17 +26,22 @@ function approvalPayload(x: unknown): x is {
 } {
   if (!x || typeof x !== "object" || Array.isArray(x)) return false;
   const p = x as Record<string, unknown>;
-  if (Object.keys(p).sort().join(",") !== "action,requestRef,subject,validUntil" ||
+  if (
+    Object.keys(p).sort().join(",") !== "action,requestRef,subject,validUntil" ||
     p.action !== "approve-renewal" ||
     !uuid(p.subject) ||
     typeof p.requestRef !== "string" ||
     !/^LEVIA-HUB05R-[A-Z0-9]{12,32}$/.test(p.requestRef) ||
     typeof p.validUntil !== "string" ||
     !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?Z$/.test(p.validUntil)
-  ) return false;
+  )
+    return false;
   const at = Date.parse(p.validUntil);
-  return Number.isFinite(at) && at > Date.now() + 60 * 60 * 1000 &&
-    at <= Date.now() + 7 * 24 * 60 * 60 * 1000;
+  return (
+    Number.isFinite(at) &&
+    at > Date.now() + 60 * 60 * 1000 &&
+    at <= Date.now() + 7 * 24 * 60 * 60 * 1000
+  );
 }
 
 export async function hubCatalogRenewalApprovalHandler(
@@ -43,8 +50,7 @@ export async function hubCatalogRenewalApprovalHandler(
 ) {
   if (request.method !== "POST") return answer(405, { ok: false });
   const bearer = request.headers.get("authorization") ?? "";
-  if (!/^Bearer [A-Za-z0-9._~-]+$/.test(bearer))
-    return answer(401, { ok: false });
+  if (!/^Bearer [A-Za-z0-9._~-]+$/.test(bearer)) return answer(401, { ok: false });
   const cfg = edgeConfiguration();
   if (!cfg) return answer(503, { ok: false });
   let input: unknown;
@@ -57,14 +63,11 @@ export async function hubCatalogRenewalApprovalHandler(
 
   let approver: string;
   try {
-    const result = await (dependencies.fetcher ?? fetch)(
-      cfg.authOrigin + "/auth/v1/user",
-      {
-        headers: { apikey: cfg.key, authorization: bearer },
-        cache: "no-store",
-        signal: AbortSignal.timeout(8000),
-      },
-    );
+    const result = await (dependencies.fetcher ?? fetch)(cfg.authOrigin + "/auth/v1/user", {
+      headers: { apikey: cfg.key, authorization: bearer },
+      cache: "no-store",
+      signal: AbortSignal.timeout(8000),
+    });
     if (!result.ok) return answer(401, { ok: false });
     const verified: unknown = await result.json();
     approver = (verified as { id?: unknown })?.id as string;
@@ -83,7 +86,10 @@ export async function hubCatalogRenewalApprovalHandler(
   const sql = (dependencies.connect ?? postgres)(cfg.rawUrl, {
     password: cfg.password,
     ssl: { rejectUnauthorized: true, ...(cfg.ca ? { ca: cfg.ca } : {}) },
-    max: 1, prepare: false, connect_timeout: 8, idle_timeout: 3,
+    max: 1,
+    prepare: false,
+    connect_timeout: 8,
+    idle_timeout: 3,
   });
   try {
     await sql.begin(async (tx) => {
