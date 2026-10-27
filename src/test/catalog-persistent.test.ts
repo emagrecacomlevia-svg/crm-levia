@@ -6,22 +6,54 @@ import {
 } from "@/modules/core/catalog/persistent";
 
 const empty: CatalogSnapshot = {
-  items: [], versions: [], tables: [], prices: [], selections: [],
-  campaigns: [], references: [], audit: [],
+  items: [],
+  versions: [],
+  tables: [],
+  prices: [],
+  selections: [],
+  campaigns: [],
+  references: [],
+  audit: [],
 };
 const active: CatalogSnapshot = {
   ...empty,
   tables: [
-    { id: "v1", revision: 1, audience: "DEMO", currency: "BRL",
-      validFrom: "2026-01-01", validUntil: "2027-01-01", terms: "Somente demonstração" },
-    { id: "v2", revision: 2, audience: "DEMO", currency: "BRL",
-      validFrom: "2026-10-01", validUntil: "2026-11-01", terms: "Somente demonstração" },
+    {
+      id: "v1",
+      revision: 1,
+      audience: "DEMO",
+      currency: "BRL",
+      validFrom: "2026-01-01",
+      validUntil: "2027-01-01",
+      terms: "Somente demonstração",
+    },
+    {
+      id: "v2",
+      revision: 2,
+      audience: "DEMO",
+      currency: "BRL",
+      validFrom: "2026-10-01",
+      validUntil: "2026-11-01",
+      terms: "Somente demonstração",
+    },
   ],
   selections: [
-    { id: "s1", commercialVersionId: "v1", selectedOn: "2026-10-01",
-      reason: "Primeira escolha fictícia válida", decisionOrder: 1, actor: "MOCK" },
-    { id: "s2", commercialVersionId: "v2", selectedOn: "2026-10-27",
-      reason: "Segunda escolha fictícia válida", decisionOrder: 2, actor: "MOCK" },
+    {
+      id: "s1",
+      commercialVersionId: "v1",
+      selectedOn: "2026-10-01",
+      reason: "Primeira escolha fictícia válida",
+      decisionOrder: 1,
+      actor: "MOCK",
+    },
+    {
+      id: "s2",
+      commercialVersionId: "v2",
+      selectedOn: "2026-10-27",
+      reason: "Segunda escolha fictícia válida",
+      decisionOrder: 2,
+      actor: "MOCK",
+    },
   ],
 };
 
