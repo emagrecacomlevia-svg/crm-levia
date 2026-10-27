@@ -43,3 +43,31 @@ Os avisos informativos de RLS sem policies são esperados: o schema é privado e
 Nenhum comando foi enviado ao agente Lovable. O código chega à branch vinculada por merge Git normal, sem rebase ou force-push. Publicação do site e configurações do Lovable não foram alteradas.
 
 O preview requer autenticação no Lovable e o projeto continua sem publicação. A validação do login do titular depende do acesso privado ao preview e da sua credencial de aplicação. Site URL foi observado como `http://localhost:3000`, sem redirects adicionais; deve ser atualizado somente quando houver destino de aplicação homologado. Não declarar homologação operacional completa enquanto o login real e o destino dos fluxos de e-mail estiverem pendentes.
+
+## Correção de recuperação pelo e-mail padrão (26/10/2026)
+
+O painel real bloqueia edição de templates sem SMTP personalizado. A orientação
+anterior de editar o HTML não se aplica a esta configuração. Não configurar SMTP
+nem substituir contas para contornar o problema.
+
+`/activate` agora aceita também o fragmento padrão `type=recovery&access_token=...`,
+além do `token_hash` personalizado. Remove o fragmento do histórico imediatamente,
+não persiste credenciais em storage e não retém refresh tokens. O backend verifica
+a identidade com Supabase Auth antes de solicitar a mudança da senha e revoga a
+sessão de recuperação após sucesso. Nenhuma permissão é derivada do fragmento.
+
+Configuração manual ainda necessária no painel autenticado do titular:
+Authentication → URL Configuration → Site URL:
+`https://id-preview--83c750f7-9e88-4997-a06d-b86c37d59b5b.lovable.app/activate`.
+Este é um destino provisório de desenvolvimento, não um domínio de produção.
+Salvar, abrir o preview previamente no mesmo navegador (autenticando no Lovable
+se necessário), solicitar um novo e-mail e definir a senha privadamente. Não usar
+links antigos nem compartilhar links completos, tokens ou senhas.
+
+A sincronização automática do preview precisa ser confirmada antes do teste real.
+Não foi alterado Site URL via conector nem enviado e-mail nesta correção.
+O reset real e o login do titular continuam pendentes; não declarar homologação.
+Validação local: build de produção, TypeScript, lint e 68 testes automatizados,
+incluindo fragmentos padrão/personalizado, rejeição de token inválido, recusa de
+senha pelo provedor e revogação após sucesso. Sem alterações em banco, grants,
+migrations ou Edge Functions.

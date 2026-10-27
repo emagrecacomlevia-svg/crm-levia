@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   activatePassword,
+  resetPasswordWithAccessToken,
   refreshTokens,
   revokeToken,
   signIn,
@@ -114,5 +115,40 @@ describe("HUB-04 GoTrue server adapter", () => {
       "invalid",
     );
     expect(spy).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("standard recovery email", () => {
+  it("validates the identity, updates the password, then revokes the recovery session", async () => {
+    const spy = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "synthetic-user" })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "synthetic-user" })))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", spy);
+    expect(
+      await resetPasswordWithAccessToken("synthetic-access", "long-synthetic-password"),
+    ).toEqual({ kind: "ok", data: null });
+    expect(spy.mock.calls.map((call) => call[1].method)).toEqual(["GET", "PUT", "POST"]);
+    expect(spy.mock.calls[2]?.[0]).toBe("https://synthetic.supabase.co/auth/v1/logout");
+  });
+  it("does not change passwords for forged or expired tokens", async () => {
+    const spy = vi.fn().mockResolvedValue(new Response("{}", { status: 401 }));
+    vi.stubGlobal("fetch", spy);
+    expect(await resetPasswordWithAccessToken("forged", "long-synthetic-password")).toEqual({
+      kind: "invalid",
+    });
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+  it("does not report success when the provider rejects the password", async () => {
+    const spy = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "synthetic-user" })))
+      .mockResolvedValueOnce(new Response("{}", { status: 400 }));
+    vi.stubGlobal("fetch", spy);
+    expect(
+      await resetPasswordWithAccessToken("synthetic-access", "long-synthetic-password"),
+    ).toEqual({ kind: "invalid" });
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 });

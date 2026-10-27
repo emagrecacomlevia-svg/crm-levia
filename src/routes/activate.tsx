@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
+import { recoveryFromFragment, type RecoveryCredential } from "@/modules/identity/recovery";
 import { activatePasswordFn } from "@/modules/identity/auth.functions";
 
 export const Route = createFileRoute("/activate")({
@@ -7,33 +8,33 @@ export const Route = createFileRoute("/activate")({
   headers: () => ({ "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" }),
 });
 function ActivatePage() {
-  const [tokenHash, setTokenHash] = useState("");
+  const [credential, setCredential] = useState<RecoveryCredential | null>(null);
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
   useEffect(() => {
-    const hash = new URLSearchParams(window.location.hash.slice(1)).get("token_hash") ?? "";
-    setTokenHash(hash);
+    const parsed = recoveryFromFragment(window.location.hash);
+    if (parsed) setCredential(parsed);
     window.history.replaceState(null, "", "/activate");
   }, []);
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (pending) return;
+    if (pending || !credential) return;
     if (password !== confirmation) {
       setMessage("As senhas devem ser iguais.");
       return;
     }
     setPending(true);
     try {
-      const result = await activatePasswordFn({ data: { tokenHash, password } });
+      const result = await activatePasswordFn({ data: { credential, password } });
       setMessage(result.message);
       if (result.ok) {
         setDone(true);
         setPassword("");
         setConfirmation("");
-        setTokenHash("");
+        setCredential(null);
       }
     } catch {
       setMessage("Não foi possível definir a senha. Verifique o link e tente novamente.");
@@ -80,12 +81,12 @@ function ActivatePage() {
               />
             </label>
             <button
-              disabled={pending || !tokenHash}
+              disabled={pending || !credential}
               className="w-full rounded-lg bg-forest px-5 py-3 font-semibold text-white disabled:opacity-50"
             >
               {pending ? "Salvando..." : "Definir senha"}
             </button>
-            {!tokenHash && (
+            {!credential && (
               <p className="text-sm text-muted-foreground">
                 Abra esta página pelo seu link privado de ativação.
               </p>

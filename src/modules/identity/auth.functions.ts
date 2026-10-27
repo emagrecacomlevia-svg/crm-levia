@@ -1,7 +1,9 @@
+import { isRecoveryCredential, type RecoveryCredential } from "./recovery";
 import { createServerFn } from "@tanstack/react-start";
 
 import {
   activatePassword,
+  resetPasswordWithAccessToken,
   refreshTokens,
   revokeToken,
   signIn,
@@ -166,11 +168,10 @@ export const checkCapabilityFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => authorizationStatus(data));
 
 export const activatePasswordFn = createServerFn({ method: "POST" })
-  .validator((data: { tokenHash: string; password: string }) => {
+  .validator((data: { credential: RecoveryCredential; password: string }) => {
     if (
       !data ||
-      typeof data.tokenHash !== "string" ||
-      !/^[a-f0-9]{64}$/i.test(data.tokenHash) ||
+      !isRecoveryCredential(data.credential) ||
       typeof data.password !== "string" ||
       data.password.length < 12 ||
       data.password.length > 128
@@ -180,10 +181,13 @@ export const activatePasswordFn = createServerFn({ method: "POST" })
     return data;
   })
   .handler(async ({ data }) => {
-    const result = await activatePassword(data.tokenHash, data.password);
+    const result =
+      data.credential.kind === "hash"
+        ? await activatePassword(data.credential.value, data.password)
+        : await resetPasswordWithAccessToken(data.credential.value, data.password);
     if (result.kind !== "ok")
       return { ok: false, message: "Link inválido, expirado ou já utilizado." };
     // Password changes can revoke the recovery session; use the normal login next.
-    await revokeToken(result.data.accessToken);
+    if (result.data) await revokeToken(result.data.accessToken);
     return { ok: true, message: "Senha definida. Entre com seu e-mail e sua nova senha." };
   });

@@ -143,3 +143,18 @@ export async function activatePassword(
   if (changed.kind !== "ok") return changed;
   return tokens;
 }
+
+/** Standard Supabase email callback: Auth validates the bearer before any change.
+ * No identity/grant is accepted from the fragment or unverified JWT claims.
+ */
+export async function resetPasswordWithAccessToken(
+  accessToken: string,
+  password: string,
+): Promise<AuthApiResult<null>> {
+  const identity = await verifyIdentity(accessToken);
+  if (identity.kind !== "ok") return identity;
+  const changed = await goTrue("/auth/v1/user", "PUT", { password }, accessToken);
+  if (changed.kind !== "ok") return changed;
+  await revokeToken(accessToken);
+  return { kind: "ok", data: null };
+}
