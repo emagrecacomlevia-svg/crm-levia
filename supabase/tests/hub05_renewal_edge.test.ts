@@ -62,7 +62,7 @@ function db(errorCode?: string) {
     },
   };
   const driver = {
-    begin: async (fn: (tx: typeof tx) => Promise<unknown>) => fn(tx),
+    begin: async (fn: (transaction: typeof tx) => Promise<unknown>) => fn(tx),
     end: async () => undefined,
   };
   return { connect: (() => driver) as unknown as typeof postgres, calls };
