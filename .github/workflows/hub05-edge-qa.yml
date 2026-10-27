@@ -1,0 +1,16 @@
+name: HUB-05 Edge Typecheck
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deno:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: deno check --config supabase/functions/hub-catalog/deno.json supabase/functions/hub-catalog/index.ts
