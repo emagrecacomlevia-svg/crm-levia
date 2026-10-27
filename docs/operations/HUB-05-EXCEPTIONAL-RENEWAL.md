@@ -51,7 +51,7 @@ Uma nova renovação exigirá **outro login do aprovador, outro requestRef, outr
 
 ## Testes e artefatos
 
-- `supabase/migrations/20261027224500_hub05_catalog_exceptional_renewal.sql`: apenas schema, funções privadas e ACLs, **não insere grants**.
+- `supabase/migrations/20261027225152_hub05_catalog_exceptional_renewal.sql`: apenas schema, funções privadas e ACLs, **não insere grants**.
 - `supabase/tests/hub05_renewal.sql`: PostgreSQL 17 descartável, duas renovações sucessivas com aprovações distintas, expirado/ativo, autoatribuição, usuário incorreto, sessão falsa, digest inválido, replay, revogação por incidente, falha induzida de auditoria e rollback.
 - `supabase/tests/hub05_renewal_edge.test.ts`: contratos HTTP com Auth e banco MOCK, sem rede ou segredos reais.
 - `.github/workflows/hub05-full-auth-qa.yml` e `.github/workflows/hub05-edge-qa.yml`: rodadas isoladas e regressão.
