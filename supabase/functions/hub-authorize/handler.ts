@@ -11,6 +11,8 @@ import { edgeConfiguration, verifiedSessionId, boundedJson } from "../_shared/co
 const capabilities = new Set([
   "core.read",
   "users.manage",
+  "catalog.read",
+  "catalog.write",
   "crm.read",
   "crm.write",
   "social.read",

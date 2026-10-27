@@ -216,3 +216,15 @@ export const activatePasswordFn = createServerFn({ method: "POST" })
       };
     }
   });
+
+
+/** Private backend helper. Never expose bearer tokens via a createServerFn return. */
+export async function getVerifiedServerAccessToken(): Promise<string | null> {
+  try {
+    const session = await getLeviaSession();
+    const status = await identityForSession(session);
+    return status.state === "authenticated" ? (session.data.accessToken ?? null) : null;
+  } catch {
+    return null;
+  }
+}

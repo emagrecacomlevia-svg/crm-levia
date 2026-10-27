@@ -35,8 +35,10 @@ function allowed(change: Partial<Parameters<typeof canAccess>[0]> = {}) {
 }
 
 describe("HUB-04 strict deny-by-default domain policy", () => {
-  it("defines precisely nine capabilities and the six audit event types", () => {
-    expect(CAPABILITIES).toHaveLength(9);
+  it("defines nine HUB-04 and two HUB-05 capabilities and the six audit event types", () => {
+    expect(CAPABILITIES).toHaveLength(11);
+    expect(CAPABILITIES).toContain("catalog.read");
+    expect(CAPABILITIES).toContain("catalog.write");
     expect(new Set(CAPABILITIES).size).toBe(9);
     expect(AUDIT_EVENT_TYPES).toHaveLength(6);
     expect(isAuditEventType("grant_revoked")).toBe(true);
