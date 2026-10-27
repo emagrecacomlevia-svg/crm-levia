@@ -1,5 +1,7 @@
 # HUB-04B2B-R01 — Plano de exportação lógica controlada (AT-024)
 
+> **Estado atual (27/10/2026):** consulte o [fechamento técnico HUB-04](../delivery-reports/HUB-04-CLOSURE-20261027.md). As pendências e restrições datadas abaixo descrevem checkpoints históricos; administrador, recuperação e acesso real já foram confirmados. Os limites de produção e recuperação integral continuam explícitos no fechamento.
+
 **Estado:** procedimento projetado; apenas ensaio sintético autorizado. **Não existe backup lógico real do Supabase LEVIA**. Não executar `supabase db dump` no remoto sem nova autorização específica.
 
 ## Objetivo, destino e premissas

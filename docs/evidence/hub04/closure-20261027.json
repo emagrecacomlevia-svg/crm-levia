@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-27",
+  "code_commit": "1cdcedddce92eb2be637a79ed788a1c7753ecefe",
+  "status": "Operational development with explicit production and recovery limitations",
+  "application_tests": 73,
+  "build_types_lint": "passed",
+  "owner_recovery_password_login_at_utc": "2026-10-27T11:51:43Z",
+  "user_acceptance": ["automatic login and dashboard", "password visibility"],
+  "database": {
+    "auth_users": 2,
+    "confirmed_users": 2,
+    "enabled_admins": 1,
+    "grants": 2,
+    "audit_events": 15,
+    "private_rls_tables": 4,
+    "client_schema_denied": true,
+    "migration_count": 4,
+    "canonical_hashes_match": true
+  },
+  "http_checks": [
+    {
+      "name": "auth_settings",
+      "status": 200,
+      "signup_disabled": true,
+      "anonymous_disabled": true,
+      "email_confirmation_required": true
+    },
+    {
+      "name": "authorize_unauthenticated",
+      "status": 401
+    },
+    {
+      "name": "write_unauthenticated",
+      "status": 401
+    },
+    {
+      "name": "maintenance",
+      "status": 410
+    },
+    {
+      "name": "private_schema",
+      "status": 406
+    }
+  ],
+  "security": {
+    "errors": 0,
+    "warnings": ["auth_leaked_password_protection"],
+    "expected_rls_info": 4
+  },
+  "performance": {
+    "errors": 0,
+    "warnings": 0,
+    "unused_index_info": 1
+  },
+  "github": {
+    "open_issues_and_prs": 0,
+    "main_protected": false
+  },
+  "lovable": {
+    "read_only": true,
+    "published": false,
+    "synced_code_commit": "1cdcedddce92eb2be637a79ed788a1c7753ecefe"
+  },
+  "backup": {
+    "drive_file_id": "1V76mktX2WKF-3oFa_QTcHHIM5BjTIDEL",
+    "bytes": 876537,
+    "sha256": "2c5bdf3350355f6a366e2048262f8b7e0647080eef037ef114356f75e0c55336",
+    "local_zip_crc": "passed",
+    "local_bundle_clone_fsck": "passed",
+    "drive_metadata_readback": true,
+    "managed_auth_storage_backup": false
+  },
+  "limitations": [
+    "Free plan leaked-password protection",
+    "Personal MFA enrollment",
+    "No full managed Auth/Storage/Vault restore or PITR certification",
+    "No Lovable publication per read-only instruction",
+    "Main branch unprotected; connector lacks administration capability",
+    "Owner standalone manual login and logout not directly witnessed; synthetic logout/replay evidence retained"
+  ],
+  "independent_auditor_approval_claimed": false,
+  "production_homologation": false
+}

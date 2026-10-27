@@ -1,5 +1,7 @@
 # HUB-04 — Execução WORK de 25/10/2026
 
+> **Estado atual (27/10/2026):** consulte o [fechamento técnico HUB-04](HUB-04-CLOSURE-20261027.md). As pendências e restrições datadas abaixo descrevem checkpoints históricos; administrador, recuperação e acesso real já foram confirmados. Os limites de produção e recuperação integral continuam explícitos no fechamento.
+
 **Estado atualizado em 26/10/2026, 19h35 (America/Sao_Paulo):** primeiro administrador real ativado no backend de desenvolvimento. Duas identidades Auth confirmadas, uma conta administrativa habilitada, duas concessões mínimas e quatro novos eventos de auditoria, preservando os 11 eventos sintéticos anteriores. A repetição do bootstrap foi negada. Falta verificar o login real do titular na aplicação; o preview exige autenticação no Lovable e não há site publicado. A homologação operacional completa ainda não foi declarada.
 
 ## Histórico reconciliado e pendências

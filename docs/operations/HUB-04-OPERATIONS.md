@@ -1,5 +1,7 @@
 # HUB-04 — Operação do backend e recuperação
 
+> **Estado atual (27/10/2026):** consulte o [fechamento técnico HUB-04](../delivery-reports/HUB-04-CLOSURE-20261027.md). As pendências e restrições datadas abaixo descrevem checkpoints históricos; administrador, recuperação e acesso real já foram confirmados. Os limites de produção e recuperação integral continuam explícitos no fechamento.
+
 Referência: missão expressamente autorizada em 25/10/2026. Este registro atualiza os procedimentos AT-040/AT-041; preserva os registros históricos.
 
 ## Implantação
