@@ -128,10 +128,12 @@ export async function revokeToken(accessToken: string): Promise<boolean> {
   return result.kind === "ok";
 }
 
+export type RecoveryResult = AuthApiResult<AuthTokens> | { kind: "password-updated-login-failed" };
+
 export async function activatePassword(
   tokenHash: string,
   password: string,
-): Promise<AuthApiResult<AuthTokens>> {
+): Promise<RecoveryResult> {
   const verified = await goTrue("/auth/v1/verify", "POST", {
     token_hash: tokenHash,
     type: "recovery",
@@ -139,22 +141,29 @@ export async function activatePassword(
   if (verified.kind !== "ok") return verified;
   const tokens = decodeTokens(verified.data);
   if (tokens.kind !== "ok") return tokens;
-  const changed = await goTrue("/auth/v1/user", "PUT", { password }, tokens.data.accessToken);
-  if (changed.kind !== "ok") return changed;
-  return tokens;
+  return resetPasswordWithAccessToken(tokens.data.accessToken, password);
 }
 
-/** Standard Supabase email callback: Auth validates the bearer before any change.
- * No identity/grant is accepted from the fragment or unverified JWT claims.
+/** Validate the recovery identity, change the password, revoke the recovery session,
+ * then prove that the SAME identity can authenticate with the new password.
+ * Tokens are server-only; this does not grant application permissions.
  */
 export async function resetPasswordWithAccessToken(
   accessToken: string,
   password: string,
-): Promise<AuthApiResult<null>> {
+): Promise<RecoveryResult> {
   const identity = await verifyIdentity(accessToken);
   if (identity.kind !== "ok") return identity;
+  if (!identity.data.email) return { kind: "invalid" };
   const changed = await goTrue("/auth/v1/user", "PUT", { password }, accessToken);
   if (changed.kind !== "ok") return changed;
+  // Revoke before password sign-in: global logout must not revoke the new session.
   await revokeToken(accessToken);
-  return { kind: "ok", data: null };
+  const login = await signIn(identity.data.email, password);
+  if (login.kind !== "ok") return { kind: "password-updated-login-failed" };
+  if (login.data.userId !== identity.data.id) {
+    await revokeToken(login.data.accessToken);
+    return { kind: "password-updated-login-failed" };
+  }
+  return login;
 }

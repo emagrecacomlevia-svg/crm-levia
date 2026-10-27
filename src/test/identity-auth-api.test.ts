@@ -97,13 +97,18 @@ describe("HUB-04 GoTrue server adapter", () => {
     const spy = vi
       .fn()
       .mockResolvedValueOnce(new Response(JSON.stringify(goodTokens)))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "synthetic-user" })));
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ id: "synthetic-user", email: "user@example.invalid" })),
+      )
+      .mockResolvedValueOnce(new Response("{}"))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(goodTokens)));
     vi.stubGlobal("fetch", spy);
     expect((await activatePassword("synthetic-token-hash", "a-long-synthetic-password")).kind).toBe(
       "ok",
     );
     expect(spy.mock.calls[0]?.[0]).toBe("https://synthetic.supabase.co/auth/v1/verify");
-    expect(spy.mock.calls[1]?.[1]).toMatchObject({
+    expect(spy.mock.calls[2]?.[1]).toMatchObject({
       method: "PUT",
       headers: { authorization: "Bearer synthetic-access-token" },
     });
@@ -122,14 +127,19 @@ describe("standard recovery email", () => {
   it("validates the identity, updates the password, then revokes the recovery session", async () => {
     const spy = vi
       .fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "synthetic-user" })))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "synthetic-user" })))
-      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ id: "synthetic-user", email: "user@example.invalid" })),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ id: "synthetic-user", email: "user@example.invalid" })),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(goodTokens)));
     vi.stubGlobal("fetch", spy);
     expect(
       await resetPasswordWithAccessToken("synthetic-access", "long-synthetic-password"),
-    ).toEqual({ kind: "ok", data: null });
-    expect(spy.mock.calls.map((call) => call[1].method)).toEqual(["GET", "PUT", "POST"]);
+    ).toMatchObject({ kind: "ok", data: { userId: "synthetic-user" } });
+    expect(spy.mock.calls.map((call) => call[1].method)).toEqual(["GET", "PUT", "POST", "POST"]);
     expect(spy.mock.calls[2]?.[0]).toBe("https://synthetic.supabase.co/auth/v1/logout");
   });
   it("does not change passwords for forged or expired tokens", async () => {
@@ -143,7 +153,9 @@ describe("standard recovery email", () => {
   it("does not report success when the provider rejects the password", async () => {
     const spy = vi
       .fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify({ id: "synthetic-user" })))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ id: "synthetic-user", email: "user@example.invalid" })),
+      )
       .mockResolvedValueOnce(new Response("{}", { status: 400 }));
     vi.stubGlobal("fetch", spy);
     expect(
@@ -152,3 +164,28 @@ describe("standard recovery email", () => {
     expect(spy).toHaveBeenCalledTimes(2);
   });
 });
+
+it.each(["rejected", "wrong-user"])(
+  "does not claim recovery login success when %s",
+  async (scenario) => {
+    const spy = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ id: "synthetic-user", email: "user@example.invalid" })),
+      )
+      .mockResolvedValueOnce(new Response("{}"))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(
+        scenario === "rejected"
+          ? new Response("{}", { status: 400 })
+          : new Response(JSON.stringify({ ...goodTokens, user: { id: "other-user" } })),
+      )
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", spy);
+    expect(await resetPasswordWithAccessToken("synthetic", "new-password")).toEqual({
+      kind: "password-updated-login-failed",
+    });
+    expect(spy.mock.calls[3]?.[0]).toContain("grant_type=password");
+    if (scenario === "wrong-user") expect(spy.mock.calls[4]?.[0]).toContain("/logout");
+  },
+);

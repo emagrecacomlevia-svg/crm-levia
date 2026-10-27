@@ -95,3 +95,28 @@ Validação: build de produção, TypeScript, lint dos arquivos alterados e 71 t
 aprovados. Sem mudanças em contas, banco, grants ou Edge Functions. Próxima ação
 pessoal: recarregar /login e digitar privadamente a senha recém-definida, evitando
 a sugestão antiga do gerenciador. A homologação depende desse login real.
+
+## Recuperação com login verificado (27/10/2026)
+
+As novas tentativas de 08:39:32 e 08:39:57 (São Paulo) continuaram retornando
+`invalid_credentials` no projeto correto. A versão de autofill estava sincronizada
+no preview. Conta confirmada, não banida, não excluída, provider email e identidade
+com e-mail correspondente. Autofill não explica comprovadamente o incidente.
+Não alterar credenciais via SQL nem ampliar permissões para contorná-lo.
+
+O fluxo de recuperação agora verifica a identidade pelo Auth, salva a senha,
+revoga a sessão de recuperação ANTES de criar outra e executa password grant com
+a mesma senha e o e-mail verificado pelo servidor. Confere que o UUID autenticado
+é o mesmo da recuperação. Somente então usa a rotina normal de sessão HttpOnly
+para abrir /app, onde as verificações de autorização continuam obrigatórias.
+Nenhuma permissão nova é concedida e nenhum token é retornado ao cliente.
+
+Em falha posterior à alteração, a mensagem distingue rejeição do password grant
+de falha da sessão do HUB; o formulário limpa credenciais e impede ressubmissão.
+A origem da recusa anterior permanece desconhecida. Não declarar login real nem
+homologação até o titular concluir o fluxo privadamente. Um NOVO link de recuperação
+é necessário porque o anterior já foi usado. Esta etapa pessoal testa uma mudança
+concreta, não uma nova tentativa do fluxo antigo.
+
+Build, TypeScript, lint e 73 testes aprovados, incluindo rejeição do password grant
+e bloqueio de identidade divergente. Banco, contas, grants e Edge Functions intactos.

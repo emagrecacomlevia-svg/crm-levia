@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { recoveryFromFragment, type RecoveryCredential } from "@/modules/identity/recovery";
 import { activatePasswordFn } from "@/modules/identity/auth.functions";
@@ -8,6 +8,8 @@ export const Route = createFileRoute("/activate")({
   headers: () => ({ "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" }),
 });
 function ActivatePage() {
+  const navigate = useNavigate();
+  const router = useRouter();
   const [credential, setCredential] = useState<RecoveryCredential | null>(null);
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -35,11 +37,15 @@ function ActivatePage() {
         data: { credential, password: submittedPassword },
       });
       setMessage(result.message);
-      if (result.ok) {
+      if (result.ok || ("passwordSaved" in result && result.passwordSaved)) {
         setDone(true);
         setPassword("");
         setConfirmation("");
         setCredential(null);
+        if (result.ok) {
+          await router.invalidate();
+          await navigate({ to: "/app" });
+        }
       }
     } catch {
       setMessage("Não foi possível definir a senha. Verifique o link e tente novamente.");

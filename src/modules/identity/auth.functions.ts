@@ -9,6 +9,7 @@ import {
   signIn,
   verifyIdentity,
   type VerifiedIdentity,
+  type AuthTokens,
 } from "./server/auth-api.server";
 import { clearLeviaSession, getLeviaSession, type LeviaSession } from "./server/session.server";
 import {
@@ -77,6 +78,19 @@ async function identityForSession(session: SessionStore): Promise<AuthStatus> {
 
 export const getAuthStatusFn = createServerFn({ method: "GET" }).handler(currentIdentity);
 
+async function establishSession(tokens: AuthTokens) {
+  const session = await getLeviaSession();
+  const state: LeviaSession = {
+    userId: tokens.userId,
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+    accessExpiresAt: Date.now() + tokens.expiresIn * 1000,
+    issuedAt: Date.now(),
+  };
+  await session.clear();
+  await session.update(state);
+}
+
 export const signInFn = createServerFn({ method: "POST" })
   .validator((data: { email: string; password: string }) => {
     if (
@@ -103,16 +117,7 @@ export const signInFn = createServerFn({ method: "POST" })
       };
     }
     try {
-      const session = await getLeviaSession();
-      const state: LeviaSession = {
-        userId: result.data.userId,
-        accessToken: result.data.accessToken,
-        refreshToken: result.data.refreshToken,
-        accessExpiresAt: Date.now() + result.data.expiresIn * 1000,
-        issuedAt: Date.now(),
-      };
-      await session.clear();
-      await session.update(state);
+      await establishSession(result.data);
       return { ok: true, message: "" };
     } catch {
       return { ok: false, message: "Configuração de sessão indisponível." };
@@ -185,9 +190,29 @@ export const activatePasswordFn = createServerFn({ method: "POST" })
       data.credential.kind === "hash"
         ? await activatePassword(data.credential.value, data.password)
         : await resetPasswordWithAccessToken(data.credential.value, data.password);
+    if (result.kind === "password-updated-login-failed")
+      return {
+        ok: false,
+        passwordSaved: true,
+        message:
+          "A senha foi salva, mas o Supabase não confirmou o login com ela. Não redefina novamente; informe esta mensagem ao suporte.",
+      };
     if (result.kind !== "ok")
-      return { ok: false, message: "Link inválido, expirado ou já utilizado." };
-    // Password changes can revoke the recovery session; use the normal login next.
-    if (result.data) await revokeToken(result.data.accessToken);
-    return { ok: true, message: "Senha definida. Entre com seu e-mail e sua nova senha." };
+      return {
+        ok: false,
+        message:
+          "Não foi possível concluir a recuperação. O link pode estar expirado ou a senha pode ter sido recusada.",
+      };
+    try {
+      await establishSession(result.data);
+      return { ok: true, message: "Senha salva e login confirmado. Acessando o HUB..." };
+    } catch {
+      await revokeToken(result.data.accessToken);
+      return {
+        ok: false,
+        passwordSaved: true,
+        message:
+          "Senha salva e validada, mas não foi possível abrir a sessão do HUB. Informe esta mensagem ao suporte.",
+      };
+    }
   });
