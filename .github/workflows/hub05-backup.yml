@@ -1,0 +1,41 @@
+name: HUB-05 Auditable Code and History Backup
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backup:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.ref == 'dev/hub-05-integrated-catalog-20261027'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Archive immutable checkpoint and branch history
+        run: |
+          set -Eeuo pipefail
+          mkdir -p artifacts/hub05-backup
+          current=$(git rev-parse HEAD)
+          tree=$(git rev-parse HEAD^{tree})
+          git archive --format=zip --output=artifacts/hub05-backup/LEVIA-HUB05-codigo.zip HEAD
+          git bundle create artifacts/hub05-backup/LEVIA-HUB05-historico.bundle --all
+          git bundle verify artifacts/hub05-backup/LEVIA-HUB05-historico.bundle
+          {
+            echo 'LEVIA HUB HUB-05 DEVELOPMENT CHECKPOINT'
+            echo "git_checkout_head=$current"
+            echo "git_tree=$tree"
+            echo "tracked_files=$(git ls-files | wc -l)"
+            echo "main_base=86a80be7bf79dd119a8cc33cdb1a7efee3327037"
+            echo "original_hub04_migration_blob=$(git rev-parse HEAD:supabase/migrations/20261024130000_identity_permissions.sql)"
+            echo "catalog_hub05_migration_blob=$(git rev-parse HEAD:supabase/migrations/20261027203757_hub05_catalog_campaigns.sql)"
+            (cd artifacts/hub05-backup && sha256sum LEVIA-HUB05-codigo.zip LEVIA-HUB05-historico.bundle)
+          } > artifacts/hub05-backup/LEVIA-HUB05-manifesto.txt
+          unzip -t artifacts/hub05-backup/LEVIA-HUB05-codigo.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LEVIA-HUB05-AT-DEV-BACKUP
+          path: artifacts/hub05-backup/
+          retention-days: 14
