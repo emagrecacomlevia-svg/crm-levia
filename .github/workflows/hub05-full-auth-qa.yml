@@ -30,6 +30,19 @@ jobs:
           done
           docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub05_authorization.sql
           docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub05_first_catalog_bootstrap.sql
+      - name: Verify positive QA is syntactically sound and gated against unauthorized runs
+        run: |
+          node --check scripts/qa-hub05-authenticated.mjs
+          set +e
+          env -u LEVIA_HUB05_EXPLICIT_APPROVAL -u LEVIA_HUB05_APPROVAL_REF \
+              -u LEVIA_HUB05_AUTH_BEARER -u LEVIA_HUB05_PUBLISHABLE_KEY \
+              -u LEVIA_HUB05_SUPABASE_ORIGIN \
+              node scripts/qa-hub05-authenticated.mjs > /tmp/hub05-gate.log 2>&1
+          result=$?
+          set -e
+          test "$result" = 2
+          grep -q '^BLOQUEADO:' /tmp/hub05-gate.log
+          echo 'PASS: real Auth/write QA requires explicit owner approval'
       - name: Cleanup
         if: always()
         run: docker rm -f hub05-full-pg || true

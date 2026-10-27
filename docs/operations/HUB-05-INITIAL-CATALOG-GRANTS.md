@@ -26,11 +26,11 @@ A função normal `hub_private.issue_capability_grant` exige `users.manage` **e*
    ```sql
    begin;
    select hub_private.bootstrap_initial_catalog_grants(
-     :approver_uuid::uuid,
-     :beneficiary_uuid::uuid,
-     :approval_reference,
-     :reason,
-     :valid_until::timestamptz
+     :'approver_uuid'::uuid,
+     :'beneficiary_uuid'::uuid,
+     :'approval_reference'::text,
+     :'reason'::text,
+     :'valid_until'::timestamptz
    );
    -- Verificar exatamente 2 grants module:catalog e 2 eventos com approval_ref.
    -- Conferir ator independente, IDs, validade, RLS intacta.
