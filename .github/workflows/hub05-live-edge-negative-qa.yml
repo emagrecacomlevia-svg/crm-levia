@@ -27,7 +27,7 @@ jobs:
         run: |
           set -Eeuo pipefail
           url=https://dfhjfajbmnsgrklhqtjk.supabase.co/functions/v1/hub-catalog-renew-approve
-          valid_until=2026-11-02T12:00:00Z
+          valid_until=$(date -u -d '+2 days' +'%Y-%m-%dT%H:%M:%SZ')
           payload="{\"action\":\"approve-renewal\",\"requestRef\":\"LEVIA-HUB05R-LIVENEGATIVEQA001\",\"subject\":\"e0000000-0000-4000-8000-000000000002\",\"validUntil\":\"$valid_until\"}"
           status=$(curl -sS -m 18 -X POST -H 'content-type: application/json' \
             --data "$payload" -o /tmp/hub05-renew-anon -w '%{http_code}' "$url")

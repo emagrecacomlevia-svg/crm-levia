@@ -37,7 +37,7 @@ A função normal `hub_private.issue_capability_grant` exige `users.manage` **e*
    commit;
    ```
    Não substituir os parâmetros por IDs fictícios. Parâmetros `psql` devem vir do operador autenticado, nunca de um browser.
-4. Confirmar leituras no banco após commit, comprovar revogação e expiração em QA operacional, preservar relatório privado de auditoria. Não renovar pelo bootstrap; concessões futuras seguem delegação normal auditada enquanto houver capacidade vigente.
+4. Confirmar leituras no banco após commit, comprovar revogação e expiração em QA operacional, preservar relatório privado de auditoria. **Não renovar pelo bootstrap inicial.** Quando o único administrador perder ambas as concessões por expiração normal, utilizar exclusivamente o [procedimento complementar de renovação com sessão Auth do aprovador independente e nova autorização do responsável](HUB-05-EXCEPTIONAL-RENEWAL.md). Nunca fazer autoatribuição nem extensão automática. A delegação normal continua sujeita à regra de possuir previamente a capability.
 5. Autenticar no app com o administrador legitimamente autorizado e verificar `/app/catalog`: consulta, criação DEMO, reload persistente e auditoria com `actor_snapshot` de usuário real. Testar também sem token, revogado, expirado e escopo incorreto. O procedimento não promete executar esses testes sem credenciais e autorização reais.
 
 ## Sem atalhos
