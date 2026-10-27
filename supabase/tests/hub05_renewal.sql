@@ -70,9 +70,9 @@ begin
   perform hub_private.approve_catalog_renewal(
    p_actor,p_session,p_subject,p_request,p_valid_until);
   raise exception 'Unexpectedly allowed independent approval';
- exception when insufficient_privilege then null;
+ exception when insufficient_privilege or unique_violation then null;
  end;
-end $$;
+end $;
 
 -- Without a genuine initial catalog grant, even the original Auth approver
 -- may not initialize renewal pre-approval.

@@ -194,7 +194,7 @@ begin
       and revoked_at is null and valid_until<=transaction_timestamp()
     for update;
     update hub_private.permission_grants
-      set revoked_at=pg_catalog.greatest(granted_at,transaction_timestamp()),
+      set revoked_at=greatest(granted_at,transaction_timestamp()),
           revoked_by_auth_user_id=v_approval.approver_auth_user_id
       where id=v_old.id and revoked_at is null;
     if not found then
