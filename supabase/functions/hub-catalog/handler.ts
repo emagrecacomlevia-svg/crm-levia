@@ -82,13 +82,14 @@ export async function hubCatalogHandler(
   }catch{return reply(503,{ok:false});}
   const session=verifiedSessionId(bearer);
   if(!session)return reply(401,{ok:false});
+  const params = p as Record<string, string | number>;
   const sql=(dependencies.connect??postgres)(cfg.rawUrl,{
     password:cfg.password,ssl:{rejectUnauthorized:true,...(cfg.ca?{ca:cfg.ca}:{})},
     max:1,prepare:false,connect_timeout:8,idle_timeout:3
   });
   try{
     const data=await sql.begin(async tx=>{
-      const write=p.action!=="snapshot";
+      const write=params.action!=="snapshot";
       if(write){
         await tx.unsafe("select id from auth.sessions where id=$1::uuid and user_id=$2::uuid for share",[session,actor]);
         await tx.unsafe("select auth_user_id from hub_private.admin_accounts where auth_user_id=$1::uuid for share",[actor]);
@@ -101,29 +102,29 @@ export async function hubCatalogHandler(
         await tx.unsafe("select pg_catalog.set_config('levia.hub05_actor',$1,true)",[actor]);
         await tx.unsafe("select pg_catalog.set_config('levia.hub05_session',$1,true)",[session]);
         let result;
-        switch(p.action){
+        switch(params.action){
         case "create-item":
-          result=await tx.unsafe("insert into hub_catalog_private.catalog_items(sku) values($1) returning id",[p.sku]);break;
+          result=await tx.unsafe("insert into hub_catalog_private.catalog_items(sku) values($1) returning id",[params.sku]);break;
         case "create-version":
-          await tx.unsafe("select id from hub_catalog_private.catalog_items where id=$1::uuid for update",[p.itemId]);
+          await tx.unsafe("select id from hub_catalog_private.catalog_items where id=$1::uuid for update",[params.itemId]);
           result=await tx.unsafe("insert into hub_catalog_private.catalog_versions(item_id,revision,name,presentation,segment,document_ref) select $1::uuid,coalesce(max(revision),0)+1,$2,$3,$4,$5 from hub_catalog_private.catalog_versions where item_id=$1::uuid returning id",
-            [p.itemId,p.name,p.presentation,p.segment,p.documentRef]);break;
+            [params.itemId,params.name,params.presentation,params.segment,params.documentRef]);break;
         case "create-table":
           await tx.unsafe("select pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext('hub05-commercial-revision'))");
           result=await tx.unsafe("insert into hub_catalog_private.commercial_versions(revision,audience,valid_from,valid_until,terms) select coalesce(max(revision),0)+1,$1,$2::date,$3::date,$4 from hub_catalog_private.commercial_versions returning id",
-            [p.audience,p.validFrom,p.validUntil,p.terms]);break;
+            [params.audience,params.validFrom,params.validUntil,params.terms]);break;
         case "add-price":
           result=await tx.unsafe("insert into hub_catalog_private.price_items(commercial_version_id,catalog_version_id,item_id,amount_minor) select $1::uuid,v.id,v.item_id,$3::integer from hub_catalog_private.catalog_versions v where v.id=$2::uuid returning id",
-            [p.commercialVersionId,p.catalogVersionId,p.amountMinor]);break;
+            [params.commercialVersionId,params.catalogVersionId,params.amountMinor]);break;
         case "select-table":
           result=await tx.unsafe("insert into hub_catalog_private.selections(decision_order,commercial_version_id,selected_on,reason) values(0,$1::uuid,$2::date,$3) returning id",
-            [p.commercialVersionId,p.selectedOn,p.reason]);break;
+            [params.commercialVersionId,params.selectedOn,params.reason]);break;
         case "create-campaign":
           result=await tx.unsafe("insert into hub_catalog_private.campaigns(code,name,purpose,channel,starts_on,ends_on,utm_campaign) values($1,$2,$3,$4,$5::date,$6::date,$7) returning id",
-            [p.code,p.name,p.purpose,p.channel,p.startsOn,p.endsOn,p.utmCampaign]);break;
+            [params.code,params.name,params.purpose,params.channel,params.startsOn,params.endsOn,params.utmCampaign]);break;
         case "link-campaign":
           result=await tx.unsafe("insert into hub_catalog_private.campaign_references(campaign_id,commercial_version_id,catalog_version_id) values($1::uuid,$2::uuid,$3::uuid) returning id",
-            [p.campaignId,p.commercialVersionId,p.catalogVersionId]);break;
+            [params.campaignId,params.commercialVersionId,params.catalogVersionId]);break;
         }
         if(!result?.[0]?.id)throw Object.assign(new Error("No row inserted"),{code:"23503"});
         return {id:String(result[0].id)};
