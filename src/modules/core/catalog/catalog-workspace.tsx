@@ -103,7 +103,8 @@ export function CatalogWorkspace() {
   async function submit(event: FormEvent<HTMLFormElement>, action: CatalogCommand["action"]) {
     event.preventDefault();
     if (busy || !writable) return;
-    const fields = Object.fromEntries(new FormData(event.currentTarget).entries());
+    const formNode = event.currentTarget;
+    const fields = Object.fromEntries(new FormData(formNode).entries());
     const command: CatalogCommand = { action };
     for (const [key, value] of Object.entries(fields)) {
       command[key] = key === "amountMinor" ? Number(value) : String(value).trim();
@@ -120,7 +121,7 @@ export function CatalogWorkspace() {
       }
       setData(refreshed.snapshot);
       setError(false); setMessage("Gravação auditada confirmada pelo backend.");
-      event.currentTarget.reset();
+      formNode.reset();
     } catch {
       setError(true); setMessage("A gravação não pôde ser confirmada.");
     } finally { setBusy(false); }
