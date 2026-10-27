@@ -120,3 +120,17 @@ concreta, não uma nova tentativa do fluxo antigo.
 
 Build, TypeScript, lint e 73 testes aprovados, incluindo rejeição do password grant
 e bloqueio de identidade divergente. Banco, contas, grants e Edge Functions intactos.
+
+## Acesso real confirmado e visualização de senha (27/10/2026)
+
+O titular confirmou acesso automático ao painel após redefinição e forneceu capturas.
+Os logs corroboram PUT /user 200, POST /token 200 e evento login em
+2026-10-27T11:51:43Z (08:51:43 São Paulo), seguidos de GET /user 200.
+O fluxo real de recuperação com autenticação está confirmado; isso não equivale
+à homologação de módulos de negócio nem a teste de logout real do titular.
+
+Adicionado controle acessível Mostrar/Ocultar com ícone de olho nos três campos:
+login, nova senha e confirmação. Cada campo inicia oculto, possui estado independente
+e botão type=button para não enviar o formulário. Não grava nem transmite a senha
+ao alternar visibilidade. Corrigido o texto obsoleto da visão geral que afirmava
+não haver autenticação; os limites dos módulos demonstrativos foram preservados.

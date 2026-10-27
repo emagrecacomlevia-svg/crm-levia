@@ -130,14 +130,17 @@ export function AdminOverviewPage() {
         </SectionCard>
         <SectionCard
           title="Limites do ambiente"
-          description="A demonstração é pública enquanto a proteção de acesso não for implementada."
+          description="O acesso é protegido por autenticação e permissões. Os módulos de negócio continuam demonstrativos."
         >
           <div className="mt-6 rounded-xl bg-cream p-5">
             <LockKeyhole aria-hidden="true" className="size-6 text-olive" strokeWidth={1.6} />
-            <p className="mt-3 font-semibold text-forest">Sem autenticação ou banco</p>
+            <p className="mt-3 font-semibold text-forest">
+              Autenticação ativa · módulos demonstrativos
+            </p>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Não insira dados pessoais, comerciais, clínicos ou confidenciais. As telas não salvam,
-              publicam, autorizam ou processam informações.
+              Não insira dados pessoais, comerciais, clínicos ou confidenciais nos módulos
+              demonstrativos. A autenticação e as permissões são reais; estes módulos ainda não
+              salvam operações de negócio.
             </p>
           </div>
           <p className="mt-5 flex items-center gap-2 text-xs font-medium text-olive">

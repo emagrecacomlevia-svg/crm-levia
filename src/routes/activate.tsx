@@ -1,3 +1,4 @@
+import { PasswordInput } from "@/components/ui/password-input";
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { recoveryFromFragment, type RecoveryCredential } from "@/modules/identity/recovery";
@@ -65,32 +66,34 @@ function ActivatePage() {
           <form method="post" onSubmit={submit} className="mt-7 space-y-5">
             <label className="block text-sm">
               Nova senha
-              <input
+              <PasswordInput
+                visibilityLabel="nova senha"
+                containerClassName="mt-2"
                 aria-label="Nova senha"
                 name="password"
-                type="password"
                 autoComplete="new-password"
                 required
                 minLength={12}
                 maxLength={128}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-input bg-background p-3"
+                className="w-full rounded-lg border border-input bg-background p-3"
               />
             </label>
             <label className="block text-sm">
               Confirmar senha
-              <input
+              <PasswordInput
+                visibilityLabel="confirmação de senha"
+                containerClassName="mt-2"
                 aria-label="Confirmar senha"
                 name="confirmation"
-                type="password"
                 autoComplete="new-password"
                 required
                 minLength={12}
                 maxLength={128}
                 value={confirmation}
                 onChange={(e) => setConfirmation(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-input bg-background p-3"
+                className="w-full rounded-lg border border-input bg-background p-3"
               />
             </label>
             <button

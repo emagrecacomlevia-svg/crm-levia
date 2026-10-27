@@ -1,3 +1,4 @@
+import { PasswordInput } from "@/components/ui/password-input";
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Leaf, LockKeyhole } from "lucide-react";
@@ -79,10 +80,9 @@ function LoginPage() {
             <label htmlFor="password" className="mb-2 block text-sm font-medium">
               Senha
             </label>
-            <input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               autoComplete="current-password"
               required
               maxLength={1024}
