@@ -1,0 +1,50 @@
+name: HUB-05 Full Auth Integration PostgreSQL 17
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sql:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start isolated PG17 without network
+        run: |
+          docker run --rm -d --name hub05-full-pg --network none -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17
+          for i in $(seq 1 40); do docker exec hub05-full-pg pg_isready -U postgres && exit 0; sleep 2; done
+          exit 1
+      - name: Apply existing and new migrations and assert Auth scope and rollback
+        run: |
+          docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon nologin;
+          create role authenticated nologin;
+          create role service_role nologin bypassrls;
+          create schema auth;
+          create table auth.users(id uuid primary key,banned_until timestamptz,deleted_at timestamptz,is_anonymous boolean default false,raw_app_meta_data jsonb default '{}');
+          create table auth.sessions(id uuid primary key,user_id uuid references auth.users(id) on delete cascade,created_at timestamptz default now(),not_after timestamptz);
+          SQL
+          for file in supabase/migrations/*.sql; do
+            docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < "$file"
+          done
+          docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub05_authorization.sql
+          docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub05_first_catalog_bootstrap.sql
+          docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub05_renewal.sql
+          docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub05_owner_only.sql
+      - name: Verify positive QA is syntactically sound and gated against unauthorized runs
+        run: |
+          node --check scripts/qa-hub05-authenticated.mjs
+          set +e
+          env -u LEVIA_HUB05_EXPLICIT_APPROVAL -u LEVIA_HUB05_APPROVAL_REF \
+              -u LEVIA_HUB05_AUTH_BEARER -u LEVIA_HUB05_PUBLISHABLE_KEY \
+              -u LEVIA_HUB05_SUPABASE_ORIGIN \
+              node scripts/qa-hub05-authenticated.mjs > /tmp/hub05-gate.log 2>&1
+          result=$?
+          set -e
+          test "$result" = 2
+          grep -q '^BLOQUEADO:' /tmp/hub05-gate.log
+          echo 'PASS: real Auth/write QA requires explicit owner approval'
+      - name: Cleanup
+        if: always()
+        run: docker rm -f hub05-full-pg || true

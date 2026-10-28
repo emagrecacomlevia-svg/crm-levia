@@ -7,7 +7,7 @@ const path = require("node:path");
 const { chromium } = require(process.env.QA_PLAYWRIGHT);
 const base = process.env.QA_BASE_URL || "http://127.0.0.1:4173";
 const out = path.resolve("artifacts/browser-qa");
-const restricted = ["/app", "/app/core", "/app/crm", "/app/social-studio"];
+const restricted = ["/app", "/app/core", "/app/crm", "/app/social-studio", "/app/catalog"];
 const widths = [320, 390, 768, 1280, 1440];
 const result = { base, checks: [], errors: [], screenshots: [], completed: false };
 
@@ -110,7 +110,7 @@ async function run() {
     await screenshot(page, "login-desktop-1440.png");
 
     await page.getByRole("textbox", { name: "E-mail" }).fill("synthetic@example.invalid");
-    await page.getByLabel("Senha").fill("not-a-real-password");
+    await page.getByRole("textbox", { name: "Senha", exact: true }).fill("not-a-real-password");
     await page.getByRole("button", { name: "Entrar" }).click();
     await page.getByRole("alert").waitFor();
     assert.equal(

@@ -1,5 +1,5 @@
 import { isRecoveryCredential, type RecoveryCredential } from "./recovery";
-import { createServerFn } from "@tanstack/react-start";
+import { createServerFn, createServerOnlyFn } from "@tanstack/react-start";
 
 import {
   activatePassword,
@@ -216,3 +216,14 @@ export const activatePasswordFn = createServerFn({ method: "POST" })
       };
     }
   });
+
+/** Private backend helper. Never expose bearer tokens via a createServerFn return. */
+export const getVerifiedServerAccessToken = createServerOnlyFn(async (): Promise<string | null> => {
+  try {
+    const session = await getLeviaSession();
+    const status = await identityForSession(session);
+    return status.state === "authenticated" ? (session.data.accessToken ?? null) : null;
+  } catch {
+    return null;
+  }
+});

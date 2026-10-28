@@ -1,0 +1,64 @@
+name: HUB-05 Live Edge Fail-Closed Smoke (Development Only)
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - name: Verify deployed development Edge Function refuses unauthenticated catalog reads
+        run: |
+          set -Eeuo pipefail
+          url=https://dfhjfajbmnsgrklhqtjk.supabase.co/functions/v1/hub-catalog
+          status=$(curl --fail-with-body -sS -m 18 -X POST \
+            -H 'Content-Type: application/json' \
+            --data '{"action":"snapshot"}' -o /tmp/hub05-response -w '%{http_code}' "$url" || true)
+          echo "Unauthorized HTTP status: $status"
+          test "$status" = 401
+          grep -q '"ok":false' /tmp/hub05-response
+          status=$(curl -sS -m 18 -o /tmp/hub05-get -w '%{http_code}' "$url")
+          echo "Wrong-method HTTP status: $status"
+          test "$status" = 405
+          echo "PASS: deployed Edge blocks anonymous requests and unexpected methods"
+      - name: Verify independent renewal approval endpoint denies anonymous and invalid JWTs
+        run: |
+          set -Eeuo pipefail
+          url=https://dfhjfajbmnsgrklhqtjk.supabase.co/functions/v1/hub-catalog-renew-approve
+          valid_until=$(date -u -d '+2 days' +'%Y-%m-%dT%H:%M:%SZ')
+          payload="{\"action\":\"approve-renewal\",\"requestRef\":\"LEVIA-HUB05R-LIVENEGATIVEQA001\",\"subject\":\"e0000000-0000-4000-8000-000000000002\",\"validUntil\":\"$valid_until\"}"
+          status=$(curl -sS -m 18 -X POST -H 'content-type: application/json' \
+            --data "$payload" -o /tmp/hub05-renew-anon -w '%{http_code}' "$url")
+          echo "Anonymous approval HTTP status: $status"
+          test "$status" = 401
+          grep -q '"ok":false' /tmp/hub05-renew-anon
+          status=$(curl -sS -m 18 -o /tmp/hub05-renew-get -w '%{http_code}' "$url")
+          echo "Renewal wrong-method status: $status"
+          test "$status" = 405
+          status=$(curl -sS -m 18 -X POST -H 'content-type: application/json' \
+            -H 'Authorization: Bearer invalid.invalid.invalid' \
+            --data "$payload" -o /tmp/hub05-renew-invalid -w '%{http_code}' "$url")
+          echo "Invalid JWT approval HTTP status: $status"
+          test "$status" = 401
+          grep -q '"ok":false' /tmp/hub05-renew-invalid
+          echo 'PASS: live renewal approval endpoint refuses anonymous, bad method and invalid bearer'
+      - name: Verify owner-only manual maintenance refuses unauthenticated callers
+        run: |
+          set -Eeuo pipefail
+          url=https://dfhjfajbmnsgrklhqtjk.supabase.co/functions/v1/hub-catalog-owner
+          valid_until=$(date -u -d '+2 days' +'%Y-%m-%dT%H:%M:%SZ')
+          payload="{\"action\":\"renew\",\"ownerRef\":\"LEVIA-OWNER-NEGATIVE20261028TEST\",\"reason\":\"Only synthetic unauthenticated denial QA, no owner privileges\",\"validUntil\":\"$valid_until\"}"
+          status=$(curl -sS -m 18 -X POST -H 'content-type: application/json' \
+            --data "$payload" -o /tmp/hub05-owner-anon -w '%{http_code}' "$url")
+          test "$status" = 401
+          grep -q '"ok":false' /tmp/hub05-owner-anon
+          status=$(curl -sS -m 18 -o /tmp/hub05-owner-get -w '%{http_code}' "$url")
+          test "$status" = 405
+          status=$(curl -sS -m 18 -X POST -H 'content-type: application/json' \
+            -H 'Authorization: Bearer invalid.invalid.invalid' \
+            --data "$payload" -o /tmp/hub05-owner-invalid -w '%{http_code}' "$url")
+          test "$status" = 401
+          grep -q '"ok":false' /tmp/hub05-owner-invalid
+          echo 'PASS: manual owner maintenance denies anonymous, invalid bearer and wrong method'

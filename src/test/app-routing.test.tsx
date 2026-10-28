@@ -14,6 +14,7 @@ const paths = [
   "/app/social-studio",
   "/app/crm",
   "/app/core",
+  "/app/catalog",
 ] as const;
 
 describe("App routing", () => {

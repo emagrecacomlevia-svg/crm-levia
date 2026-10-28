@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, CalendarDays, LayoutGrid, Layers3, UsersRound } from "lucide-react";
+import { ArrowLeft, CalendarDays, LayoutGrid, Layers3, BookOpen, UsersRound } from "lucide-react";
 
 import { adminNavigation, type AdminPath } from "@/app/config/admin-navigation";
 
@@ -8,6 +8,7 @@ const icons = {
   studio: CalendarDays,
   crm: UsersRound,
   core: Layers3,
+  catalog: BookOpen,
 } as const;
 
 export function AdminNavigation({

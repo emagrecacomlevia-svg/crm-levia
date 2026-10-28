@@ -1,0 +1,88 @@
+LEVIA HUB — HUB-05 — INTEGRAÇÃO EFETIVA EM DESENVOLVIMENTO
+Data de referência: 27/10/2026 | Branch: dev/hub-05-integrated-catalog-20261027
+Estado: DESENVOLVIMENTO INTEGRADO, HOMOLOGAÇÃO POSITIVA AUTH PENDENTE
+
+1. PREEXISTÊNCIA REUTILIZADA
+Base main 86a80be7bf79dd119a8cc33cdb1a7efee3327037.
+A interface pública /catalog-demo e o domínio do laboratório foram
+preservados; os modelos DEMO não são fontes de permissão em produção.
+
+2. BANCO SUPABASE REAL
+Projeto exclusivamente dev levia-hub-dev (dfhjfajbmnsgrklhqtjk).
+O projeto já continha as quatro migrations HUB-04, uma conta,
+duas concessões e quinze eventos; esses controles foram preservados.
+Três migrations aditivas foram aplicadas COM SUCESSO via conector
+Supabase, com versões CANÔNICAS DO LEDGER (não reutilizar versão
+da candidata como se fosse histórico remoto):
+  20261027203757 / hub05_catalog_campaigns
+  20261027203819 / hub05_catalog_authorization_audit
+  20261027204837 / hub05_catalog_audit_actor_fk
+Os três arquivos no Git têm exatamente os timestamps observados do
+ledger. A candidata original em supabase/candidates/hub05 é intocada.
+Esquema privado hub_catalog_private, 8 tabelas append-only, RLS nas 8,
+nenhuma policy positiva, nenhuma autorização pública, serviço anônimo
+ou grant direto para anon/authenticated/service_role.
+HUB-04 ganhou 2 capacidades específicas: catalog.read/catalog.write.
+Não se concedeu automaticamente nenhuma capacidade a usuários.
+A auditoria de catálogo contém actor_auth_user_id, actor_snapshot,
+auth_session_id, database_actor e usa trigger transacional.
+
+3. REGISTROS REAIS, MAS FICTÍCIOS
+Uma operação via executor SQL privado postgres criou, de forma atômica:
+um item DEMO-HUB05-ALFA, uma versão referencial, uma versão de tabela,
+preço 12900 centavos, decisão explícita, campanha DEMO-HUB05-2026
+e referência fixada. Exatamente sete eventos de auditoria persistiram.
+Para essa carga do operador SQL, database_actor=postgres e o
+actor_snapshot é NULL; não se atribuiu fraudulentamente uma identidade
+Auth de usuário humano ao carregamento DEMO.
+Dados fictícios não representam produtos, preços ou campanhas da LEVIA.
+
+4. EDGE E AUTORIZAÇÃO
+hub-catalog ACTIVE v1 no Supabase dev, POST apenas.
+hub-authorize atualizado v3; hub-admin-write atualizado v5.
+A Edge Function verifica a identidade contra Supabase Auth e exige
+a sessão ativa no PostgreSQL, com capability específica + conta
+habilitada + permissão vigente e não revogada. Escritas só ocorrem
+dentro de transação com evento de auditoria. O SSR guarda tokens no
+servidor; a rota /app/catalog exige catalog.read e também passa pelo
+gate core.read da rota /app.
+Todas as operações usam SQL constante parametrizado e nenhuma
+solicitação do cliente pode escolher arbitrariamente o usuário/ator.
+verify_jwt=false na gateway de Edge é intencional porque a função
+faz dupla validação interna de bearer e Auth session; HTTP anônimo
+deve devolver 401, métodos não previstos 405.
+A CLI/canal de integração ainda não foi homologada com token real de
+uma conta que possua catalog.read e catalog.write. Nenhum grant foi
+fabricado para obter falsos resultados de teste.
+
+5. SUPABASE SECURITY ADVISOR
+12 entradas informativas RLS enabled no positive policy são
+intencionais e fortalecem o fail-closed nos schemas privados.
+Aviso de senha vazada desabilitado permanece como configuração
+pré-existente do Supabase Auth, não é uma policy de catálogo.
+Índice de FK actor_auth_user_id foi criado depois de diagnóstico
+de performance.
+
+6. TESTES E REGRESSÕES
+GitHub workflows e evidências na PR #13:
+- LEVIA HUB Quality (lint, format, build, types, Vitest).
+- HUB-05 Full Auth Integration PostgreSQL 17, RLS/ACL/SQL rollback.
+- HUB-05 Catalog Candidate and Recovery (dump/restauração sintética).
+- HUB-05 Edge Typecheck + 8 testes HTTP MOCK, sem rede.
+- HUB-05 Live Edge Fail-Closed Smoke: 401 anônimo, 405 GET (real).
+- Browser QA: /catalog-demo intacto e /app/catalog inacessível sem Auth.
+Os MOCKs não homologam o caminho positivo Auth real.
+HUB04 regressões preservadas, sem alteração na main.
+
+7. LIMITES PARA ACEITE
+O administrador existente possui apenas duas concessões herdadas;
+catalog.read e catalog.write ainda não foram concedidas a ele.
+Uma atribuição inicial demanda ator independente verificado,
+users.manage com escopo exato e delegação auditável, sem autoatribuição.
+A integração positiva real requer conta administrativa legítima,
+credenciais protegidas e concessões catalog.read/catalog.write
+autorizadas. Sem isso, a página funciona em modo DENY, não oferece
+uma sessão falsa ou bypass para demonstrar persistência.
+A primeira execução do frontend autenticado depende do deploy
+do próprio webapp em destino de desenvolvimento aprovado.
+NÃO publicar a PR nem executar merge antes do auditor aceitar.
