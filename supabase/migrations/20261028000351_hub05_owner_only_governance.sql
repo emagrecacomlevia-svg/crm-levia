@@ -170,6 +170,7 @@ begin
  end loop;
 end $function$
 
+;
 revoke all on function hub_private.owner_catalog_change(
  uuid,uuid,text,text,text,timestamptz,text,text)
  from public,anon,authenticated,service_role;

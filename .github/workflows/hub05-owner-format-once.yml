@@ -1,0 +1,30 @@
+name: HUB-05 Owner Format Once (Temporary)
+on:
+  push:
+    branches: [dev/hub-05-integrated-catalog-20261027]
+    paths:
+      - .github/workflows/hub05-owner-format-once.yml
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev/hub-05-integrated-catalog-20261027
+          persist-credentials: true
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - name: Format owner-only code, then commit and push if needed
+        run: |
+          set -Eeuo pipefail
+          bunx prettier --write supabase/functions/hub-catalog-owner/handler.ts supabase/tests/hub05_owner_edge.test.ts
+          if ! git diff --quiet; then
+            git config user.name "LEVIA HUB Dev Format Bot"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add supabase/functions/hub-catalog-owner/handler.ts supabase/tests/hub05_owner_edge.test.ts
+            git commit -m "style(hub05): format owner-only lifecycle contract"
+            git push origin HEAD:dev/hub-05-integrated-catalog-20261027
+          fi
