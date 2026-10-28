@@ -15,6 +15,7 @@ As restrições históricas `grant_no_self_assignment` e `audit_event_subject` p
 ## Manutenção: explícita e somente quando necessário
 
 A função Edge `hub-catalog-owner` aceita exclusivamente POST autenticado com token Supabase Auth real validado em `/auth/v1/user`; o PostgreSQL verifica sessão viva em `auth.sessions`. O corpo é estrito:
+
 ```json
 {
   "action": "renew",
@@ -23,6 +24,7 @@ A função Edge `hub-catalog-owner` aceita exclusivamente POST autenticado com t
   "validUntil": "2026-11-01T00:00:00Z"
 }
 ```
+
 O exemplo não representa autorização. O endpoint também aceita `action:"revoke"` com `validUntil:null`. Ambas as decisões exigem uma nova referência única e são registradas. Uma renovação somente ocorre **após a expiração natural de ambos os grants íntegros**. Nunca reativa privilégios revogados por incidente, nem durante a vigência do par. O executor encerra historicamente as duas linhas vencidas, audita e emite duas novas, tudo na mesma transação. Revogação explícita bloqueia renovação futura automática. Não há agendamento, cron, autoalongamento ou grants mais amplos. O prazo é no máximo sete dias a cada decisão explícita.
 
 A função legada `hub-catalog-renew-approve` e suas SQLs ficam como histórico técnico, mas **não se aplicam ao novo modelo**: requerem uma primeira outorga legada com operação `hub05-initial-catalog-grant`, que nunca ocorreu. Não utilizar a conta secundária para simular independência.
