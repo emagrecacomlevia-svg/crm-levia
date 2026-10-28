@@ -17,18 +17,26 @@ function validInput(p: unknown): p is {
 } {
   if (!p || typeof p !== "object" || Array.isArray(p)) return false;
   const v = p as Record<string, unknown>;
-  if (Object.keys(v).sort().join(",") !== "action,ownerRef,reason,validUntil" ||
+  if (
+    Object.keys(v).sort().join(",") !== "action,ownerRef,reason,validUntil" ||
     !["renew", "revoke"].includes(String(v.action)) ||
     typeof v.ownerRef !== "string" ||
     !/^LEVIA-OWNER-[A-Z0-9]{12,32}$/.test(v.ownerRef) ||
-    typeof v.reason !== "string" || v.reason.trim().length < 30 ||
-    v.reason.trim().length > 500) return false;
+    typeof v.reason !== "string" ||
+    v.reason.trim().length < 30 ||
+    v.reason.trim().length > 500
+  )
+    return false;
   if (v.action === "revoke") return v.validUntil === null;
-  if (typeof v.validUntil !== "string" ||
-    !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?Z$/.test(v.validUntil)) return false;
+  if (
+    typeof v.validUntil !== "string" ||
+    !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,3})?Z$/.test(v.validUntil)
+  )
+    return false;
   const expiry = Date.parse(v.validUntil);
-  return Number.isFinite(expiry) && expiry > Date.now() + 3600000 &&
-    expiry <= Date.now() + 7 * 86400000;
+  return (
+    Number.isFinite(expiry) && expiry > Date.now() + 3600000 && expiry <= Date.now() + 7 * 86400000
+  );
 }
 const uuid = (v: unknown): v is string =>
   typeof v === "string" &&
@@ -70,25 +78,40 @@ export async function hubCatalogOwnerHandler(
   // SHA-256 anchors the exact authenticated request and live session context.
   // Not claimed as a third-party signature or approval.
   const canonical = JSON.stringify({
-    owner, session, action: p.action, ownerRef: p.ownerRef,
-    reason: p.reason.trim(), validUntil: p.validUntil,
+    owner,
+    session,
+    action: p.action,
+    ownerRef: p.ownerRef,
+    reason: p.reason.trim(),
+    validUntil: p.validUntil,
   });
   const bytes = new TextEncoder().encode(canonical);
   const hash = await crypto.subtle.digest("SHA-256", bytes);
-  const evidence = Array.from(new Uint8Array(hash)).map((b) =>
-    b.toString(16).padStart(2, "0")
-  ).join("");
+  const evidence = Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
   const sql = (dependencies.connect ?? postgres)(cfg.rawUrl, {
     password: cfg.password,
     ssl: { rejectUnauthorized: true, ...(cfg.ca ? { ca: cfg.ca } : {}) },
-    max: 1, prepare: false, connect_timeout: 8, idle_timeout: 3,
+    max: 1,
+    prepare: false,
+    connect_timeout: 8,
+    idle_timeout: 3,
   });
   try {
     await sql.begin(async (tx) => {
       await tx.unsafe(
         "select hub_private.owner_catalog_change($1::uuid,$2::uuid,$3,$4,$5,$6::timestamptz,$7,$8)",
-        [owner, session, p.action, p.ownerRef, p.reason.trim(),
-          p.validUntil, evidence, "verified-auth-request"],
+        [
+          owner,
+          session,
+          p.action,
+          p.ownerRef,
+          p.reason.trim(),
+          p.validUntil,
+          evidence,
+          "verified-auth-request",
+        ],
       );
     });
     return reply(200, { ok: true, action: p.action, recorded: true });

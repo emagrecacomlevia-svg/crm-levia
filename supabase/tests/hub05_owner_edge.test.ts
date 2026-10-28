@@ -12,14 +12,20 @@ function config() {
   Deno.env.set("SUPABASE_URL", origin);
   Deno.env.set("SUPABASE_PUBLISHABLE_KEY", "sb_publishable_synthetic_not_secret");
   Deno.env.set("SUPABASE_PUBLISHABLE_KEYS", "{}");
-  Deno.env.set("SUPABASE_DB_URL",
-    "postgresql://postgres:MOCK@db.dfhjfajbmnsgrklhqtjk.supabase.co:5432/postgres");
+  Deno.env.set(
+    "SUPABASE_DB_URL",
+    "postgresql://postgres:MOCK@db.dfhjfajbmnsgrklhqtjk.supabase.co:5432/postgres",
+  );
 }
 function jwt() {
-  const b64 = (v: unknown) => btoa(JSON.stringify(v)).replaceAll("+", "-")
-    .replaceAll("/", "_").replaceAll("=", "");
-  return b64({ alg: "HS256" }) + "." +
-    b64({ session_id: session, exp: Math.floor(Date.now() / 1000) + 900 }) + ".SYNTHETIC";
+  const b64 = (v: unknown) =>
+    btoa(JSON.stringify(v)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+  return (
+    b64({ alg: "HS256" }) +
+    "." +
+    b64({ session_id: session, exp: Math.floor(Date.now() / 1000) + 900 }) +
+    ".SYNTHETIC"
+  );
 }
 function expiry() {
   return new Date(Date.now() + 2 * 86400000).toISOString().replace(/\.\d{3}Z$/, "Z");
@@ -32,33 +38,56 @@ function request(data: unknown, bearer = true, method = "POST") {
     ...(method === "POST" ? { body: JSON.stringify(data) } : {}),
   });
 }
-const auth = (status = 200): typeof fetch => async () =>
-  new Response(status === 200 ? JSON.stringify({ id: owner }) : "{}", { status });
+const auth =
+  (status = 200): typeof fetch =>
+  async () =>
+    new Response(status === 200 ? JSON.stringify({ id: owner }) : "{}", { status });
 function mockDb(errorCode?: string) {
   const calls: { sql: string; args: unknown[] }[] = [];
-  const tx = { unsafe: async (sql: string, args: unknown[]) => {
-    calls.push({ sql, args });
-    if (errorCode) throw Object.assign(new Error("synthetic denial"), { code: errorCode });
-    return [];
-  } };
-  const driver = { begin: async (f: (t: typeof tx) => Promise<unknown>) => f(tx),
-    end: async () => undefined };
+  const tx = {
+    unsafe: async (sql: string, args: unknown[]) => {
+      calls.push({ sql, args });
+      if (errorCode) throw Object.assign(new Error("synthetic denial"), { code: errorCode });
+      return [];
+    },
+  };
+  const driver = {
+    begin: async (f: (t: typeof tx) => Promise<unknown>) => f(tx),
+    end: async () => undefined,
+  };
   return { connect: (() => driver) as unknown as typeof postgres, calls };
 }
 Deno.test("Owner endpoint refuses anonymous and non-POST", async () => {
   config();
   const db = mockDb();
-  assert.equal((await hubCatalogOwnerHandler(request(payload(), true, "GET"),
-    { fetcher: auth(), connect: db.connect })).status, 405);
-  assert.equal((await hubCatalogOwnerHandler(request(payload(), false),
-    { fetcher: auth(), connect: db.connect })).status, 401);
+  assert.equal(
+    (
+      await hubCatalogOwnerHandler(request(payload(), true, "GET"), {
+        fetcher: auth(),
+        connect: db.connect,
+      })
+    ).status,
+    405,
+  );
+  assert.equal(
+    (
+      await hubCatalogOwnerHandler(request(payload(), false), {
+        fetcher: auth(),
+        connect: db.connect,
+      })
+    ).status,
+    401,
+  );
   assert.equal(db.calls.length, 0);
 });
 Deno.test("Owner endpoint refuses unverifiable JWT", async () => {
   config();
   const db = mockDb();
-  assert.equal((await hubCatalogOwnerHandler(request(payload()),
-    { fetcher: auth(401), connect: db.connect })).status, 401);
+  assert.equal(
+    (await hubCatalogOwnerHandler(request(payload()), { fetcher: auth(401), connect: db.connect }))
+      .status,
+    401,
+  );
   assert.equal(db.calls.length, 0);
 });
 Deno.test("Owner endpoint refuses unexpected actions, extra keys and TTL", async () => {
@@ -68,21 +97,28 @@ Deno.test("Owner endpoint refuses unexpected actions, extra keys and TTL", async
     { ...payload(), action: "initial" },
     { ...payload(), ownerRef: "INVALID" },
     { ...payload(), validUntil: null },
-    { ...payload(), validUntil: new Date(Date.now() + 8 * 86400000).toISOString().replace(/\.\d{3}Z$/, "Z") },
+    {
+      ...payload(),
+      validUntil: new Date(Date.now() + 8 * 86400000).toISOString().replace(/\.\d{3}Z$/, "Z"),
+    },
     { ...payload(), extra: "privilege-escalation" },
     { ...payload(), reason: "too short" },
     { ...payload(), action: "revoke" },
   ]) {
-    assert.equal((await hubCatalogOwnerHandler(request(bad),
-      { fetcher: auth(), connect: db.connect })).status, 400);
+    assert.equal(
+      (await hubCatalogOwnerHandler(request(bad), { fetcher: auth(), connect: db.connect })).status,
+      400,
+    );
   }
   assert.equal(db.calls.length, 0);
 });
 Deno.test("Owner renewal uses Auth-verified principal and SQL session gate", async () => {
   config();
   const db = mockDb();
-  const res = await hubCatalogOwnerHandler(request(payload()),
-    { fetcher: auth(), connect: db.connect });
+  const res = await hubCatalogOwnerHandler(request(payload()), {
+    fetcher: auth(),
+    connect: db.connect,
+  });
   assert.equal(res.status, 200);
   assert.equal(db.calls.length, 1);
   assert.match(db.calls[0].sql, /hub_private\.owner_catalog_change/);
@@ -93,19 +129,30 @@ Deno.test("Owner renewal uses Auth-verified principal and SQL session gate", asy
 Deno.test("Owner explicit revocation has no expiry and is separately audited", async () => {
   config();
   const db = mockDb();
-  const res = await hubCatalogOwnerHandler(request({
-    ...payload(), action: "revoke", ownerRef: "LEVIA-OWNER-QA20261028REVOKE01",
-    validUntil: null,
-  }), { fetcher: auth(), connect: db.connect });
+  const res = await hubCatalogOwnerHandler(
+    request({
+      ...payload(),
+      action: "revoke",
+      ownerRef: "LEVIA-OWNER-QA20261028REVOKE01",
+      validUntil: null,
+    }),
+    { fetcher: auth(), connect: db.connect },
+  );
   assert.equal(res.status, 200);
   assert.equal(db.calls[0].args[2], "revoke");
   assert.equal(db.calls[0].args[5], null);
 });
 Deno.test("Owner grant SQL denial and replay remain closed", async () => {
   config();
-  for (const [error, status] of [["42501", 403], ["23505", 409]] as const) {
+  for (const [error, status] of [
+    ["42501", 403],
+    ["23505", 409],
+  ] as const) {
     const db = mockDb(error);
-    assert.equal((await hubCatalogOwnerHandler(request(payload()),
-      { fetcher: auth(), connect: db.connect })).status, status);
+    assert.equal(
+      (await hubCatalogOwnerHandler(request(payload()), { fetcher: auth(), connect: db.connect }))
+        .status,
+      status,
+    );
   }
 });
