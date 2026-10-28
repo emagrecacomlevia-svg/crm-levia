@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import type postgres from "npm:postgres@3.4.7";
 import { hubCatalogOwnerHandler } from "../functions/hub-catalog-owner/handler.ts";
 const origin = "https://dfhjfajbmnsgrklhqtjk.supabase.co";
-const owner = "333d7d47-68b3-426e-bd2f-5327db9fecdf";
+const owner = "d0000000-0000-4000-8000-000000000011";
 const session = "e1000000-0000-4000-8000-000000000001";
 const ref = "LEVIA-OWNER-QA20261028RENEW01";
 const reason = "O proprietário único autoriza uma manutenção manual com auditoria e prazo curto.";
