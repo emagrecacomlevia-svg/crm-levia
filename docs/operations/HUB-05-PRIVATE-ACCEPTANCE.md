@@ -2,19 +2,22 @@
 
 ## Acesso ao código exato da PR, sem publicação
 
-O preview existente no Lovable está ligado à `main` e **não** deve ser utilizado para certificar a PR #13. O teste operacional deve executar o HEAD atual da branch `dev/hub-05-integrated-catalog-20261027`, sem merge.
+O preview existente no Lovable está ligado à `main` e **não** deve ser usado para certificar a PR #13. O teste deve ocorrer exclusivamente na branch `dev/hub-05-integrated-catalog-20261027` (confirmar HEAD na PR antes de começar). Não alterar `main` nem tornar a prévia pública.
 
-**Opção recomendada: Codespace pessoal e porta privada, iniciado pelo proprietário.** No GitHub, abra a branch da PR #13, selecione **Code > Codespaces > Create codespace on this branch**. O arquivo `.devcontainer/devcontainer.json` instala Bun 1.3.2 a partir do npm e dependências do `bun.lock`; aguarde a preparação e execute no terminal:
+### Caminho mais simples para o responsável — somente cliques
 
-```bash
-git branch --show-current
-git rev-parse HEAD
-bun run dev -- --host 0.0.0.0 --port 3000
-```
+1. Acesse a [PR #13](https://github.com/emagrecacomlevia-svg/crm-levia/pull/13), verifique que a branch indicada é `dev/hub-05-integrated-catalog-20261027`, e abra o repositório nessa branch.
+2. Clique em **Code → Codespaces → Create codespace on this branch**, usando sua própria conta GitHub. Se o GitHub pedir pagamento ou indicar falta de cota gratuita, **não confirme nem cadastre pagamento**; relate apenas que a opção foi bloqueada.
+3. O Codespace instala Bun e dependências automaticamente (`postCreateCommand`). Ao iniciar, `postStartCommand` liga a aplicação na porta 3000, sem terminal e sem comandos manuais. A prévia poderá abrir automaticamente; caso contrário, na aba **PORTS/PORTAS**, clique no ícone de abrir no navegador da porta **3000 — LEVIA HUB-05**.
+4. **Antes de inserir sua senha**, confira na aba PORTS que a porta 3000 tem **Visibility = Private** e **Protocol = HTTPS**. As portas Codespaces são privadas por padrão; se aparecer diferente, ajuste por cliques. Se não for possível garantir ambas, não use a prévia e comunique o bloqueio.
+5. Na nova aba privada, acesse `/login`, use sua própria conta administrativa habilitada e siga o ensaio abaixo. **Nunca compartilhe URL privada, senha, token, cookie ou código**. O envio de uma confirmação textual do SKU e do resultado basta para a verificação posterior no Supabase.
+6. Após o teste, no GitHub Codespaces é possível parar ou excluir a instância pela página **Your codespaces**; não há necessidade de publicar/deployar nada.
 
-Confirme que a branch é `dev/hub-05-integrated-catalog-20261027`. Na aba **PORTS**, garanta **Visibility = Private** e **Protocol = HTTPS**, sem compartilhar o endereço com terceiros. Abra a URL apresentada para a porta 3000 e depois `/login`. Portas privadas do Codespaces exigem login GitHub do próprio criador; nenhum app foi publicado em produção. Se o GitHub indicar cobrança ou limite de cota, **não criar Codespace**: use a alternativa local abaixo. Nenhum serviço pago está autorizado automaticamente.
+**Custo:** Codespaces pessoais possuem cota gratuita mensal, mas não podemos verificar o saldo desta conta pela integração atual. Não incorrer em cobranças; não criar instância se o painel exigir pagamento. A execução da prévia depende da criação pessoal da instância GitHub, que não está disponível nas ações conectadas deste desenvolvedor. Não alegar ambiente ativo sem confirmação pessoal.
 
-**Alternativa local sem hospedagem e sem Codespaces:** em sua estação privada com Git, Bun 1.3.2 e acesso ao GitHub:
+### Alternativa técnica reservada ao desenvolvedor (não exigida ao responsável)
+
+Se Codespaces não estiver disponível dentro da cota gratuita, o desenvolvedor poderá conduzir a opção local isolada, sem pedir ao responsável para executar terminal ou instalar dependências. Como referência técnica (não roteiro do responsável):
 
 ```bash
 git clone https://github.com/emagrecacomlevia-svg/crm-levia.git
@@ -24,7 +27,7 @@ bun install --frozen-lockfile
 bun run dev -- --host 127.0.0.1 --port 3000
 ```
 
-Abra `http://127.0.0.1:3000/login`. A URL é acessível apenas na própria máquina. A aplicação utiliza a URL e chave publicável do **Supabase de desenvolvimento** já configuradas no servidor; nunca inserir `service_role`, `postgres`, senha SQL ou tokens em arquivos, commits ou chats.
+O frontend usa apenas configurações **publicáveis** do Supabase de desenvolvimento. Nunca usar `service_role`, credenciais de banco ou tokens pessoais na aplicação, no histórico GitHub ou no chat.
 
 ## Ensaio real a realizar pessoalmente
 
