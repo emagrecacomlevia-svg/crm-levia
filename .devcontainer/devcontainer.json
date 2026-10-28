@@ -4,9 +4,6 @@
   "postCreateCommand": "npm install --global bun@1.3.2 && bun install --frozen-lockfile",
   "forwardPorts": [3000],
   "portsAttributes": {
-    "3000": {
-      "label": "LEVIA HUB-05 (acesso pessoal)",
-      "onAutoForward": "notify",
-    },
-  },
+    "3000": { "label": "LEVIA HUB-05 (acesso pessoal)", "onAutoForward": "notify" }
+  }
 }
