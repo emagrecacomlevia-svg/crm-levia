@@ -1,5 +1,8 @@
 # HUB-05 — Renovação excepcional de permissões de catálogo
 
+> **LEGADO — NÃO EXECUTAR:** não existe segundo aprovador humano independente. A via excepcional abaixo está obsoleta para este projeto; utilizar exclusivamente `HUB-05-OWNER-GOVERNANCE.md` e decisão expressa do proprietário. Preservado por rastreabilidade.
+
+
 ## Objetivo e condições
 
 O bootstrap inicial já instalado em `20261027212242` continua **imutável** e de uso único. A renovação usa uma nova migration aditiva e **NUNCA** cria permissões automaticamente. O responsável LEVIA deve autorizar **cada outorga, inclusive cada renovação, nominalmente**. Sem essa autorização, a segunda etapa está proibida.

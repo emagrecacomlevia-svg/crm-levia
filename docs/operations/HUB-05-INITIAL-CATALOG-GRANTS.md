@@ -1,5 +1,8 @@
 # HUB-05 — Concessão inicial excepcional de capabilities de catálogo
 
+> **LEGADO — NÃO EXECUTAR:** o aprovador da HUB-04 e o administrador principal pertencem à mesma pessoa. A via independente histórica foi substituída operacionalmente por `HUB-05-OWNER-GOVERNANCE.md`. Preserve o texto abaixo somente como histórico técnico; não registrar aprovação independente fictícia.
+
+
 ## Estado do procedimento
 
 O procedimento `hub_private.bootstrap_initial_catalog_grants` é **inerte quando instalado**. Criá-lo não concede capabilities. Sua chamada que insere as duas permissões permanece **PROIBIDA até autorização nominal e específica do responsável LEVIA**. Este documento não equivale à autorização.

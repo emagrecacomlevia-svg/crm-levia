@@ -1,6 +1,6 @@
 /**
  * HUB-05 positive real QA. NEVER call before the nominal catalog grants
- * have been expressly authorized, audited and independently provisioned.
+ * have been expressly authorized and transactionally audited under owner-only governance.
  * Uses Auth verified against live Supabase and creates ONE synthetic item.
  * No password, JWT, identity UUID or API key is printed.
  */
@@ -16,7 +16,7 @@ const declaredOrigin = process.env["LEVIA_HUB05_SUPABASE_ORIGIN"] ?? "";
 
 if (
   !approved ||
-  !/^LEVIA-HUB05-[A-Z0-9]{12,32}$/.test(reference) ||
+  !/^LEVIA-OWNER-[A-Z0-9]{12,32}$/.test(reference) ||
   declaredOrigin !== origin ||
   !token ||
   !key
