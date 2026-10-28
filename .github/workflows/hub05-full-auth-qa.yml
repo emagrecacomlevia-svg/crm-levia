@@ -31,6 +31,7 @@ jobs:
           docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub05_authorization.sql
           docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub05_first_catalog_bootstrap.sql
           docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub05_renewal.sql
+          docker exec -i hub05-full-pg psql -U postgres -v ON_ERROR_STOP=1 < supabase/tests/hub05_owner_only.sql
       - name: Verify positive QA is syntactically sound and gated against unauthorized runs
         run: |
           node --check scripts/qa-hub05-authenticated.mjs
