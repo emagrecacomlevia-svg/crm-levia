@@ -10,7 +10,7 @@ insert into auth.sessions(id,user_id) values
  ('a1000000-0000-4000-8000-000000000001','333d7d47-68b3-426e-bd2f-5327db9fecdf'),
  ('a1000000-0000-4000-8000-000000000003','a0000000-0000-4000-8000-000000000003');
 insert into hub_private.admin_accounts(auth_user_id,is_enabled,created_by_auth_user_id)
-values('333d7d47-68b3-426e-bd2f-5327db9fecdf',true,'50764df7-8649-4590-b2df-4fab9aa906a0');
+values('333d7d47-68b3-426e-bd2f-5327db9fecdf',true,null,'50764df7-8649-4590-b2df-4fab9aa906a0');
 with g as(
  insert into hub_private.permission_grants(
  subject_user_id,capability_code,scope_kind,scope_key,granted_by_auth_user_id)

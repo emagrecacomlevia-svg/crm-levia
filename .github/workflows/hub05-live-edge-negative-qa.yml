@@ -44,3 +44,21 @@ jobs:
           test "$status" = 401
           grep -q '"ok":false' /tmp/hub05-renew-invalid
           echo 'PASS: live renewal approval endpoint refuses anonymous, bad method and invalid bearer'
+      - name: Verify owner-only manual maintenance refuses unauthenticated callers
+        run: |
+          set -Eeuo pipefail
+          url=https://dfhjfajbmnsgrklhqtjk.supabase.co/functions/v1/hub-catalog-owner
+          valid_until=$(date -u -d '+2 days' +'%Y-%m-%dT%H:%M:%SZ')
+          payload="{\"action\":\"renew\",\"ownerRef\":\"LEVIA-OWNER-NEGATIVE20261028TEST\",\"reason\":\"Only synthetic unauthenticated denial QA, no owner privileges\",\"validUntil\":\"$valid_until\"}"
+          status=$(curl -sS -m 18 -X POST -H 'content-type: application/json' \
+            --data "$payload" -o /tmp/hub05-owner-anon -w '%{http_code}' "$url")
+          test "$status" = 401
+          grep -q '"ok":false' /tmp/hub05-owner-anon
+          status=$(curl -sS -m 18 -o /tmp/hub05-owner-get -w '%{http_code}' "$url")
+          test "$status" = 405
+          status=$(curl -sS -m 18 -X POST -H 'content-type: application/json' \
+            -H 'Authorization: Bearer invalid.invalid.invalid' \
+            --data "$payload" -o /tmp/hub05-owner-invalid -w '%{http_code}' "$url")
+          test "$status" = 401
+          grep -q '"ok":false' /tmp/hub05-owner-invalid
+          echo 'PASS: manual owner maintenance denies anonymous, invalid bearer and wrong method'
